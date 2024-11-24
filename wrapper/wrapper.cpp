@@ -1,19 +1,29 @@
-
-// cuPyNumeric C++ API
-// https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
-
-// legate::Type defined here:
-// https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
-// can find inside of conda here:
-// /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
-
 #include "jlcxx/jlcxx.hpp"
 #include "cupynumeric/cupynumeric/operators.h"
 #include "cupynumeric/cupynumeric/ndarray.h"
 #include "legate/legate/type/type_info.h"
 #include "legate/legate/data/logical_store.h"
-#include "legate/legate/utilities/internal_shared_ptr.h"
+#include "legate/legate/runtime/runtime.h"
 
+// General Idea:
+    // 1. Construct Runtime
+    // 2. Use Runtime to create Logical Store
+    // 3. Use Logical Store to create NDArray
+    // 4. Use NDArray to call operations (e.g., dot)
+
+// Specific Hacks:
+    // legate::PrimitiveType takes a value from the legate::Type::Code enum 
+    // but I can't wrap that enum explicitly so I will hardcode
+    // an enum in Julia that has the same mappings and just
+    // pass integeters to construct PrimitiveTypes
+
+// cuPyNumeric C++ API:
+    // https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
+
+// legate::Type defined here:
+    // https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
+// can find inside of conda here:
+    // /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
 
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
@@ -24,23 +34,19 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
 
-    mod.add_type<legate::detail::LogicalStore>("LogicalStore")
+    mod.add_type<legate::LogicalStore>("LogicalStore");
 
     //& create Runtime Object and add create_store 
+    mod.add_type<legate::Runtime>()
+        .constructor<>()
+        .method("create_store", &legate::Runtime::create_store);
 
-
-    //can reate logical store from Runtime with create_store
-    // then can create NDArray from logical store and call ops
-
-
-    mod.add_type<NDArray>("NDArray")
+    mod.add_type<cupynumeric::NDArray>("NDArray")
         .constructor<legate::LogicalStore>()
-        .method("dim", &NDArray::dim)
-        .method("size", &NDArray::size)
-        .method("dot", &NDArray::dot)
-        .method("binary_op", &NDArray::binary_op)
-
-
+        .method("dim", &cupynumeric::NDArray::dim)
+        .method("size", &cupynumeric::NDArray::size)
+        .method("dot", &cupynumeric::NDArray::dot)
+        .method("binary_op", &cupynumeric::NDArray::binary_op);
 
 }
 
