@@ -26,20 +26,22 @@ set(SOURCES wrapper/wrapper.cpp)
 
 
 # Add the dependency to the shared library
-target_link_libraries(mylibrary PRIVATE ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME}.so)
-set_target_properties(mylibrary PROPERTIES INSTALL_RPATH "${CUNUMERIC_LIB_PATH}")
+add_library(cuPyNumeric SHARED IMPORTED)
+target_link_libraries(cuPyNumeric PRIVATE ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME}.so)
+set_target_properties(cuPyNumeric PROPERTIES INSTALL_RPATH "${CUNUMERIC_LIB_PATH}")
 
-target_link_libraries(mylibrary PRIVATE ${LIBCXXWRAP_PATH}/${LIBCXXWRAP_NAME}.so)
-set_target_properties(mylibrary PROPERTIES INSTALL_RPATH "${CXXWRAP_LIB_PATH}")
+add_library(cxxwrap_julia SHARED IMPORTED)
+target_link_libraries(cxxwrap_julia PRIVATE ${LIBCXXWRAP_PATH}/${LIBCXXWRAP_NAME}.so)
+set_target_properties(cxxwrap_julia PROPERTIES INSTALL_RPATH "${CXXWRAP_LIB_PATH}")
 
 
 
 # Create the shared library
-add_library(mylibrary SHARED ${SOURCES})
+add_library(cuNumericWrapper SHARED ${SOURCES})
 
 # Optionally set the version of the shared library
-set_target_properties(mylibrary PROPERTIES VERSION 1.0 SOVERSION 1)
+set_target_properties(cuNumericWrapper PROPERTIES VERSION 1.0 SOVERSION 1)
 
 # Optionally, install the library and headers
-install(TARGETS mylibrary DESTINATION lib)
+install(TARGETS cuNumericWrapper DESTINATION lib)
 install(DIRECTORY include/ DESTINATION include)

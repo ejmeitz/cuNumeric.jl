@@ -2,6 +2,7 @@
 #include "cupynumeric/cupynumeric/operators.h"
 #include "cupynumeric/cupynumeric/ndarray.h"
 #include "legate/legate/type/type_info.h"
+#include "legate/legate/data/shape.h"
 #include "legate/legate/data/logical_store.h"
 #include "legate/legate/runtime/runtime.h"
 
@@ -35,6 +36,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
 
     mod.add_type<legate::LogicalStore>("LogicalStore");
+    mod.add_tuple<legate::Shape>("Shape")
+        .constructor<std::vector<std::uint64_t>>();
 
     //& create Runtime Object and add create_store 
     mod.add_type<legate::Runtime>()
