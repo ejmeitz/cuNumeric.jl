@@ -11,20 +11,36 @@
 #include "cupynumeric/cupynumeric/operators.h"
 #include "cupynumeric/cupynumeric/ndarray.h"
 #include "legate/legate/type/type_info.h"
+#include "legate/legate/data/logical_store.h"
+#include "legate/legate/utilities/internal_shared_ptr.h"
+
 
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
 
-  mod.add_type<legate::Type>("LegateType"); // this is a base class
-  mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
-    .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
-
-  mod.add_type<NDArray>("NDArray")
-    //& TODO Add constructors and methods
+    mod.add_type<legate::Type>("LegateType"); // this is a base class
+    mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
+        .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
 
-  //& TODO Add free methods which return NDArrays in operators.h
+    mod.add_type<legate::detail::LogicalStore>("LogicalStore")
+
+    //& create Runtime Object and add create_store 
+
+
+    //can reate logical store from Runtime with create_store
+    // then can create NDArray from logical store and call ops
+
+
+    mod.add_type<NDArray>("NDArray")
+        .constructor<legate::LogicalStore>()
+        .method("dim", &NDArray::dim)
+        .method("size", &NDArray::size)
+        .method("dot", &NDArray::dot)
+        .method("binary_op", &NDArray::binary_op)
+
+
 
 }
 
