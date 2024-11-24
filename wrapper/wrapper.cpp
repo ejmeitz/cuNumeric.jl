@@ -9,20 +9,22 @@
 
 #include "jlcxx/jlcxx.hpp"
 #include "cupynumeric/cupynumeric/operators.h"
+#include "cupynumeric/cupynumeric/ndarray.h"
 #include "legate/legate/type/type_info.h"
 
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
 
-  mod.add_type<CodeMap>()
-
   mod.add_type<legate::Type>("LegateType"); // this is a base class
   mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
     .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
-  // Need to wrap Type.Code somehow so we can construct Types
-  // Can I just pass normal ints to Julia and make a copy of the map in my julia code
+  mod.add_type<NDArray>("NDArray")
+    //& TODO Add constructors and methods
+
+
+  //& TODO Add free methods which return NDArrays in operators.h
 
 }
 
