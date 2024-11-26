@@ -41,8 +41,8 @@ target_include_directories(libcupynumwrapper PRIVATE
 
 # Create executable which tests the cpp interface 
 # that the shared library is wrapping/exposing to Julia
-add_executable(cunumeric_cpp_test wrapper/test.cpp) 
-target_link_libraries(cunumeric_cpp_test PRIVATE cupynumeric::cupynumeric)
+# add_executable(cunumeric_cpp_test wrapper/test.cpp) 
+# target_link_libraries(cunumeric_cpp_test PRIVATE cupynumeric::cupynumeric)
 
 install(TARGETS libcupynumwrapper DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
-install(TARGETS cunumeric_cpp_test DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
+# install(TARGETS cunumeric_cpp_test DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
