@@ -32,7 +32,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
 
     mod.add_type<legate::LogicalStore>("LogicalStore");
-    mod.add_tuple<legate::Shape>("Shape")
+    mod.add_type<legate::Shape>("Shape")
         .constructor<std::vector<std::uint64_t>>();
 
     // // //& create Runtime Object and add create_store 
