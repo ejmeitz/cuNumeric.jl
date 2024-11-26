@@ -26,7 +26,8 @@ set(LIBCXXWRAP_NAME "libcxxwrap_julia.so")
 set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
 
 
-# Load cunumeric and legate libraries 
+# Make cunumeric, legate and cxxwrap libraries 
+#* use RPATH?
 add_library(cuPyNumeric SHARED IMPORTED)
 set_property(TARGET cuPyNumeric PROPERTY IMPORTED_LOCATION ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME})
 
@@ -63,7 +64,5 @@ target_include_directories(cuNumericWrapper PRIVATE
 add_executable(cunumeric_cpp_test wrapper/test.cpp) 
 target_link_libraries(cunumeric_cpp_test INTERFACE cuNumericWrapper) # link my library to the test executable
 
-
-# Optionally, install the library and header
 #* probably should set the install paths to something else
 install(TARGETS cuNumericWrapper DESTINATION ./lib)
