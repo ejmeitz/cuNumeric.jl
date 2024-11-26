@@ -1,7 +1,7 @@
 #include "jlcxx/jlcxx.hpp"
 
-#include "cupynumeric/cupynumeric/operators.h" 
-#include "cupynumeric/cupynumeric/ndarray.h"
+#include "cupynumeric/cupynumeric.h" 
+
 #include "legate/legate/type/type_info.h"
 #include "legate/legate/data/shape.h"
 #include "legate/legate/data/logical_store.h"
