@@ -48,11 +48,12 @@ set_property(TARGET cxxwrap_julia PROPERTY IMPORTED_LOCATION ${LIBCXXWRAP_PATH}/
 # Create the shared library that wraps the cunumeric/legate libs
 set(SOURCES wrapper/wrapper.cpp)
 add_library(cuNumericWrapper SHARED ${SOURCES})
+target_link_libraries(cuNumericWrapper PRIVATE cuPyNumeric cxxwrap_julia)
 
 # Create executable which tests the cpp interface 
 # that the shared library is wrapping/exposing to Julia
 add_executable(cunumeric_cpp_test wrapper/test.cpp) 
-target_link_libraries(cunumeric_cpp_test PRIVATE cuNumericWrapper) # link my library to the test executable
+target_link_libraries(cunumeric_cpp_test INTERFACE cuNumericWrapper) # link my library to the test executable
 
 
 # Optionally, install the library and header
