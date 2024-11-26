@@ -13,7 +13,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # include_directories(${CUDA_INCLUDE_DIRS})
 find_package(CUDAToolkit REQUIRED)
 include_directories(${CUDAToolkit_INCLUDE_DIRS})
-target_link_libraries(my_target PRIVATE CUDA::cudart)
+# target_link_libraries(cuNumericWrapper PRIVATE CUDA::cudart)
 
 # Assuming CUNUMERIC_LIB_PATH is an environment variable or predefined
 set(CUNUMERIC_PATH "/home/emeitz/.conda/envs/cunumeric")
