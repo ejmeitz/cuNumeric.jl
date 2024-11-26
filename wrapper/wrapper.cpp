@@ -36,7 +36,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .constructor<std::vector<std::uint64_t>>();
 
     // //& create Runtime Object and add create_store 
-    mod.add_type<legate::Runtime>()
+    mod.add_type<legate::Runtime>("Runtime")
         .constructor<>()
         .method("create_store", &legate::Runtime::create_store);
 
