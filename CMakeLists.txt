@@ -9,10 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Not sure this will work if cupynumeric uses CUDA in a conda env
-# find_package(CUDA REQUIRED)
-# include_directories(${CUDA_INCLUDE_DIRS})
 find_package(CUDAToolkit REQUIRED)
-include_directories(${CUDAToolkit_INCLUDE_DIRS})
 # target_link_libraries(cuNumericWrapper PRIVATE CUDA::cudart)
 
 # Assuming CUNUMERIC_LIB_PATH is an environment variable or predefined
@@ -30,16 +27,14 @@ set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
 
 
 # Load cunumeric and legate libraries 
-# add_library(cuPyNumeric SHARED IMPORTED)
-# set_property(TARGET cuPyNumeric PROPERTY IMPORTED_LOCATION ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME})
+add_library(cuPyNumeric SHARED IMPORTED)
+set_property(TARGET cuPyNumeric PROPERTY IMPORTED_LOCATION ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME})
 
-# add_library(cxxwrap_julia SHARED IMPORTED)
-# set_property(TARGET cxxwrap_julia PROPERTY IMPORTED_LOCATION ${LIBCXXWRAP_PATH}/${LIBCXXWRAP_NAME})
+add_library(cxxwrap_julia SHARED IMPORTED)
+set_property(TARGET cxxwrap_julia PROPERTY IMPORTED_LOCATION ${LIBCXXWRAP_PATH}/${LIBCXXWRAP_NAME})
 
-
-set(LIBCUNMERIC_PATH ${LIBCUNUMERIC_PATH}/${LIBCUNUMERIC_NAME})
-set(LIBLEGATE_PATH ${LIBCUNUMERIC_PATH}/${LIBLEGATE_NAME})
-set(LIBCXXWRAP_PATH ${LIBCXXWRAP_PATH}/${LIBCXXWRAP_NAME})
+add_library(legate SHARED IMPORTED)
+set_property(TARGET legate PROPERTY IMPORTED_LOCATION ${LIBCUNUMERIC_PATH}/${LIBLEGATE_NAME})
 
 
 # Create the shared library that wraps the cunumeric/legate libs
@@ -48,13 +43,14 @@ add_library(cuNumericWrapper SHARED ${SOURCES})
 
 #* necessary??
 target_link_libraries(cuNumericWrapper PRIVATE
-                         ${LIBCUNMERIC_PATH} 
-                         ${LIBLEGATE_PATH}
-                         ${LIBCXXWRAP_PATH}
+                         cuPyNumeric 
+                         legate
+                         cxxwrap_julia
                     )
 
 # Include the header files
 target_include_directories(cuNumericWrapper PRIVATE
+                    ${CUDAToolkit_INCLUDE_DIRS}
                     ${CXXWRAP_PATH}/include
                     ${CUNUMERIC_PATH}/include
                     ${CUNUMERIC_PATH}/include/cupynumeric
