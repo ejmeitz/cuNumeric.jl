@@ -1,7 +1,7 @@
 #include "jlcxx/jlcxx.hpp"
 
 // #include "legate.h"
-// #include "cupynumeric.h" 
+#include "cupynumeric.h" 
 
 // #include "legate/type/type_info.h"
 // #include "legate/data/shape.h"
