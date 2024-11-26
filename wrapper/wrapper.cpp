@@ -26,26 +26,26 @@
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
 
-    mod.add_type<legate::Type>("LegateType"); // this is a base class
-    mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
+    mod.add_type<legate::Type>("Type"); // this is a base class
+    mod.add_type<legate::PrimitiveType>("PrimitiveType", jlcxx::julia_base_type<legate::Type>())
         .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
 
-    mod.add_type<legate::LogicalStore>("LogicalStore");
-    mod.add_tuple<legate::Shape>("Shape")
-        .constructor<std::vector<std::uint64_t>>();
+    // mod.add_type<legate::LogicalStore>("LogicalStore");
+    // mod.add_tuple<legate::Shape>("Shape")
+    //     .constructor<std::vector<std::uint64_t>>();
 
-    // //& create Runtime Object and add create_store 
-    mod.add_type<legate::Runtime>("Runtime")
-        .constructor<>()
-        .method("create_store", &legate::Runtime::create_store);
+    // // //& create Runtime Object and add create_store 
+    // mod.add_type<legate::Runtime>("Runtime")
+    //     .constructor<>()
+    //     .method("create_store", &legate::Runtime::create_store);
 
-    mod.add_type<cupynumeric::NDArray>("NDArray")
-        .constructor<legate::LogicalStore>()
-        .method("dim", &cupynumeric::NDArray::dim)
-        .method("size", &cupynumeric::NDArray::size)
-        .method("dot", &cupynumeric::NDArray::dot)
-        .method("binary_op", &cupynumeric::NDArray::binary_op);
+    // mod.add_type<cupynumeric::NDArray>("NDArray")
+    //     .constructor<legate::LogicalStore>()
+    //     .method("dim", &cupynumeric::NDArray::dim)
+    //     .method("size", &cupynumeric::NDArray::size)
+    //     .method("dot", &cupynumeric::NDArray::dot)
+    //     .method("binary_op", &cupynumeric::NDArray::binary_op);
 
 }
 
