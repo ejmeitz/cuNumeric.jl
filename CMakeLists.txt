@@ -15,12 +15,18 @@ set(CUNUMERIC_PATH "/home/emeitz/.conda/envs/cunumeric")
 set(LIBCUNUMERIC_PATH ${CUNUMERIC_PATH}/lib) 
 set(LIBCUNUMERIC_NAME "libcupynumeric.so")
 
-set (CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia")
+set(CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia")
 set(LIBCXXWRAP_PATH ${CXXWRAP_PATH}/lib)
 set(LIBCXXWRAP_NAME "libcxxwrap_julia.so")
 
+set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
+
 # Include the header files
-include_directories(${CXXWRAP_PATH}/include ${CUNUMERIC_PATH}/include)
+include_directories(
+                    ${CXXWRAP_PATH}/include
+                    ${CUNUMERIC_PATH}/include
+                    ${JULIA_DIR}/include/julia
+                    )
 
 
 # Load cunumeric and legate libraries 
