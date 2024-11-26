@@ -11,11 +11,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
 # Assuming CUNUMERIC_LIB_PATH is an environment variable or predefined
-set(CUNUMERIC_PATH "/home/emeitz/.conda/envs/cunumeric/")
+set(CUNUMERIC_PATH "/home/emeitz/.conda/envs/cunumeric")
 set(LIBCUNUMERIC_PATH ${CUNUMERIC_PATH}/lib) 
 set(LIBCUNUMERIC_NAME "libcupynumeric.so")
 
-set (CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia/lib")
+set (CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia")
 set(LIBCXXWRAP_PATH ${CXXWRAP_PATH}/lib)
 set(LIBCXXWRAP_NAME "libcxxwrap_julia.so")
 
