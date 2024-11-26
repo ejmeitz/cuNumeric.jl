@@ -5,7 +5,7 @@ project(cuNumericWrapper VERSION 0.01 LANGUAGES C CXX)
 
 # Specify C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_PREFIX_PATH "/home/emeitz/.conda/envs/cunumeric") #* dont love this...fix later
+# set(CMAKE_PREFIX_PATH "/home/emeitz/.conda/envs/cunumeric") #* dont love this...fix later
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
