@@ -9,8 +9,11 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Not sure this will work if cupynumeric uses CUDA in a conda env
-find_package(CUDA REQUIRED)
-include_directories(${CUDA_INCLUDE_DIRS})
+# find_package(CUDA REQUIRED)
+# include_directories(${CUDA_INCLUDE_DIRS})
+find_package(CUDAToolkit REQUIRED)
+include_directories(${CUDAToolkit_INCLUDE_DIRS})
+target_link_libraries(my_target PRIVATE CUDA::cudart)
 
 # Assuming CUNUMERIC_LIB_PATH is an environment variable or predefined
 set(CUNUMERIC_PATH "/home/emeitz/.conda/envs/cunumeric")
