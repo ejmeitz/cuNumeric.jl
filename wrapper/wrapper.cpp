@@ -1,11 +1,11 @@
 #include "jlcxx/jlcxx.hpp"
 
-#include "cupynumeric/cupynumeric.h" 
+#include "cupynumeric.h" 
 
-#include "legate/legate/type/type_info.h"
-#include "legate/legate/data/shape.h"
-#include "legate/legate/data/logical_store.h"
-#include "legate/legate/runtime/runtime.h"
+#include "legate/type/type_info.h"
+#include "legate/data/shape.h"
+#include "legate/data/logical_store.h"
+#include "legate/runtime/runtime.h"
 
 // General Idea:
     // 1. Construct Runtime

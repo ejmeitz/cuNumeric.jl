@@ -24,12 +24,14 @@ set(CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia")
 set(LIBCXXWRAP_PATH ${CXXWRAP_PATH}/lib)
 set(LIBCXXWRAP_NAME "libcxxwrap_julia.so")
 
+# This needs to be whatever Julia was given to libcxx_wrap
 set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
 
 # Include the header files
 include_directories(
                     ${CXXWRAP_PATH}/include
                     ${CUNUMERIC_PATH}/include
+                    ${CUNUMERIC_PATH}/include/cupynumeric
                     ${CUNUMERIC_PATH}/include/legate
                     ${JULIA_DIR}/include/julia
                     )
