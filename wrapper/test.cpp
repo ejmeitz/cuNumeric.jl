@@ -1,10 +1,4 @@
-// #include "cupynumeric/cupynumeric/operators.h"
-// #include "cupynumeric/cupynumeric/ndarray.h"
-// #include "legate/legate/type/type_info.h"
-// #include "legate/legate/data/logical_store.h"
-// #include "legate/legate/data/shape.h"
-// #include "legate/legate/runtime/runtime.h"
-
+#include "cupynumeric.h"
 #include <vector>
 
 // This is the workflow I would like to 
