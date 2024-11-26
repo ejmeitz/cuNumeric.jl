@@ -25,6 +25,7 @@ set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
 include_directories(
                     ${CXXWRAP_PATH}/include
                     ${CUNUMERIC_PATH}/include
+                    ${CUNUMERIC_PATH}/include/legate
                     ${JULIA_DIR}/include/julia
                     )
 
