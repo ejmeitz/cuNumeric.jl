@@ -52,6 +52,10 @@ target_link_libraries(cuNumericWrapper PRIVATE
                          cupynumeric::cupynumeric
                          cxxwrap_julia
                     )
+target_include_directories(cuNumericWrapper PRIVATE 
+                            ${JULIA_DIR}/include/julia
+                            ${CXXWRAP_PATH}/include
+                        )
 
 # Include the header files
 # target_include_directories(cuNumericWrapper PRIVATE
