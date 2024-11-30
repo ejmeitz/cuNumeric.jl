@@ -1,3 +1,4 @@
+#include "legate.h"
 #include "cupynumeric.h"
 #include <vector>
 
