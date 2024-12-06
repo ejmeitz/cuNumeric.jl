@@ -6,6 +6,9 @@ module cuNumeric
 function __init__()
     # initialize cupynumeric and legate like
     # done in stencil.cc
+
+    #legate::start
+    #cupynumeric::initialize
 end
 
 end
