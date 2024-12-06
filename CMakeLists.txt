@@ -14,8 +14,8 @@ endif()
 find_package(cupynumeric REQUIRED)
 
 
-set(CXXWRAP_PATH "/home/emeitz/software/libcxxwrap-julia")
-set(LIBCXXWRAP_PATH ${CXXWRAP_PATH}/lib)
+set(CXXWRAP_DIR "/home/emeitz/software/libcxxwrap-julia")
+set(LIBCXXWRAP_PATH ${CXXWRAP_DIR}/lib)
 set(LIBCXXWRAP_NAME "libcxxwrap_julia.so")
 
 # This needs to be whatever Julia was given to libcxx_wrap
@@ -36,7 +36,7 @@ target_link_libraries(libcupynumwrapper PRIVATE
                     )
 target_include_directories(libcupynumwrapper PRIVATE 
                             ${JULIA_DIR}/include/julia
-                            ${CXXWRAP_PATH}/include
+                            ${CXXWRAP_DIR}/include
                         )
 
 # Create executable which tests the cpp interface 
