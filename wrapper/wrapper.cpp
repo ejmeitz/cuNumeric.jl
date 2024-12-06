@@ -28,6 +28,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
 
     mod.add_type<legate::Type>("LegateType"); // this is a base class
+
+    // defined in type_info.h which is included in type_traits.h which is included in legate.h
     // mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
     //     .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
