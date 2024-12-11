@@ -28,14 +28,16 @@ set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
 # Julia Wrapper Library
 add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
 
-target_link_libraries(cupynumericwrapper PRIVATE
-                         cupynumeric::cupynumeric
-                         JlCxx::cxxwrap_julia
-                    )
+# both can be private I think
+target_link_libraries(cupynumericwrapper 
+                        PRIVATE cupynumeric::cupynumeric
+                        PUBLIC JlCxx::cxxwrap_julia)
+
+
 #NEEDED???
 target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_DIR}/include/julia
-                            ${JlCxx_DIR}/include #* is
+                            ${JlCxx_DIR}/include
                         )
 
 # Create executable which tests the cpp interface 
