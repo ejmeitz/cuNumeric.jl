@@ -32,9 +32,10 @@ target_link_libraries(cupynumericwrapper PRIVATE
                          cupynumeric::cupynumeric
                          JlCxx::cxxwrap_julia
                     )
+#NEEDED???
 target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_DIR}/include/julia
-                            ${CXXWRAP_DIR}/include
+                            ${JlCxx_DIR}/include #* is
                         )
 
 # Create executable which tests the cpp interface 
@@ -42,5 +43,7 @@ target_include_directories(cupynumericwrapper PRIVATE
 # add_executable(cunumeric_cpp_test wrapper/test.cpp) 
 # target_link_libraries(cunumeric_cpp_test PRIVATE cupynumeric::cupynumeric)
 
-install(TARGETS cupynumericwrapper DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
+install(TARGETS cupynumericwrapper 
+          DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
+
 # install(TARGETS cunumeric_cpp_test DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
