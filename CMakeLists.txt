@@ -27,14 +27,14 @@ set_property(TARGET cxxwrap_julia PROPERTY IMPORTED_LOCATION ${LIBCXXWRAP_PATH}/
 
 
 # Julia Wrapper Library
-add_library(libcupynumwrapper SHARED wrapper/wrapper.cpp)
+add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
 
 #* necessary??
-target_link_libraries(libcupynumwrapper PRIVATE
+target_link_libraries(cupynumericwrapper PRIVATE
                          cupynumeric::cupynumeric
                          cxxwrap_julia
                     )
-target_include_directories(libcupynumwrapper PRIVATE 
+target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_DIR}/include/julia
                             ${CXXWRAP_DIR}/include
                         )
@@ -44,5 +44,5 @@ target_include_directories(libcupynumwrapper PRIVATE
 # add_executable(cunumeric_cpp_test wrapper/test.cpp) 
 # target_link_libraries(cunumeric_cpp_test PRIVATE cupynumeric::cupynumeric)
 
-install(TARGETS libcupynumwrapper DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
+install(TARGETS cupynumericwrapper DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
 # install(TARGETS cunumeric_cpp_test DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
