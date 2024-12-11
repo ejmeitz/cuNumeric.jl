@@ -1,33 +1,28 @@
 #include "legate.h"
 #include "cupynumeric.h"
 #include <vector>
+#include <iostream>
 
 // This is the workflow I would like to 
 // re-create in Julia
 
-void test_workflow(){
-    // Runtime r();
-    // std::vector<uint64_t> dims1 = {4,2}; 
-    // std::vector<uint64_t> dims2 = {2,4};
+cupynumeric::NDArray test_workflow(){
+    N = 25
+    auto arr1 = cupynumeric::full({N}, 2.0);
+    auto arr2 = cupynumeric::full({N}, 2.0);
 
-    // Shape s1(dims1);
-    // Shape s2(dims2);
-
-    // PrimitiveType pt(3); // INT32
-    // LogicalStore ls1 = r.create_store(s1, pt); //how to put data in here?
-    // LogicalStore ls2 = r.create_store(s2, pt);
-
-    // NDArray arr1(ls1);
-    // NDArray arr2(ls2);
-
-    // //& are you supposed to pass to BinaryOp somehow?
-    // //& but that also returns void
-    // //& python lib puts the result in lhs
-    // dot(arr1, arr2); //& this returns nothing???
-
+    return cupynumeric::dot(arr1, arr2)
 }
 
 int main(int argc, char** argv){
-    test_workflow();
-    return 0;
+    auto result = legate::start(argc, argv);
+    assert(result == 0);
+
+    cupynumeric::initialize(argc, argv);
+
+    auto res = test_workflow();
+
+    std::cout << res[0] << std::endl;
+
+    return legate::finish();
 }

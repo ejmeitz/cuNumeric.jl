@@ -3,17 +3,10 @@
 #include "cupynumeric.h" 
 
 
-// General Idea:
-    // 1. Construct Runtime
-    // 2. Use Runtime to create Logical Store
-    // 3. Use Logical Store to create NDArray
-    // 4. Use NDArray to call operations (e.g., dot)
-
-// Specific Hacks:
-    // legate::PrimitiveType takes a value from the legate::Type::Code enum 
-    // but I can't wrap that enum explicitly so I will hardcode
-    // an enum in Julia that has the same mappings and just
-    // pass integeters to construct PrimitiveTypes
+// legate::PrimitiveType takes a value from the legate::Type::Code enum 
+// but I can't wrap that enum explicitly so I will hardcode
+// an enum in Julia that has the same mappings and just
+// pass integeters to construct PrimitiveTypes
 
 // cuPyNumeric C++ API:
     // https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
@@ -27,28 +20,30 @@
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
 
+    // These are used in stencil.cc, seem important
+    mod.method("start_legate", &legate::start); // no idea where this is
+    mod.method("initialize_cunumeric", &cupynumeric::initialize); //runtime.cc
+    mod.method("legate_finish", &legate::finish); // no idea where this is
+
     mod.add_type<legate::Type>("LegateType"); // this is a base class
+    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
 
     // defined in type_info.h which is included in type_traits.h which is included in legate.h
     // mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
     //     .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
 
+    mod.add_type<cupynumeric::NDArray>("NDArray")
+        .method("dim", &cupynumeric::NDArray::dim)
+        .method("size", &cupynumeric::NDArray::size)
+        .method("type", &cupynumeric::NDArray::type)
+        .method("as_type", &cupynumeric::NDArray::as_type)
+        .method("binary_op", &cupynumeric::NDArray::binary_op)
+        .method("get_store", &cupynumeric::NDArray::get_store);
 
-    mod.add_type<legate::LogicalStore>("LogicalStore");
-    mod.add_type<legate::Shape>("Shape")
-        .constructor<std::vector<std::uint64_t>>();
-
-    // // //& create Runtime Object and add create_store 
-    // mod.add_type<legate::Runtime>("Runtime")
-    //     .constructor<>()
-    //     .method("create_store", &legate::Runtime::create_store);
-
-    // mod.add_type<cupynumeric::NDArray>("NDArray")
-    //     .constructor<legate::LogicalStore>()
-    //     .method("dim", &cupynumeric::NDArray::dim)
-    //     .method("size", &cupynumeric::NDArray::size)
-    //     .method("dot", &cupynumeric::NDArray::dot)
-    //     .method("binary_op", &cupynumeric::NDArray::binary_op);
+    mod.method("zeros", &cupynumeric::zeros); // operators.cc, 152
+    mod.method("full", &cupynumeric::full); // operators.cc, 162
+    mod.method("dot", &cupynumeric::dot); //operators.cc, 263
+    mod.method("sum", &cupynumeric::sum); //operators.cc, 303
 
 }
 
