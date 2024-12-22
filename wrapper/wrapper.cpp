@@ -1,5 +1,7 @@
 #include "jlcxx/jlcxx.hpp"
-#include "legate.h"
+
+
+//#include "legate.h"
 #include "cupynumeric.h" 
 
 

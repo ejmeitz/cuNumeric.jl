@@ -1,0 +1,13 @@
+#!/bin/bash
+export CUNUMERIC_JL_HOME=$(pwd)
+
+conda activate cupy-gpu
+
+JULIA="julia"
+export JULIA_PATH=$(which $JULIA)
+
+
+# update to a newer cmake
+export PATH=/home/david/tools/cmake-3.31.2-linux-x86_64/bin:$PATH
+# update to a newer nvcc
+export PATH=/usr/local/cuda-12.4/bin:$PATH

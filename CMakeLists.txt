@@ -5,15 +5,18 @@ project(cuNumericWrapper VERSION 0.01 LANGUAGES C CXX)
 
 # Specify C++ standard
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-# set(CMAKE_PREFIX_PATH "/home/emeitz/.conda/envs/cunumeric") #* dont love this...fix later
 
 if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+set(CMAKE_PREFIX_PATH "/home/david/anaconda3/envs/cupy-gpu")
+#set(CMAKE_PREFIX_PATH "${cupynumeric_ROOT}")
+
+
 find_package(cupynumeric REQUIRED)
 
-set(JlCxx_DIR "/home/emeitz/software/libcxxwrap-julia")
+set(JlCxx_DIR "${CUNUMERIC_JL_HOME}libcxxwrap-julia-build")
 find_package(JlCxx)
 get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
 get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
@@ -22,8 +25,6 @@ message(STATUS "Found JlCxx at ${JlCxx_location}")
 
 # This needs to be whatever Julia was given to libcxx_wrap
 # This is found when running find_package(JlCxx) can I just get it from there?
-set(JULIA_DIR "/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu")
-
 
 # Julia Wrapper Library
 add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
@@ -36,7 +37,7 @@ target_link_libraries(cupynumericwrapper
 
 #NEEDED???
 target_include_directories(cupynumericwrapper PRIVATE 
-                            ${JULIA_DIR}/include/julia
+                            ${JULIA_PATH}/include/julia
                             ${JlCxx_DIR}/include
                         )
 
