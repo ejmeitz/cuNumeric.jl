@@ -10,7 +10,7 @@ if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
-set(CMAKE_PREFIX_PATH "/home/david/anaconda3/envs/cupy-gpu")
+set(CMAKE_PREFIX_PATH "/home/david/anaconda3/envs/cupy_gpu")
 #set(CMAKE_PREFIX_PATH "${cupynumeric_ROOT}")
 
 
@@ -45,6 +45,7 @@ target_include_directories(cupynumericwrapper PRIVATE
 # that the shared library is wrapping/exposing to Julia
 # add_executable(cunumeric_cpp_test wrapper/test.cpp) 
 # target_link_libraries(cunumeric_cpp_test PRIVATE cupynumeric::cupynumeric)
+
 
 install(TARGETS cupynumericwrapper 
           DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
