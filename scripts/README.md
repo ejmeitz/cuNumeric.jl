@@ -28,7 +28,7 @@ gmake: *** [Makefile:136: all] Error 2
 ```
 
 
-This error was shown for each reduction operator in `legion_redop.inl` for complex types. The unmodified code of the Sum reduction is below. We would enter `#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)`; however, the compiler failed the static asset when `std::atomic_ref<LHS> atomic(lhs);` was used. We have added a patch `patch_legion.sh` for the various default reductions where it does the TypePunning case. This will copy our patched file into the conda installed path of cupynumeric/legion. 
+This error was shown for each reduction operator in `legion_redop.inl` for complex types. The unmodified code of the Sum reduction is below. We would enter `#if defined(__cpp_lib_atomic_ref) && (__cpp_lib_atomic_ref >= 201806L)`; however, the compiler failed the static assert when `std::atomic_ref<LHS> atomic(lhs);` was used. We have added a patch `patch_legion.sh` for the various default reductions where it does the TypePunning case. This will copy our patched file into the conda installed path of cupynumeric/legion. 
 
 ```
 #ifdef LEGION_REDOP_COMPLEX
