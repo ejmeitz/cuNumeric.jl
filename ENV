@@ -8,9 +8,5 @@ if [ -e "$file" ]; then
 fi 
 
 
-
 JULIA="julia"
 export JULIA_PATH=$(which $JULIA)
-
-export cupynumeric_RT=`python -c 'import cupynumeric.install_info as i; from pathlib import Path; print(Path(i.libpath).parent.resolve())'`
-

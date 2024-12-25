@@ -10,8 +10,8 @@ if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+# set(CMAKE_PREFIX_PATH "${CONDA_PREFIX}")
 set(CMAKE_PREFIX_PATH "/home/david/anaconda3/envs/cupy_gpu")
-#set(CMAKE_PREFIX_PATH "${cupynumeric_ROOT}")
 
 
 find_package(cupynumeric REQUIRED)

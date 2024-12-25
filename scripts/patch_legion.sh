@@ -1,6 +1,9 @@
 #!/bin/bash
-exists=$cupynumeric_RT/include/legion/legion_redop.inl
-new=legion_redop_patch.inl
+exists=$CONDA_PREFIX/include/legion/legion_redop.inl 
+new=./legion_redop_patch.inl
 
-rm $exists
+if [ -e "$exists" ]; then
+  rm $exists 
+fi 
+
 cp $new $exists 
