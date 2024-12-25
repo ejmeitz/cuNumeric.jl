@@ -1,7 +1,6 @@
 #include "jlcxx/jlcxx.hpp"
 
-
-//#include "legate.h"
+#include "legate.h"
 #include "cupynumeric.h" 
 
 
@@ -21,20 +20,18 @@
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
-
     // These are used in stencil.cc, seem important
     mod.method("start_legate", &legate::start); // no idea where this is
     mod.method("initialize_cunumeric", &cupynumeric::initialize); //runtime.cc
     mod.method("legate_finish", &legate::finish); // no idea where this is
-
-    mod.add_type<legate::Type>("LegateType"); // this is a base class
-    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
+    //mod.add_type<legate::Type>("LegateType"); // this is a base class
+    // mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
 
     // defined in type_info.h which is included in type_traits.h which is included in legate.h
-    // mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
-    //     .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
-
-    mod.add_type<cupynumeric::NDArray>("NDArray")
+//    mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
+//        .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
+        
+/*    mod.add_type<cupynumeric::NDArray>("NDArray")
         .method("dim", &cupynumeric::NDArray::dim)
         .method("size", &cupynumeric::NDArray::size)
         .method("type", &cupynumeric::NDArray::type)
@@ -46,8 +43,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("full", &cupynumeric::full); // operators.cc, 162
     mod.method("dot", &cupynumeric::dot); //operators.cc, 263
     mod.method("sum", &cupynumeric::sum); //operators.cc, 303
-
+*/
 }
+
 
 
 

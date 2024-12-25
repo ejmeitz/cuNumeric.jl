@@ -32,6 +32,7 @@ add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
 # both can be private I think
 target_link_libraries(cupynumericwrapper 
                         PRIVATE cupynumeric::cupynumeric
+                        PRIVATE legate::legate
                         PUBLIC JlCxx::cxxwrap_julia)
 
 

@@ -1,0 +1,16 @@
+#!/bin/bash
+export CUNUMERIC_JL_HOME=$(pwd)
+
+# sets packages to path and activates conda env
+file=./.localenv
+if [ -e "$file" ]; then
+  source $file
+fi 
+
+
+
+JULIA="julia"
+export JULIA_PATH=$(which $JULIA)
+
+export cupynumeric_RT=`python -c 'import cupynumeric.install_info as i; from pathlib import Path; print(Path(i.libpath).parent.resolve())'`
+

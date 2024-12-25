@@ -1,12 +1,11 @@
 module cuNumeric
+  using CxxWrap
+  lib = "libcupynumericwrapper.so"
+  @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
-using CxxWrap
-path_to_wrapper_lib = "libcupynumericwrapper.so"
-@wrapmodule(() -> joinpath(@__DIR__, "..", "..", "build", path_to_wrapper_lib))
-
-# Runtime initilization
-# Called once in lifetime of code
-function __init__()
+  # Runtime initilization
+  # Called once in lifetime of code
+  function __init__()
     @initcxx
 
     
@@ -18,6 +17,7 @@ function __init__()
 
 
     # where to do legate::final??
+  end
 end
 
-end
+
