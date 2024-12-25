@@ -1,26 +1,13 @@
 #!/bin/bash
-export CUNUMERIC_JL_HOME=$(pwd)
+# CHANGE THIS
 
-
-JULIA="julia"
-export JULIA_PATH=$(which $JULIA)
-
-export cupynumeric_RT=`python -c 'import cupynumeric.install_info as i; from pathlib import Path; print(Path(i.libpath).parent.resolve())'`
-
-
-file=./ENV_LOCAL
-if [ -e "$file" ]; then
-  source ENV_LOCAL
-fi
-
-
-
-#!/bin/bash
 # david's hardcoded paths 
 
 conda activate cupy_gpu
+
 # update to a newer cmake
-# export PATH=/home/david/tools/cmake-3.31.2-linux-x86_64/bin:$PATH
-export PATH=/home/david/tools/bin:$PATH
+export PATH=/home/david/tools/cmake-3.31.2-linux-x86_64/bin:$PATH
+#export PATH=/home/david/tools/bin:$PATH
+
 # update to a newer nvcc
 export PATH=/usr/local/cuda-12.2/bin:$PATH
