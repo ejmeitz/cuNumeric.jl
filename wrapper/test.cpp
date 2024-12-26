@@ -7,9 +7,13 @@
 // re-create in Julia
 
 cupynumeric::NDArray test_workflow(){
-    int N = 25;
-    auto arr1 = cupynumeric::full({N}, legate::Scalar{2.0});
-    auto arr2 = cupynumeric::full({N}, legate::Scalar{2.0});
+    size_t N = 25;
+
+    legate::LogicalStore store1;
+    legate::LogicalStore store2; 
+    
+    auto arr1 = cupynumeric::NDArray(store1::fill(2));
+    auto arr2 = cupynumeric::NDArray(store2::fill(2));
 
     return cupynumeric::dot(arr1, arr2);
 }
