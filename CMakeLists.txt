@@ -12,15 +12,21 @@ endif()
 
 find_package(cupynumeric REQUIRED)
 
-set(JlCxx_DIR "${CUNUMERIC_JL_HOME}libcxxwrap-julia-build")
+
+execute_process(
+  COMMAND julia -e "println(DEPOT_PATH[1])"
+  OUTPUT_VARIABLE JULIA_DEP_PATH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+
+set(JlCxx_DIR "${JULIA_DEP_PATH}/dev/libcxxwrap_julia_jll/override")
 find_package(JlCxx)
 get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
 get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib;${JlCxx_location}")
 message(STATUS "Found JlCxx at ${JlCxx_location}")
 
-# This needs to be whatever Julia was given to libcxx_wrap
-# This is found when running find_package(JlCxx) can I just get it from there?
 
 # Julia Wrapper Library
 add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
@@ -32,7 +38,6 @@ target_link_libraries(cupynumericwrapper
                         PUBLIC JlCxx::cxxwrap_julia)
 
 
-#NEEDED???
 target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_PATH}/include/julia
                             ${JlCxx_DIR}/include

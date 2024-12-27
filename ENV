@@ -7,6 +7,5 @@ if [ -e "$file" ]; then
   source $file
 fi 
 
-
 JULIA="julia"
 export JULIA_PATH=$(which $JULIA)
