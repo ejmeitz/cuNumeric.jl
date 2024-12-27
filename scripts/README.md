@@ -1,7 +1,10 @@
 ## Scripts
 
 After initializing the git submodules, we need to install them. 
-- `install_cxxwrap.sh` 
+- `install_cxxwrap.sh` WARNING: This will overwrite `/home/user/.julia/dev/libcxxwrap_julia_jll/override`. 
+
+
+
 
 
 We struggled compiling the wrapper package with g++ `(Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0` and CUDA `cuda_12.3.r12.3/compiler.33567101_0`.
