@@ -20,7 +20,11 @@ fi
 
 echo "Using $JULIA at: $JULIA_PATH"
 
+cd $JULIA_CXXWRAP_SRC
 
+# grab latest release of libcxxwrap-julia
+tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+git checkout $tag
 
 mkdir $JULIA_CXXWRAP
 cmake -S $JULIA_CXXWRAP_SRC -B $JULIA_CXXWRAP -DJulia_EXECUTABLE=$JULIA_PATH 
