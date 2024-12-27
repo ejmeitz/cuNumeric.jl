@@ -27,21 +27,17 @@ function __init__()
     # initialize cupynumeric and legate like
     cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+
+    Base.atexit(cuNumeric.legate_finish)
 end
 
 
-function __del__()
-    cuNumeric.legate_finish()
-end
 
-
-import Base: *
+import Base: *, +
 
 function *(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
     return array1.multiply(array2)
 end
-
-import Base: +
 
 function +(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
     return array1.add(array2)
