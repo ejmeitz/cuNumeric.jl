@@ -3,7 +3,7 @@ using CxxWrap
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
-
+# From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
     argv
     argc::Ref{Cint}
@@ -16,7 +16,7 @@ mutable struct ArgcArgv
   end
   
 getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
-@static global ARGV::ArgcArgv  
+global ARGV::ArgcArgv  
 
 # Runtime initilization
 # Called once in lifetime of code
@@ -24,23 +24,12 @@ function __init__()
     @initcxx
 
     global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
-    # initialize cupynumeric and legate like
+
     cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 
     Base.atexit(cuNumeric.legate_finish)
 end
 
-
-
-import Base: *, +
-
-function *(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
-    return array1.multiply(array2)
-end
-
-function +(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
-    return array1.add(array2)
-end
 
 end
