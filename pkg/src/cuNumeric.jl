@@ -1,5 +1,4 @@
 module cuNumeric
-  
 using CxxWrap
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
