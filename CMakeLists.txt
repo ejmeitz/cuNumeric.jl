@@ -20,7 +20,7 @@ execute_process(
 )
 
 # THERE IS NO INCLUDE DIR HERE???
-set(JlCxx_DIR "${JULIA_DEP_PATH}/dev/libcxxwrap_julia_jll")
+set(JlCxx_DIR "${JULIA_DEP_PATH}/dev/libcxxwrap_julia_jll/override")
 find_package(JlCxx)
 get_target_property(JlCxx_location JlCxx::cxxwrap_julia LOCATION)
 get_filename_component(JlCxx_location ${JlCxx_location} DIRECTORY)
