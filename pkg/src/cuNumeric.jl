@@ -6,18 +6,29 @@ lib = "libcupynumericwrapper.so"
     # Runtime initilization
     # Called once in lifetime of code
 function __init__()
-    @initcxx # i have no clue what this actually does
+    @initcxx
 
-    
     # initialize cupynumeric and legate like
-    # done in stencil.cc
-
-    # legate::start
-    # cupynumeric::initialize
-
-
-    # where to do legate::final??
-end
+    cuNumeric.start_legate(0, [""])
+    cuNumeric.initialize_cunumeric(0, [""])
 end
 
 
+function __del__()
+    cuNumeric.legate_finish()
+end
+
+
+import Base: *
+
+function *(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
+    return array1.multiply(array2)
+end
+
+import Base: +
+
+function +(array1::cuNumeric.NDArray, array2::cuNumeric.NDArray)
+    return array1.add(array2)
+end
+
+end
