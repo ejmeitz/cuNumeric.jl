@@ -1,7 +1,11 @@
 module cuNumeric
+
 using CxxWrap
+
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
+
+include("ndarray.jl")
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
@@ -27,7 +31,8 @@ function __init__()
 
     global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
     
-    res1 = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    # res1 = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    res1 = cuNumeric.start_legate(0, [""])
     if res1 == 0
         @info "Started Legate successfully"
     else
@@ -36,7 +41,8 @@ function __init__()
     end
     Base.atexit(cuNumeric.legate_finish)
 
-    res2 = cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+    # res2 = cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+    res2 = cuNumeric.initialize_cunumeric(0, [""])
     if res2 == 0
         @info "Initialized cunumeric successfully"
     else

@@ -17,8 +17,15 @@
 // can find inside of conda here:
     // /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
 
-
-
+struct WrapCppOptional
+{
+  template<typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped)
+  {
+    typedef typename TypeWrapperT::type WrappedT;
+    wrapped.template constructor<typename WrappedT::value_type>();
+  }
+};
 
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
@@ -27,55 +34,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("start_legate", &legate::start); // no idea where this is
     mod.method("initialize_cunumeric", &cupynumeric::initialize); //runtime.cc
     mod.method("legate_finish", &legate::finish); // no idea where this is
-    mod.add_type<legate::Type>("LegateType");
-
-    // Wrap the 'Code' Enum inside Type
-    // mod.add_bits<legate::Type::Code>("Code", jlcxx::julia_type("CppEnum"));
-    // mod.set_const("_BOOL", BOOL);
-    // mod.set_const(_INT64", INT64);
-    // mod.set_const("_FLOAT64", FLOAT64)
-
-
-    // these likely aren't needed. LegateTypeAllocated
-    mod.method("bool_", &legate::bool_);
-    mod.method("int8", &legate::int8);
-    mod.method("int16", &legate::int16);
-    mod.method("int32", &legate::int32);
-    mod.method("int64", &legate::int64);
-    mod.method("uint8", &legate::uint8);
-    mod.method("uint16", &legate::uint16);
-    mod.method("uint32", &legate::uint32);
-    mod.method("uint64", &legate::uint64);
-    mod.method("float16", &legate::float16);
-    mod.method("float32", &legate::float32);
-    mod.method("float64", &legate::float64);
-        //mod.method("complex32", &legate::complex32);
-    mod.method("complex64", &legate::complex64);
-    mod.method("complex128", &legate::complex128); 
-
-    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
-
-    mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("Optional")
-            .apply<std::optional<legate::Type>>([](auto wrapped){});
-
-
-// https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
-    mod.add_type<cupynumeric::NDArray>("NDArray")
-        .method("dim", &cupynumeric::NDArray::dim)
-        .method("size", &cupynumeric::NDArray::size)
-        .method("type", &cupynumeric::NDArray::type)
-        .method("as_type", &cupynumeric::NDArray::as_type)
-        .method("binary_op", &cupynumeric::NDArray::binary_op)
-        .method("get_store", &cupynumeric::NDArray::get_store)
-	.method("add", (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator+)	
-	.method("multiply",  (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator*);
-	//.method("add_eq", &cupynumeric::NDArray::operator+=)
-	//.method("multiply_eq", &cupynumeric::NDArray::operator*=);
-
-    mod.method("zeros", &cupynumeric::zeros); // operators.cc, 152
-    // mod.method("full", &cupynumeric::full); // operators.cc, 162
-    mod.method("dot", &cupynumeric::dot); //operators.cc, 263
-    mod.method("sum", &cupynumeric::sum); //operators.cc, 303
 
     mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
     mod.set_const("LEGION_TYPE_BOOL",     0);
@@ -94,9 +52,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.set_const("LEGION_TYPE_COMPLEX64",   13);
     mod.set_const("LEGION_TYPE_COMPLEX128",  14);
     mod.set_const("LEGION_TYPE_TOTAL", 15);
-
-
-
 
     mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
     mod.set_const("BOOL",     legion_type_id_t::LEGION_TYPE_BOOL);
@@ -119,6 +74,51 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.set_const("STRUCT", 18);
     mod.set_const("STRING", 19);
     mod.set_const("LIST", 20);
+
+    mod.add_type<legate::Type>("LegateType")
+        .method("code", &legate::Type::code);
+
+    // these likely aren't needed. LegateTypeAllocated
+    mod.method("bool_", &legate::bool_);
+    mod.method("int8", &legate::int8);
+    mod.method("int16", &legate::int16);
+    mod.method("int32", &legate::int32);
+    mod.method("int64", &legate::int64);
+    mod.method("uint8", &legate::uint8);
+    mod.method("uint16", &legate::uint16);
+    mod.method("uint32", &legate::uint32);
+    mod.method("uint64", &legate::uint64);
+    mod.method("float16", &legate::float16);
+    mod.method("float32", &legate::float32);
+    mod.method("float64", &legate::float64);
+        //mod.method("complex32", &legate::complex32);
+    mod.method("complex64", &legate::complex64);
+    mod.method("complex128", &legate::complex128); 
+
+    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
+
+    mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
+        .apply<std::optional<legate::Type>, std::optional<int>>(WrapCppOptional());
+
+
+// https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
+    mod.add_type<cupynumeric::NDArray>("NDArray")
+        .method("dim", &cupynumeric::NDArray::dim)
+        .method("size", &cupynumeric::NDArray::size)
+        .method("type", &cupynumeric::NDArray::type)
+        .method("as_type", &cupynumeric::NDArray::as_type)
+        .method("binary_op", &cupynumeric::NDArray::binary_op)
+        .method("get_store", &cupynumeric::NDArray::get_store)
+	.method("add", (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator+)	
+	.method("multiply",  (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator*);
+	//.method("add_eq", &cupynumeric::NDArray::operator+=)
+	//.method("multiply_eq", &cupynumeric::NDArray::operator*=);
+
+    mod.method("zeros", &cupynumeric::zeros); // operators.cc, 152
+    // mod.method("full", &cupynumeric::full); // operators.cc, 162
+    mod.method("dot", &cupynumeric::dot); //operators.cc, 263
+    mod.method("sum", &cupynumeric::sum); //operators.cc, 303
+
 }
 
 

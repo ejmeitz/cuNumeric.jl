@@ -40,7 +40,6 @@ target_link_libraries(cupynumericwrapper
 
 target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_PATH}/include/julia
-                            ${JlCxx_DIR}/include
                         )
 
 install(TARGETS cupynumericwrapper 
