@@ -29,6 +29,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.method("legate_finish", &legate::finish); // no idea where this is
     mod.add_type<legate::Type>("LegateType");
 
+    // Wrap the 'Code' Enum inside Type
+    // mod.add_bits<legate::Type::Code>("Code", jlcxx::julia_type("CppEnum"));
+    // mod.set_const("_BOOL", BOOL);
+    // mod.set_const(_INT64", INT64);
+    // mod.set_const("_FLOAT64", FLOAT64)
+
 
     // these likely aren't needed. LegateTypeAllocated
     mod.method("bool_", &legate::bool_);
@@ -49,14 +55,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
     mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
 
-mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("Optional")
-  .apply<std::optional<legate::Type>>([](auto wrapped){});
+    mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("Optional")
+            .apply<std::optional<legate::Type>>([](auto wrapped){});
 
-
-    // defined in type_info.h which is included in type_traits.h which is included in legate.h
-    // mod.add_type<legate::PrimitiveType>("LegatePrimitiveType", jlcxx::julia_base_type<legate::Type>())
-    //    .constructor<int32_t>(); // write map in Julia lib that hard codes the mapping to the codes below
-  
 
 // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
     mod.add_type<cupynumeric::NDArray>("NDArray")

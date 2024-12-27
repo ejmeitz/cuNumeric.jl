@@ -3,14 +3,30 @@ using CxxWrap
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
-    # Runtime initilization
-    # Called once in lifetime of code
+
+mutable struct ArgcArgv
+    argv
+    argc::Ref{Cint}
+  
+    function ArgcArgv(args::Vector{String})
+      argv = Base.cconvert(CxxPtr{CxxPtr{CxxChar}}, args)
+      argc = length(args)
+      return new(argv, argc)
+    end
+  end
+  
+getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
+@static global ARGV::ArgcArgv  
+
+# Runtime initilization
+# Called once in lifetime of code
 function __init__()
     @initcxx
 
+    global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
     # initialize cupynumeric and legate like
-    cuNumeric.start_legate(0, [""])
-    cuNumeric.initialize_cunumeric(0, [""])
+    cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 end
 
 
