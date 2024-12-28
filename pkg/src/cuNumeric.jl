@@ -27,30 +27,22 @@ global ARGV::ArgcArgv
 function __init__()
     @initcxx
 
-    @info "Starting legate and cunumeric"
-
+    # BREAK THE LEGATE/CUNUMERIC OPTIONS OUT INTO CLASS
+    # SO THEY CAN BE STARTED AND STOPPED MULTIPLE TIMES
+    # INSIDE OF A SINGLE JULIA CODE WITH DIFFERENT ARGS
     global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
     
-    # res1 = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
-    res1 = cuNumeric.start_legate(0, [""])
-    if res1 == 0
+    res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    if res == 0
         @info "Started Legate successfully"
     else
-        @error "Failed to start Legate, exiting"
-        # Base.exit(-1)
+        @error "Failed to start Legate, got exit code $(res), exiting"
+        Base.exit(res)
     end
     Base.atexit(cuNumeric.legate_finish)
 
-    # res2 = cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
-    res2 = cuNumeric.initialize_cunumeric(0, [""])
-    if res2 == 0
-        @info "Initialized cunumeric successfully"
-    else
-        @error "Failed to initialize cunumeric, exiting"
-        # Base.exit(-1)
-    end
-
-
+    # void return
+    cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 end
 
 
