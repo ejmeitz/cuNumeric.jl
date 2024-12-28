@@ -1,38 +1,53 @@
-#include "jlcxx/jlcxx.hpp"
+/* Copyright 2025 Northwestern University,
+ *                   Carnegie Mellon University University
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ * Author(s): David Krasowska <krasow@u.northwestern.edu>
+ *            Ethan Meitz <emeitz@andrew.cmu.edu>
+ */
 
+#include "cupynumeric.h"
+#include "jlcxx/jlcxx.hpp"
 #include "legate.h"
-#include "cupynumeric.h" 
 #include "legion.h"
 
-// legate::PrimitiveType takes a value from the legate::Type::Code enum 
+// legate::PrimitiveType takes a value from the legate::Type::Code enum
 // but I can't wrap that enum explicitly so I will hardcode
 // an enum in Julia that has the same mappings and just
 // pass integeters to construct PrimitiveTypes
 
 // cuPyNumeric C++ API:
-    // https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
+// https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
 
 // legate::Type defined here:
-    // https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
+// https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
 // can find inside of conda here:
-    // /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
+// /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
 
-struct WrapCppOptional
-{
-  template<typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped)
-  {
+struct WrapCppOptional {
+  template <typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
     typedef typename TypeWrapperT::type WrappedT;
     wrapped.template constructor<typename WrappedT::value_type>();
   }
 };
 
-JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
-{
-    // These are used in stencil.cc, seem important
-    mod.method("start_legate", &legate::start); // no idea where this is
-    mod.method("initialize_cunumeric", &cupynumeric::initialize); //runtime.cc
-    mod.method("legate_finish", &legate::finish); // no idea where this is
+JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+  // These are used in stencil.cc, seem important
+  mod.method("start_legate", &legate::start);  // no idea where this is
+  mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
+  mod.method("legate_finish", &legate::finish);  // no idea where this is
 
     // mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
     // mod.set_const("LEGION_TYPE_BOOL",     0);
@@ -80,24 +95,25 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
         .apply<std::optional<legate::Type>>(WrapCppOptional());
     
 
-    // these likely aren't needed. LegateTypeAllocated
-    mod.method("bool_", &legate::bool_);
-    mod.method("int8", &legate::int8);
-    mod.method("int16", &legate::int16);
-    mod.method("int32", &legate::int32);
-    mod.method("int64", &legate::int64);
-    mod.method("uint8", &legate::uint8);
-    mod.method("uint16", &legate::uint16);
-    mod.method("uint32", &legate::uint32);
-    mod.method("uint64", &legate::uint64);
-    mod.method("float16", &legate::float16);
-    mod.method("float32", &legate::float32);
-    mod.method("float64", &legate::float64);
-        //mod.method("complex32", &legate::complex32);
-    mod.method("complex64", &legate::complex64);
-    mod.method("complex128", &legate::complex128); 
+  // these likely aren't needed. LegateTypeAllocated
+  mod.method("bool_", &legate::bool_);
+  mod.method("int8", &legate::int8);
+  mod.method("int16", &legate::int16);
+  mod.method("int32", &legate::int32);
+  mod.method("int64", &legate::int64);
+  mod.method("uint8", &legate::uint8);
+  mod.method("uint16", &legate::uint16);
+  mod.method("uint32", &legate::uint32);
+  mod.method("uint64", &legate::uint64);
+  mod.method("float16", &legate::float16);
+  mod.method("float32", &legate::float32);
+  mod.method("float64", &legate::float64);
+  // mod.method("complex32", &legate::complex32);
+  mod.method("complex64", &legate::complex64);
+  mod.method("complex128", &legate::complex128);
 
-    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
+  mod.add_type<legate::LogicalStore>(
+      "LogicalStore");  // might be useful with ndarray.get_store
 
     //in scalar.h
     mod.add_type<legate::Scalar>("LegateScalar")
@@ -140,10 +156,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 //     UINT32      = UINT32_LT,      /*!< 32-bit unsigned integer type */
 //     UINT64      = UINT64_LT,      /*!< 64-bit unsigned integer type */
 //     FLOAT16     = FLOAT16_LT,     /*!< Half-precision floating point type */
-//     FLOAT32     = FLOAT32_LT,     /*!< Single-precision floating point type */
-//     FLOAT64     = FLOAT64_LT,     /*!< Double-precision floating point type */
-//     COMPLEX64   = COMPLEX64_LT,   /*!< Single-precision complex type */
-//     COMPLEX128  = COMPLEX128_LT,  /*!< Double-precision complex type */
+//     FLOAT32     = FLOAT32_LT,     /*!< Single-precision floating point type
+//     */ FLOAT64     = FLOAT64_LT,     /*!< Double-precision floating point
+//     type */ COMPLEX64   = COMPLEX64_LT,   /*!< Single-precision complex type
+//     */ COMPLEX128  = COMPLEX128_LT,  /*!< Double-precision complex type */
 //     FIXED_ARRAY = FIXED_ARRAY_LT, /*!< Fixed-size array type */
 //     STRUCT      = STRUCT_LT,      /*!< Struct type */
 //     STRING      = STRING_LT,      /*!< String type */
@@ -192,5 +208,3 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 //   LEGION_TYPE_COMPLEX128 = 14,
 //   LEGION_TYPE_TOTAL = 15, // must be last
 // } legion_type_id_t;
-
-

@@ -1,0 +1,8 @@
+---
+Language: Cpp
+# Use 2 spaces for indentation
+IndentWidth: 2
+# Use spaces instead of tabs
+UseTab: Never
+# Use the Google style
+BasedOnStyle: Google
