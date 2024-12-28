@@ -64,7 +64,8 @@ function __init__()
     if res2 == 0
         @info "Initialized cunumeric successfully"
     else
-        @error "Failed to initialize cunumeric, exiting"
+        nothing 
+        # @error "Failed to initialize cunumeric, exiting"
         # Base.exit(-1)
     end
 

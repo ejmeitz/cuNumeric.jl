@@ -46,7 +46,6 @@ struct WrapCppOptional
   }
 };
 
-
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 {
     // These are used in stencil.cc, seem important
@@ -119,6 +118,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
         .apply<std::optional<legate::Type>>(WrapCppOptional());
 
+    mod.add_type<legate::Scalar>("Scalar");
 
 // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
     mod.add_type<cupynumeric::NDArray>("NDArray")
@@ -134,7 +134,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 	//.method("multiply_eq", &cupynumeric::NDArray::operator*=);
 
     mod.method("zeros", &cupynumeric::zeros); // operators.cc, 152
-    // mod.method("full", &cupynumeric::full); // operators.cc, 162
+// https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/operators.cc#L162
+    mod.method("full", &cupynumeric::full); // operators.cc, 162
     mod.method("dot", &cupynumeric::dot); //operators.cc, 263
     mod.method("sum", &cupynumeric::sum); //operators.cc, 303
 

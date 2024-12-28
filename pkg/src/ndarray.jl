@@ -16,7 +16,7 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
-export ArrayData
+export ArrayDesc
 
 #is legion Complex128 same as ComplexF64 in julia?
 const type_map = Dict{Type, Symbol}(
@@ -38,15 +38,15 @@ const type_map = Dict{Type, Symbol}(
 )
 
 
-struct ArrayData{N,T}
+struct ArrayDesc{N,T}
     dims::StdVector{UInt64}
     type::StdOptional
 end
 
-function ArrayData(dims::NTuple{N, Integer}, type::Type = Float64) where N
+function ArrayDesc(dims::NTuple{N, Integer}, type::Type = Float64) where N
     opt = StdOptional{LegateType}(eval(type_map[type])())
     # arr = NDArray(dims, opt)
-    return ArrayData{N, type}(StdVector(UInt64.([d for d in dims])), opt);
+    return ArrayDesc{N, type}(StdVector(UInt64.([d for d in dims])), opt);
 end
 
 
