@@ -1,4 +1,4 @@
-/* Copyright 2025 Northwestern University, 
+/* Copyright 2025 Northwestern University,
  *                   Carnegie Mellon University University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,130 +15,129 @@
  *
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
-*/
+ */
 
+#include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
-
 #include "legate.h"
-#include "cupynumeric.h" 
 #include "legion.h"
 
-// legate::PrimitiveType takes a value from the legate::Type::Code enum 
+// legate::PrimitiveType takes a value from the legate::Type::Code enum
 // but I can't wrap that enum explicitly so I will hardcode
 // an enum in Julia that has the same mappings and just
 // pass integeters to construct PrimitiveTypes
 
 // cuPyNumeric C++ API:
-    // https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
+// https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
 
 // legate::Type defined here:
-    // https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
+// https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
 // can find inside of conda here:
-    // /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
+// /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
 
-struct WrapCppOptional
-{
-  template<typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped)
-  {
+struct WrapCppOptional {
+  template <typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
     typedef typename TypeWrapperT::type WrappedT;
     wrapped.template constructor<typename WrappedT::value_type>();
   }
 };
 
-JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
-{
-    // These are used in stencil.cc, seem important
-    mod.method("start_legate", &legate::start); // no idea where this is
-    mod.method("initialize_cunumeric", &cupynumeric::initialize); //runtime.cc
-    mod.method("legate_finish", &legate::finish); // no idea where this is
+JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+  // These are used in stencil.cc, seem important
+  mod.method("start_legate", &legate::start);  // no idea where this is
+  mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
+  mod.method("legate_finish", &legate::finish);  // no idea where this is
 
-    mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
-    mod.set_const("LEGION_TYPE_BOOL",     0);
-    mod.set_const("LEGION_TYPE_INT8",     1);
-    mod.set_const("LEGION_TYPE_INT16",    2);
-    mod.set_const("LEGION_TYPE_INT32",    3);
-    mod.set_const("LEGION_TYPE_INT64",    4);
-    mod.set_const("LEGION_TYPE_UINT8",    5);
-    mod.set_const("LEGION_TYPE_UINT16",   6);
-    mod.set_const("LEGION_TYPE_UINT32",   7);
-    mod.set_const("LEGION_TYPE_UINT64",   8);
-    mod.set_const("LEGION_TYPE_FLOAT16",  9);
-    mod.set_const("LEGION_TYPE_FLOAT32",  10);
-    mod.set_const("LEGION_TYPE_FLOAT64",  11);
-    mod.set_const("LEGION_TYPE_COMPLEX32",   12);
-    mod.set_const("LEGION_TYPE_COMPLEX64",   13);
-    mod.set_const("LEGION_TYPE_COMPLEX128",  14);
-    mod.set_const("LEGION_TYPE_TOTAL", 15);
+  mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
+  mod.set_const("LEGION_TYPE_BOOL", 0);
+  mod.set_const("LEGION_TYPE_INT8", 1);
+  mod.set_const("LEGION_TYPE_INT16", 2);
+  mod.set_const("LEGION_TYPE_INT32", 3);
+  mod.set_const("LEGION_TYPE_INT64", 4);
+  mod.set_const("LEGION_TYPE_UINT8", 5);
+  mod.set_const("LEGION_TYPE_UINT16", 6);
+  mod.set_const("LEGION_TYPE_UINT32", 7);
+  mod.set_const("LEGION_TYPE_UINT64", 8);
+  mod.set_const("LEGION_TYPE_FLOAT16", 9);
+  mod.set_const("LEGION_TYPE_FLOAT32", 10);
+  mod.set_const("LEGION_TYPE_FLOAT64", 11);
+  mod.set_const("LEGION_TYPE_COMPLEX32", 12);
+  mod.set_const("LEGION_TYPE_COMPLEX64", 13);
+  mod.set_const("LEGION_TYPE_COMPLEX128", 14);
+  mod.set_const("LEGION_TYPE_TOTAL", 15);
 
-    mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
-    mod.set_const("BOOL",     legion_type_id_t::LEGION_TYPE_BOOL);
-    mod.set_const("INT8",     legion_type_id_t::LEGION_TYPE_INT8);
-    mod.set_const("INT16",    legion_type_id_t::LEGION_TYPE_INT16);
-    mod.set_const("INT32",    legion_type_id_t::LEGION_TYPE_INT32);
-    mod.set_const("INT64",    legion_type_id_t::LEGION_TYPE_INT64);
-    mod.set_const("UINT8",    legion_type_id_t::LEGION_TYPE_UINT8);
-    mod.set_const("UINT16",   legion_type_id_t::LEGION_TYPE_UINT16);
-    mod.set_const("UINT32",   legion_type_id_t::LEGION_TYPE_UINT32);
-    mod.set_const("UINT64",   legion_type_id_t::LEGION_TYPE_UINT64);
-    mod.set_const("FLOAT16",  legion_type_id_t::LEGION_TYPE_FLOAT16);
-    mod.set_const("FLOAT32",  legion_type_id_t::LEGION_TYPE_FLOAT32);
-    mod.set_const("FLOAT64",  legion_type_id_t::LEGION_TYPE_FLOAT64);
-    mod.set_const("COMPLEX64",    legion_type_id_t::LEGION_TYPE_COMPLEX64);
-    mod.set_const("COMPLEX128",   legion_type_id_t::LEGION_TYPE_COMPLEX128);
-    mod.set_const("NIL", 15);
-    mod.set_const("BINARY", 16);
-    mod.set_const("FIXED_ARRAY", 17);
-    mod.set_const("STRUCT", 18);
-    mod.set_const("STRING", 19);
-    mod.set_const("LIST", 20);
+  mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
+  mod.set_const("BOOL", legion_type_id_t::LEGION_TYPE_BOOL);
+  mod.set_const("INT8", legion_type_id_t::LEGION_TYPE_INT8);
+  mod.set_const("INT16", legion_type_id_t::LEGION_TYPE_INT16);
+  mod.set_const("INT32", legion_type_id_t::LEGION_TYPE_INT32);
+  mod.set_const("INT64", legion_type_id_t::LEGION_TYPE_INT64);
+  mod.set_const("UINT8", legion_type_id_t::LEGION_TYPE_UINT8);
+  mod.set_const("UINT16", legion_type_id_t::LEGION_TYPE_UINT16);
+  mod.set_const("UINT32", legion_type_id_t::LEGION_TYPE_UINT32);
+  mod.set_const("UINT64", legion_type_id_t::LEGION_TYPE_UINT64);
+  mod.set_const("FLOAT16", legion_type_id_t::LEGION_TYPE_FLOAT16);
+  mod.set_const("FLOAT32", legion_type_id_t::LEGION_TYPE_FLOAT32);
+  mod.set_const("FLOAT64", legion_type_id_t::LEGION_TYPE_FLOAT64);
+  mod.set_const("COMPLEX64", legion_type_id_t::LEGION_TYPE_COMPLEX64);
+  mod.set_const("COMPLEX128", legion_type_id_t::LEGION_TYPE_COMPLEX128);
+  mod.set_const("NIL", 15);
+  mod.set_const("BINARY", 16);
+  mod.set_const("FIXED_ARRAY", 17);
+  mod.set_const("STRUCT", 18);
+  mod.set_const("STRING", 19);
+  mod.set_const("LIST", 20);
 
-    mod.add_type<legate::Type>("LegateType")
-        .method("code", &legate::Type::code);
+  mod.add_type<legate::Type>("LegateType").method("code", &legate::Type::code);
 
-    // these likely aren't needed. LegateTypeAllocated
-    mod.method("bool_", &legate::bool_);
-    mod.method("int8", &legate::int8);
-    mod.method("int16", &legate::int16);
-    mod.method("int32", &legate::int32);
-    mod.method("int64", &legate::int64);
-    mod.method("uint8", &legate::uint8);
-    mod.method("uint16", &legate::uint16);
-    mod.method("uint32", &legate::uint32);
-    mod.method("uint64", &legate::uint64);
-    mod.method("float16", &legate::float16);
-    mod.method("float32", &legate::float32);
-    mod.method("float64", &legate::float64);
-        //mod.method("complex32", &legate::complex32);
-    mod.method("complex64", &legate::complex64);
-    mod.method("complex128", &legate::complex128); 
+  // these likely aren't needed. LegateTypeAllocated
+  mod.method("bool_", &legate::bool_);
+  mod.method("int8", &legate::int8);
+  mod.method("int16", &legate::int16);
+  mod.method("int32", &legate::int32);
+  mod.method("int64", &legate::int64);
+  mod.method("uint8", &legate::uint8);
+  mod.method("uint16", &legate::uint16);
+  mod.method("uint32", &legate::uint32);
+  mod.method("uint64", &legate::uint64);
+  mod.method("float16", &legate::float16);
+  mod.method("float32", &legate::float32);
+  mod.method("float64", &legate::float64);
+  // mod.method("complex32", &legate::complex32);
+  mod.method("complex64", &legate::complex64);
+  mod.method("complex128", &legate::complex128);
 
-    mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
+  mod.add_type<legate::LogicalStore>(
+      "LogicalStore");  // might be useful with ndarray.get_store
 
-    mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
-        .apply<std::optional<legate::Type>>(WrapCppOptional());
+  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
+      .apply<std::optional<legate::Type>>(WrapCppOptional());
 
-    mod.add_type<legate::Scalar>("Scalar");
+  mod.add_type<legate::Scalar>("Scalar");
 
-// https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
-    mod.add_type<cupynumeric::NDArray>("NDArray")
-        .method("dim", &cupynumeric::NDArray::dim)
-        .method("size", &cupynumeric::NDArray::size)
-        .method("type", &cupynumeric::NDArray::type)
-        .method("as_type", &cupynumeric::NDArray::as_type)
-        .method("binary_op", &cupynumeric::NDArray::binary_op)
-        .method("get_store", &cupynumeric::NDArray::get_store)
-	.method("add", (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator+)	
-	.method("multiply",  (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator*);
-	//.method("add_eq", &cupynumeric::NDArray::operator+=)
-	//.method("multiply_eq", &cupynumeric::NDArray::operator*=);
+  // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
+  mod.add_type<cupynumeric::NDArray>("NDArray")
+      .method("dim", &cupynumeric::NDArray::dim)
+      .method("size", &cupynumeric::NDArray::size)
+      .method("type", &cupynumeric::NDArray::type)
+      .method("as_type", &cupynumeric::NDArray::as_type)
+      .method("binary_op", &cupynumeric::NDArray::binary_op)
+      .method("get_store", &cupynumeric::NDArray::get_store)
+      .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                         const cupynumeric::NDArray&) const) &
+                         cupynumeric::NDArray::operator+)
+      .method("multiply", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              const cupynumeric::NDArray&) const) &
+                              cupynumeric::NDArray::operator*);
+  //.method("add_eq", &cupynumeric::NDArray::operator+=)
+  //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
 
-    mod.method("zeros", &cupynumeric::zeros); // operators.cc, 152
-// https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/operators.cc#L162
-    mod.method("full", &cupynumeric::full); // operators.cc, 162
-    mod.method("dot", &cupynumeric::dot); //operators.cc, 263
-    mod.method("sum", &cupynumeric::sum); //operators.cc, 303
-
+  mod.method("zeros", &cupynumeric::zeros);  // operators.cc, 152
+  // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/operators.cc#L162
+  mod.method("full", &cupynumeric::full);  // operators.cc, 162
+  mod.method("dot", &cupynumeric::dot);    // operators.cc, 263
+  mod.method("sum", &cupynumeric::sum);    // operators.cc, 303
 }
 
 // These codes map to this enum
@@ -157,10 +156,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 //     UINT32      = UINT32_LT,      /*!< 32-bit unsigned integer type */
 //     UINT64      = UINT64_LT,      /*!< 64-bit unsigned integer type */
 //     FLOAT16     = FLOAT16_LT,     /*!< Half-precision floating point type */
-//     FLOAT32     = FLOAT32_LT,     /*!< Single-precision floating point type */
-//     FLOAT64     = FLOAT64_LT,     /*!< Double-precision floating point type */
-//     COMPLEX64   = COMPLEX64_LT,   /*!< Single-precision complex type */
-//     COMPLEX128  = COMPLEX128_LT,  /*!< Double-precision complex type */
+//     FLOAT32     = FLOAT32_LT,     /*!< Single-precision floating point type
+//     */ FLOAT64     = FLOAT64_LT,     /*!< Double-precision floating point
+//     type */ COMPLEX64   = COMPLEX64_LT,   /*!< Single-precision complex type
+//     */ COMPLEX128  = COMPLEX128_LT,  /*!< Double-precision complex type */
 //     FIXED_ARRAY = FIXED_ARRAY_LT, /*!< Fixed-size array type */
 //     STRUCT      = STRUCT_LT,      /*!< Struct type */
 //     STRING      = STRING_LT,      /*!< String type */
@@ -209,5 +208,3 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 //   LEGION_TYPE_COMPLEX128 = 14,
 //   LEGION_TYPE_TOTAL = 15, // must be last
 // } legion_type_id_t;
-
-
