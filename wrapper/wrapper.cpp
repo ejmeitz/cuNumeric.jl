@@ -98,7 +98,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
     mod.add_type<legate::LogicalStore>("LogicalStore"); //might be useful with ndarray.get_store
 
     mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
-        .apply<std::optional<legate::Type>, std::optional<int>>(WrapCppOptional());
+        .apply<std::optional<legate::Type>>(WrapCppOptional());
 
 
 // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h       
