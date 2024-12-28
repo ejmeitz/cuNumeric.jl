@@ -141,7 +141,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod)
 
 }
 
-
 // These codes map to this enum
 // https://github.com/nv-legate/legate/blob/fd4563612c9ebc8d342d88ce790da6cc9b311cdf/src/core/legate_c.h#L76C1-L98C27
 // which map to the legion/legion_config.h here:
