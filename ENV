@@ -5,6 +5,7 @@ export CUNUMERIC_JL_HOME=$(pwd)
 file=./.localenv
 if [ -e "$file" ]; then
   source $file
+  echo "Found local environment file $file"
 fi 
 
 JULIA="julia"

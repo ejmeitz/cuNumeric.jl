@@ -18,7 +18,8 @@
 =#
 export ArrayDesc
 
-#is legion Complex128 same as ComplexF64 in julia?
+# is legion Complex128 same as ComplexF64 in julia? 
+# These are methods that return a LegateTypeAllocated
 const type_map = Dict{Type, Symbol}(
     Bool => :bool_, 
     Int8 => :int8,
@@ -55,12 +56,12 @@ to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type
 function zeros(dims::Dims{N}, type::Type = Float64) where N
     opt = StdOptional{LegateType}(eval(type_map[type])())
     dims_uint64 = to_cpp_dims(dims)
-    return zeros(dims_uint64, opt) #rename wrapper to avoid confusion?
+    return _zeros(dims_uint64, opt)
 end
 
 function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
     dims_uint64 = to_cpp_dims(dims)
-    return full(dims_uint64, LegateScalar(val))
+    return _full(dims_uint64, LegateScalar(val))
 end
 
 function Base.:*(arr1::NDArray, arr2::NDArray)

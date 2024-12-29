@@ -1,10 +1,10 @@
 using cuNumeric
 
-N = 10000
+N = 1000
+dims = (N, N)
+arr = cuNumeric.zeros(dims, Float64)
+arr2 = cuNumeric.full(dims, Float64(5.0))
 
-ad = ArrayDesc((N, N), Float32)
-arr = cuNumeric.zeros(ad.dims, ad.type)
 
-arr2 = cuNumeric.full(ad.dims, cuNumeric.Scalar(6.0, cuNumeric.float32))
 
-print(arr2)
+# arr = arr + arr2 

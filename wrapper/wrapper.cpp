@@ -43,6 +43,7 @@ struct WrapCppOptional {
   }
 };
 
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // no idea where this is
@@ -115,6 +116,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       "LogicalStore");  // might be useful with ndarray.get_store
 
   // in scalar.h
+  
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
@@ -137,10 +139,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
 
-  mod.method("zeros", &cupynumeric::zeros);  // operators.cc, 152
-  mod.method("full", &cupynumeric::full);    // operators.cc, 162
-  mod.method("dot", &cupynumeric::dot);      // operators.cc, 263
-  mod.method("sum", &cupynumeric::sum);      // operators.cc, 303
+  mod.method("_zeros", &cupynumeric::zeros);  // operators.cc, 152
+  mod.method("_full", &cupynumeric::full);    // operators.cc, 162
+  mod.method("_dot", &cupynumeric::dot);      // operators.cc, 263
+  mod.method("_sum", &cupynumeric::sum);      // operators.cc, 303
   // mod.method("add", &cupynumeric::add);
   // mod.method("multiply", &cupynumeric::multiply);
 }
@@ -187,12 +189,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 //   FLOAT64_LT    = LEGION_TYPE_FLOAT64,
 //   COMPLEX64_LT  = LEGION_TYPE_COMPLEX64,
 //   COMPLEX128_LT = LEGION_TYPE_COMPLEX128,
-//   // Compound types
-//   FIXED_ARRAY_LT,
-//   STRUCT_LT,
-//   // Variable size types
-//   STRING_LT,
-//   INVALID_LT = -1,
 // } legate_core_type_code_t;
 
 // typedef enum legion_type_id_t {
