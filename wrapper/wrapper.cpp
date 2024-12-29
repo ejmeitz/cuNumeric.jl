@@ -49,45 +49,45 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
   mod.method("legate_finish", &legate::finish);  // no idea where this is
 
-    // mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
-    // mod.set_const("LEGION_TYPE_BOOL",     0);
-    // mod.set_const("LEGION_TYPE_INT8",     1);
-    // mod.set_const("LEGION_TYPE_INT16",    2);
-    // mod.set_const("LEGION_TYPE_INT32",    3);
-    // mod.set_const("LEGION_TYPE_INT64",    4);
-    // mod.set_const("LEGION_TYPE_UINT8",    5);
-    // mod.set_const("LEGION_TYPE_UINT16",   6);
-    // mod.set_const("LEGION_TYPE_UINT32",   7);
-    // mod.set_const("LEGION_TYPE_UINT64",   8);
-    // mod.set_const("LEGION_TYPE_FLOAT16",  9);
-    // mod.set_const("LEGION_TYPE_FLOAT32",  10);
-    // mod.set_const("LEGION_TYPE_FLOAT64",  11);
-    // mod.set_const("LEGION_TYPE_COMPLEX32",   12);
-    // mod.set_const("LEGION_TYPE_COMPLEX64",   13);
-    // mod.set_const("LEGION_TYPE_COMPLEX128",  14);
-    // mod.set_const("LEGION_TYPE_TOTAL", 15);
+    mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
+    mod.set_const("LEGION_TYPE_BOOL",     0);
+    mod.set_const("LEGION_TYPE_INT8",     1);
+    mod.set_const("LEGION_TYPE_INT16",    2);
+    mod.set_const("LEGION_TYPE_INT32",    3);
+    mod.set_const("LEGION_TYPE_INT64",    4);
+    mod.set_const("LEGION_TYPE_UINT8",    5);
+    mod.set_const("LEGION_TYPE_UINT16",   6);
+    mod.set_const("LEGION_TYPE_UINT32",   7);
+    mod.set_const("LEGION_TYPE_UINT64",   8);
+    mod.set_const("LEGION_TYPE_FLOAT16",  9);
+    mod.set_const("LEGION_TYPE_FLOAT32",  10);
+    mod.set_const("LEGION_TYPE_FLOAT64",  11);
+    mod.set_const("LEGION_TYPE_COMPLEX32",   12);
+    mod.set_const("LEGION_TYPE_COMPLEX64",   13);
+    mod.set_const("LEGION_TYPE_COMPLEX128",  14);
+    mod.set_const("LEGION_TYPE_TOTAL", 15);
 
-    // mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
-    // mod.set_const("BOOL",     legion_type_id_t::LEGION_TYPE_BOOL);
-    // mod.set_const("INT8",     legion_type_id_t::LEGION_TYPE_INT8);
-    // mod.set_const("INT16",    legion_type_id_t::LEGION_TYPE_INT16);
-    // mod.set_const("INT32",    legion_type_id_t::LEGION_TYPE_INT32);
-    // mod.set_const("INT64",    legion_type_id_t::LEGION_TYPE_INT64);
-    // mod.set_const("UINT8",    legion_type_id_t::LEGION_TYPE_UINT8);
-    // mod.set_const("UINT16",   legion_type_id_t::LEGION_TYPE_UINT16);
-    // mod.set_const("UINT32",   legion_type_id_t::LEGION_TYPE_UINT32);
-    // mod.set_const("UINT64",   legion_type_id_t::LEGION_TYPE_UINT64);
-    // mod.set_const("FLOAT16",  legion_type_id_t::LEGION_TYPE_FLOAT16);
-    // mod.set_const("FLOAT32",  legion_type_id_t::LEGION_TYPE_FLOAT32);
-    // mod.set_const("FLOAT64",  legion_type_id_t::LEGION_TYPE_FLOAT64);
-    // mod.set_const("COMPLEX64",    legion_type_id_t::LEGION_TYPE_COMPLEX64);
-    // mod.set_const("COMPLEX128",   legion_type_id_t::LEGION_TYPE_COMPLEX128);
-    // mod.set_const("NIL", 15);
-    // mod.set_const("BINARY", 16);
-    // mod.set_const("FIXED_ARRAY", 17);
-    // mod.set_const("STRUCT", 18);
-    // mod.set_const("STRING", 19);
-    // mod.set_const("LIST", 20);
+    mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
+    mod.set_const("BOOL",     legion_type_id_t::LEGION_TYPE_BOOL);
+    mod.set_const("INT8",     legion_type_id_t::LEGION_TYPE_INT8);
+    mod.set_const("INT16",    legion_type_id_t::LEGION_TYPE_INT16);
+    mod.set_const("INT32",    legion_type_id_t::LEGION_TYPE_INT32);
+    mod.set_const("INT64",    legion_type_id_t::LEGION_TYPE_INT64);
+    mod.set_const("UINT8",    legion_type_id_t::LEGION_TYPE_UINT8);
+    mod.set_const("UINT16",   legion_type_id_t::LEGION_TYPE_UINT16);
+    mod.set_const("UINT32",   legion_type_id_t::LEGION_TYPE_UINT32);
+    mod.set_const("UINT64",   legion_type_id_t::LEGION_TYPE_UINT64);
+    mod.set_const("FLOAT16",  legion_type_id_t::LEGION_TYPE_FLOAT16);
+    mod.set_const("FLOAT32",  legion_type_id_t::LEGION_TYPE_FLOAT32);
+    mod.set_const("FLOAT64",  legion_type_id_t::LEGION_TYPE_FLOAT64);
+    mod.set_const("COMPLEX64",    legion_type_id_t::LEGION_TYPE_COMPLEX64);
+    mod.set_const("COMPLEX128",   legion_type_id_t::LEGION_TYPE_COMPLEX128);
+    mod.set_const("NIL", 15);
+    mod.set_const("BINARY", 16);
+    mod.set_const("FIXED_ARRAY", 17);
+    mod.set_const("STRUCT", 18);
+    mod.set_const("STRING", 19);
+    mod.set_const("LIST", 20);
 
     mod.add_type<legate::Type>("LegateType");
 
@@ -127,7 +127,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
         .method("type", &cupynumeric::NDArray::type)
         .method("as_type", &cupynumeric::NDArray::as_type)
         .method("binary_op", &cupynumeric::NDArray::binary_op)
-        .method("get_store", &cupynumeric::NDArray::get_store);
+        .method("get_store", &cupynumeric::NDArray::get_store)
+	    .method("add", (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator+)	
+	    .method("multiply",  (cupynumeric::NDArray (cupynumeric::NDArray::*)(const cupynumeric::NDArray&) const) &cupynumeric::NDArray::operator*);
+
 	//.method("add_eq", &cupynumeric::NDArray::operator+=)
 	//.method("multiply_eq", &cupynumeric::NDArray::operator*=);
 
@@ -135,8 +138,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
     mod.method("full", &cupynumeric::full); // operators.cc, 162
     mod.method("dot", &cupynumeric::dot); //operators.cc, 263
     mod.method("sum", &cupynumeric::sum); //operators.cc, 303
-    mod.method("add", &cupynumeric::add);
-    mod.method("multiply", &cupynumeric::multiply);
+    // mod.method("add", &cupynumeric::add);
+    // mod.method("multiply", &cupynumeric::multiply);
 }
 
 

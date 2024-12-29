@@ -38,15 +38,15 @@ const type_map = Dict{Type, Symbol}(
 )
 
 
-# struct ArrayData{N,T}
+# struct ArrayDesc{N,T}
 #     dims::StdVector{UInt64}
 #     type::StdOptional
 # end
 
-# function ArrayData(dims::NTuple{N, Integer}, type::Type = Float64) where N
+# function ArrayDesc(dims::NTuple{N, Integer}, type::Type = Float64) where N
 #     opt = StdOptional{LegateType}(eval(type_map[type])())
 #     # arr = NDArray(dims, opt)
-#     return ArrayData{N, type}(StdVector(UInt64.([d for d in dims])), opt);
+#     return ArrayDesc{N, type}(StdVector(UInt64.([d for d in dims])), opt);
 # end
 
 #probably some way to enforce this only gets passed int types
@@ -64,11 +64,11 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
 end
 
 function Base.:*(arr1::NDArray, arr2::NDArray)
-    return multiply(arr1, arr2)
+    return arr1.multiply(arr2)
 end
 
-function Base.:+(array1::NDArray, array2::NDArray)
-    return array1.add(array2)
+function Base.:+(arr1::NDArray, arr2::NDArray)
+    return arr1.add(arr2)
 end
 
 #* not sure the out arr can be same as input array
