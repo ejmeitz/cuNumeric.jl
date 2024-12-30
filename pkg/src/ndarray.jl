@@ -89,14 +89,12 @@ end
 
 function Base.getindex(arr::NDArray, i::Int64, j::Int64)
     acc = get_read_accessor_double_2d(arr); 
-    idx = (i, j)
-    return read_double_2d(acc, to_cpp_index(idx))
+    return read_double_2d(acc, to_cpp_index((i, j)))
 end
 
 function Base.setindex!(arr::NDArray, value::Float64, i::Int64, j::Int64)
     acc = get_write_accessor_double_2d(arr);
-    idx = (i, j)
-    write_double_2d(acc, to_cpp_index(idx), value)
+    write_double_2d(acc, to_cpp_index((i, j)), value)
 end
 
 

@@ -23,8 +23,8 @@ for i in N
         x_cpu[i, j] = rand()
         y_cpu[i, j] = rand()
         # set cunumeric.jl arrays
-        x[(i, j)] = x_cpu[i, j]
-        y[(i, j)] = y_cpu[i, j]
+        x[i, j] = x_cpu[i, j]
+        y[i, j] = y_cpu[i, j]
     end
 end
 

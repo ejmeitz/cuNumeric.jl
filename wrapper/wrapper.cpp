@@ -43,14 +43,15 @@ struct WrapCppOptional {
   }
 };
 
-double read_double_2d(legate::AccessorRO<double, 2> acc, std::vector<uint64_t> dims){
-  Legion::Point<2> p = {dims[0] , dims[1]};
+double read_double_2d(legate::AccessorRO<double, 2> acc,
+                      std::vector<uint64_t> dims) {
+  Legion::Point<2> p = {dims[0], dims[1]};
   return acc.read(p);
 }
 
-
-void write_double_2d(legate::AccessorWO<double, 2> acc, std::vector<uint64_t> dims, double val){
-  Legion::Point<2> p = {dims[0] , dims[1]};
+void write_double_2d(legate::AccessorWO<double, 2> acc,
+                     std::vector<uint64_t> dims, double val) {
+  Legion::Point<2> p = {dims[0], dims[1]};
   acc.write(p, val);
 }
 
@@ -124,7 +125,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   mod.add_type<legate::LogicalStore>(
       "LogicalStore");  // might be useful with ndarray.get_store
- 
+
   // in scalar.h
 
   mod.add_type<legate::Scalar>("LegateScalar")
@@ -134,12 +135,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorRO<double, 2>>("AccessorRO_double_2d");
   mod.add_type<legate::AccessorRO<float, 2>>("AccessorRO_float_2d");
 
-  mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d"); 
-  mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d"); 
-  
-  mod.method("read_double_2d", &read_double_2d); 
-  mod.method("write_double_2d", &write_double_2d); 
+  mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
+  mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
+  mod.method("read_double_2d", &read_double_2d);
+  mod.method("write_double_2d", &write_double_2d);
 
   // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
   mod.add_type<cupynumeric::NDArray>("NDArray")
@@ -151,10 +151,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
-      .method("get_read_accessor_double_2d", &cupynumeric::NDArray::get_read_accessor<double, 2>)
-      .method("get_read_accessor_float_2d", &cupynumeric::NDArray::get_read_accessor<float, 2>)
-      .method("get_write_accessor_double_2d", &cupynumeric::NDArray::get_write_accessor<double, 2>)
-      .method("get_write_accessor_float_2d", &cupynumeric::NDArray::get_write_accessor<float, 2>)
+      .method("get_read_accessor_double_2d",
+              &cupynumeric::NDArray::get_read_accessor<double, 2>)
+      .method("get_read_accessor_float_2d",
+              &cupynumeric::NDArray::get_read_accessor<float, 2>)
+      .method("get_write_accessor_double_2d",
+              &cupynumeric::NDArray::get_write_accessor<double, 2>)
+      .method("get_write_accessor_float_2d",
+              &cupynumeric::NDArray::get_write_accessor<float, 2>)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)
