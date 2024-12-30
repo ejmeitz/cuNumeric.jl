@@ -52,6 +52,8 @@ const type_map = Dict{Type, Symbol}(
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
+#julia is 1 indexed vs c is 0 indexed. added the -1 
+to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
 
 function zeros(dims::Dims{N}, type::Type = Float64) where N
     opt = StdOptional{LegateType}(eval(type_map[type])())
@@ -65,12 +67,40 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
 end
 
 function Base.:*(arr1::NDArray, arr2::NDArray)
-    return arr1.multiply(arr2)
+    return multiply(arr1, arr2)
 end
 
 function Base.:+(arr1::NDArray, arr2::NDArray)
-    return arr1.add(arr2)
+    return add(arr1, arr2)
 end
+
+
+function Base.getindex(arr::NDArray, i::Dims{N}) where N
+    # TODO retriving the accessor each read like this? 
+    acc = get_read_accessor_double_2d(arr); 
+    return read_double_2d(acc, to_cpp_index(i))
+end
+
+function Base.setindex!(arr::NDArray, value::Float64, i::Dims{N}) where N
+    acc = get_write_accessor_double_2d(arr);
+    write_double_2d(acc, to_cpp_index(i), value)
+end
+
+
+function Base.getindex(arr::NDArray, i::Int64, j::Int64)
+    acc = get_read_accessor_double_2d(arr); 
+    idx = (i, j)
+    return read_double_2d(acc, to_cpp_index(idx))
+end
+
+function Base.setindex!(arr::NDArray, value::Float64, i::Int64, j::Int64)
+    acc = get_write_accessor_double_2d(arr);
+    idx = (i, j)
+    write_double_2d(acc, to_cpp_index(idx), value)
+end
+
+
+
 
 #* not sure the out arr can be same as input array
 # function Base.:+=(lhs::NDArray, rhs::NDArray)

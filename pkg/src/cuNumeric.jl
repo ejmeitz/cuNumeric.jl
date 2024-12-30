@@ -18,6 +18,10 @@
 =#
 module cuNumeric
 
+# DEBUG HELP: use tool `c++filt -t [St8optionalIN11cupynumeric7NDArrayEE]`
+# this tool helps with reading these c++ strings from libcupynumericwrapper.so
+# the above yields:: std::optional<cupynumeric::NDArray>
+
 using CxxWrap
 
 lib = "libcupynumericwrapper.so"
