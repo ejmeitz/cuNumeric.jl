@@ -14,8 +14,8 @@ y_cpu = zeros(dims);
 # result = α * x + y  
 # ERROR: MethodError: no method matching *(::Float64, ::cuNumeric.NDArrayAllocated)     
 α = cuNumeric.full(dims, Float64(56.6))
-x = cuNumeric.zeros(dims);
-y = cuNumeric.zeros(dims);
+x = cuNumeric.zeros(dims)
+y = cuNumeric.zeros(dims)
 
 
 for i in N

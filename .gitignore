@@ -2,6 +2,7 @@
 *-build
 build
 .localenv
+.vscode
 
 # Prerequisites
 *.d
