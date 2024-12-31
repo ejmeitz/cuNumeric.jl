@@ -22,6 +22,8 @@
 #include "legate.h"
 #include "legion.h"
 
+#include <type_traits>
+
 // legate::PrimitiveType takes a value from the legate::Type::Code enum
 // but I can't wrap that enum explicitly so I will hardcode
 // an enum in Julia that has the same mappings and just
@@ -55,9 +57,40 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
   acc.write(p, val);
 }
 
+
+namespace jlcxx {
+
+// good example of this
+// https://github.com/barche/cxxwrap-juliacon2020/blob/master/eigen/sample-solution/jleigen/jleigen.cpp
+template<typename T, int n_dims>
+struct BuildParameterList<legate::AccessorRO<T, n_dims>>
+{
+  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
+};
+
+}
+
+struct ApplyAccessor
+{
+  template<typename T, typename n_dims> using apply = legate::AccessorRO<T, n_dims::value>;
+};
+
+struct WrapAccessorRO {
+  template <typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    // typedef typename TypeWrapperT::type WrappedT;
+    // wrapped.template constructor<typename WrappedT::value_type>();
+    //could implement constructors and other functions here that 
+      //depend on templates of WrappedT (i.e., AccesorRO<typename T,int I>)
+  }
+};
+
+
+
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   using jlcxx::Parametric;
+  using jlcxx::ParameterList;
   using jlcxx::TypeVar;
 
   // These are used in stencil.cc, seem important
@@ -141,6 +174,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
+
+  using fp_types = ParameterList<double, float>;
+  using dims = ParameterList<std::integral_constant<int, 1>, std::integral_constant<int, 2>>;
+  auto parent_type = jlcxx::julia_type("AbstractAccessorRO");
+  auto accessor_base = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type);
+  accessor_base.apply_combination<ApplyAccessor, fp_types, dims>(WrapAccessorRO());
 
   // mod.add_type<Parametric<TypeVar<1>,
   // TypeVar<2>>>("AccessorRO_2d")
