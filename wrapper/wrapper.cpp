@@ -170,6 +170,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
+      .method("random", &cupynumeric::NDArray::random)
+      .method("fill", &cupynumeric::NDArray::fill)
       .method("get_read_accessor_double_2d",
               &cupynumeric::NDArray::get_read_accessor<double, 2>)
       .method("get_read_accessor_float_2d",
@@ -183,6 +185,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                          cupynumeric::NDArray::operator+)
       .method("multiply", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                               const cupynumeric::NDArray&) const) &
+                              cupynumeric::NDArray::operator*)
+      .method("add_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                         const legate::Scalar&) const) &
+                         cupynumeric::NDArray::operator+)
+      .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              const legate::Scalar&) const) &
                               cupynumeric::NDArray::operator*);
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)

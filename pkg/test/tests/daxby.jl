@@ -28,7 +28,7 @@ global TEST_PASS = true
 global TEST_FAIL = false
 
 function daxby()
-    N = 1000
+    N = 100
     dims = (N, N)
 
 
@@ -46,8 +46,8 @@ function daxby()
     y = cuNumeric.zeros(dims)
 
 
-    for i in N
-        for j in N
+    for i in 1:N
+        for j in 1:N
             x_cpu[i, j] = rand()
             y_cpu[i, j] = rand()
             # set cunumeric.jl arrays
@@ -60,8 +60,8 @@ function daxby()
     result = α * x + y
 
     # check results 
-    for i in N
-        for j in N
+    for i in 1:N
+        for j in 1:N
             # we are explicity checking the == operator and not !=
             check = (result[(i, j)] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
             if check == TEST_FAIL

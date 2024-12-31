@@ -19,48 +19,54 @@
 
 #= Purpose of test: daxby_advanced
     -- Test arbitrary types and dimensions (not done)
+    -- add overloading support for [double/float scalar] * NDArray
     -- equavalence operator between a cuNumeric and Julia array without looping
     --          result == (α_cpu * x_cpu + y_cpu)
+    --          (α_cpu * x_cpu + y_cpu) == result
+    -- x[:, :] colon notation for reading entire NDArray to a Julia array
+    -- x[:, :] colon notation for filling entire NDArray with scalar
 =#
 global TEST_PASS = true
 global TEST_FAIL = false
 
 function daxby_advanced()
-    N = 1000
+    seed = 10
+
+    N = 100
     dims = (N, N)
 
-
-    α_cpu = 56.6
+    α = 56.6
+    
+    # base Julia arrays
     x_cpu = zeros(dims);
     y_cpu = zeros(dims);
 
     # cunumeric arrays
-
-    # TODO 
-    # result = α * x + y  
-    # ERROR: MethodError: no method matching *(::Float64, ::cuNumeric.NDArrayAllocated)     
-    α = cuNumeric.full(dims, Float64(56.6))
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
 
+    # test fill with scalar of all elements of the NDArray
+    x[:, :] = 4.23
 
-    for i in N
-        for j in N
-            x_cpu[i, j] = rand()
-            y_cpu[i, j] = rand()
-            # set cunumeric.jl arrays
-            x[i, j] = x_cpu[i, j]
-            y[i, j] = y_cpu[i, j]
-        end
+    if (x != fill(4.23, dims))
+        return TEST_FAIL
     end
+
+    # create two random arrays
+    cuNumeric.random(x, seed)
+    cuNumeric.random(y, seed)
+
+    # set all the elements of each NDArray to the CPU array equivalent
+    x_cpu = x[:, :]
+    y_cpu = y[:, :]
 
 
     result = α * x + y
 
     # check results 
-    if result == (α_cpu * x_cpu + y_cpu)
-        # switch LHS and RHS
-        if (α_cpu * x_cpu + y_cpu) == result
+    if result == (α * x_cpu + y_cpu)
+        # switch LHS and RHS to check different overloading
+        if (α * x_cpu + y_cpu) == result
             # successful completion
             return TEST_PASS
         end

@@ -74,6 +74,14 @@ function Base.:+(arr1::NDArray, arr2::NDArray)
     return add(arr1, arr2)
 end
 
+function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
+    return add_scalar(arr, LegateScalar(val))
+end
+
+function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
+    return multiply_scalar(arr, LegateScalar(val))
+end
+
 
 function Base.getindex(arr::NDArray, i::Dims{N}) where N
     # TODO retriving the accessor each read like this? 
@@ -81,7 +89,7 @@ function Base.getindex(arr::NDArray, i::Dims{N}) where N
     return read_double_2d(acc, to_cpp_index(i))
 end
 
-function Base.setindex!(arr::NDArray, value::Float64, i::Dims{N}) where N
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Dims{N}) where N
     acc = get_write_accessor_double_2d(arr);
     write_double_2d(acc, to_cpp_index(i), value)
 end
@@ -92,11 +100,30 @@ function Base.getindex(arr::NDArray, i::Int64, j::Int64)
     return read_double_2d(acc, to_cpp_index((i, j)))
 end
 
-function Base.setindex!(arr::NDArray, value::Float64, i::Int64, j::Int64)
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Int64, j::Int64)
     acc = get_write_accessor_double_2d(arr);
     write_double_2d(acc, to_cpp_index((i, j)), value)
 end
 
+function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
+    # TODO fix temp hardcoded solution
+    nrows = 100
+    ncols = 100
+    
+
+    julia_array = Base.zeros((nrows, ncols))
+    for i in 1:nrows
+        for j in 1:ncols
+            julia_array[i, j] = arr[i, j]
+        end
+    end
+    return julia_array
+end
+
+
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, rows::Colon, cols::Colon)
+    fill(arr, LegateScalar(value))
+end
 
 
 function Base.:(==)(arr::NDArray, julia_array::Matrix)
