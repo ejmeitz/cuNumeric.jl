@@ -138,6 +138,25 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
+  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("AccessorRO_2d")
+  //   .apply_combination<legate::AccessorRO,
+  //    jlcxx::ParameterList<float, double>,
+  //    jlcxx::ParameterList<std::integral_constant<int, 1>,
+  //                         std::integral_constant<int, 2>,
+  //                         std::integral_constant<int, 3>>>
+  //   ([](auto wrapped)
+  //     {
+  //       typedef typename decltype(wrapped)::type WrappedT;
+  //       wrapped.method("read", &WrappedT::read);
+  //     });
+
+  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("AccessorWO_2d")
+  // .apply_combination<legate::AccessorWO, jlcxx::ParameterList<float, double>, jlcxx::ParameterList<1,2,3,4>>([](auto wrapped)
+  //   {
+  //     typedef typename decltype(wrapped)::type WrappedT;
+  //     wrapped.method("write", &WrappedT::read);
+  //   });
+
   mod.method("read_double_2d", &read_double_2d);
   mod.method("write_double_2d", &write_double_2d);
 
