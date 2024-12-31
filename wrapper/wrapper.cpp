@@ -138,7 +138,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
-  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("AccessorRO_2d")
+  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>,
+  // jlcxx::TypeVar<2>>>("AccessorRO_2d")
   //   .apply_combination<legate::AccessorRO,
   //    jlcxx::ParameterList<float, double>,
   //    jlcxx::ParameterList<std::integral_constant<int, 1>,
@@ -150,8 +151,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //       wrapped.method("read", &WrappedT::read);
   //     });
 
-  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("AccessorWO_2d")
-  // .apply_combination<legate::AccessorWO, jlcxx::ParameterList<float, double>, jlcxx::ParameterList<1,2,3,4>>([](auto wrapped)
+  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>,
+  // jlcxx::TypeVar<2>>>("AccessorWO_2d") .apply_combination<legate::AccessorWO,
+  // jlcxx::ParameterList<float, double>, jlcxx::ParameterList<1,2,3,4>>([](auto
+  // wrapped)
   //   {
   //     typedef typename decltype(wrapped)::type WrappedT;
   //     wrapped.method("write", &WrappedT::read);
@@ -187,11 +190,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                               const cupynumeric::NDArray&) const) &
                               cupynumeric::NDArray::operator*)
       .method("add_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
-                         const legate::Scalar&) const) &
-                         cupynumeric::NDArray::operator+)
+                                const legate::Scalar&) const) &
+                                cupynumeric::NDArray::operator+)
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
-                              const legate::Scalar&) const) &
-                              cupynumeric::NDArray::operator*);
+                                     const legate::Scalar&) const) &
+                                     cupynumeric::NDArray::operator*);
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
