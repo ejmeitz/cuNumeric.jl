@@ -25,8 +25,8 @@ using cuNumeric
 end
 
 @testset "daxby" begin
-    include("daxby.jl")
+    include("tests/daxby.jl")
     @test daxby()
-    include("daxby_advanced.jl")
+    include("tests/daxby_advanced.jl")
     @test daxby_advanced()
 end
