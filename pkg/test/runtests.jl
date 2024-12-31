@@ -27,4 +27,6 @@ end
 @testset "daxby" begin
     include("daxby.jl")
     @test daxby()
+    include("daxby_advanced.jl")
+    @test daxby_advanced()
 end

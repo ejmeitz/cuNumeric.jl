@@ -17,17 +17,16 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-#= Purpose of test: daxby
-    -- Focused on double 2 dimenional. Does not test other types or dims. 
-    -- NDArray intialization 
-    -- NDArray writing and reading scalar indexing
-    --          shows both [i, j] and [(i, j)] working
-    -- NDArray addition and multiplication
+#= Purpose of test: daxby_advanced
+    -- TODO: these neither are satisfied yet
+    -- Test arbitrary types and dimensions
+    -- equavalence operator between a cuNumeric and Julia array without looping
+    --          result == (α_cpu * x_cpu + y_cpu)
 =#
 global TEST_PASS = false
 global TEST_FAIL = true
 
-function daxby()
+function daxby_advanced()
     N = 1000
     dims = (N, N)
 
@@ -60,16 +59,13 @@ function daxby()
     result = α * x + y
 
     # check results 
-    for i in N
-        for j in N
-            check = (result[(i, j)] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
-            if check == 1
-                #something messed up
-                return TEST_FAIL
-            end
-        end
-    end
+    check = (result == (α_cpu * x_cpu + y_cpu))
 
-    # successful completion
-    return TEST_PASS
+    if check == 1
+        #something messed up
+        return TEST_FAIL
+    else
+        # successful completion
+        return TEST_PASS
+    end
 end
