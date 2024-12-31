@@ -56,6 +56,10 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
 }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+
+  using jlcxx::Parametric;
+  using jlcxx::TypeVar;
+
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // no idea where this is
   mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
@@ -103,7 +107,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   mod.add_type<legate::Type>("LegateType");
 
-  mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("StdOptional")
+  mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
       .apply<std::optional<legate::Type>>(WrapCppOptional());
 
   // these likely aren't needed. LegateTypeAllocated
@@ -138,8 +142,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
-  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>,
-  // jlcxx::TypeVar<2>>>("AccessorRO_2d")
+  // mod.add_type<Parametric<TypeVar<1>,
+  // TypeVar<2>>>("AccessorRO_2d")
   //   .apply_combination<legate::AccessorRO,
   //    jlcxx::ParameterList<float, double>,
   //    jlcxx::ParameterList<std::integral_constant<int, 1>,
@@ -151,8 +155,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //       wrapped.method("read", &WrappedT::read);
   //     });
 
-  // mod.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>,
-  // jlcxx::TypeVar<2>>>("AccessorWO_2d") .apply_combination<legate::AccessorWO,
+  // mod.add_type<Parametric<TypeVar<1>,
+  // TypeVar<2>>>("AccessorWO_2d") .apply_combination<legate::AccessorWO,
   // jlcxx::ParameterList<float, double>, jlcxx::ParameterList<1,2,3,4>>([](auto
   // wrapped)
   //   {
