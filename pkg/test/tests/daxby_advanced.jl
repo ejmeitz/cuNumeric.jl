@@ -18,13 +18,12 @@
 =#
 
 #= Purpose of test: daxby_advanced
-    -- TODO: these neither are satisfied yet
-    -- Test arbitrary types and dimensions
+    -- Test arbitrary types and dimensions (not done)
     -- equavalence operator between a cuNumeric and Julia array without looping
     --          result == (α_cpu * x_cpu + y_cpu)
 =#
-global TEST_PASS = false
-global TEST_FAIL = true
+global TEST_PASS = true
+global TEST_FAIL = false
 
 function daxby_advanced()
     N = 1000
@@ -59,13 +58,13 @@ function daxby_advanced()
     result = α * x + y
 
     # check results 
-    check = (result == (α_cpu * x_cpu + y_cpu))
-
-    if check == 1
-        #something messed up
-        return TEST_FAIL
-    else
-        # successful completion
-        return TEST_PASS
+    if result == (α_cpu * x_cpu + y_cpu)
+        # switch LHS and RHS
+        if (α_cpu * x_cpu + y_cpu) == result
+            # successful completion
+            return TEST_PASS
+        end
     end
+
+    return TEST_FAIL
 end

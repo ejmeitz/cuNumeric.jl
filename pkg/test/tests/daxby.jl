@@ -24,8 +24,8 @@
     --          shows both [i, j] and [(i, j)] working
     -- NDArray addition and multiplication
 =#
-global TEST_PASS = false
-global TEST_FAIL = true
+global TEST_PASS = true
+global TEST_FAIL = false
 
 function daxby()
     N = 1000
@@ -62,8 +62,9 @@ function daxby()
     # check results 
     for i in N
         for j in N
+            # we are explicity checking the == operator and not !=
             check = (result[(i, j)] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
-            if check == 1
+            if check == TEST_FAIL
                 #something messed up
                 return TEST_FAIL
             end

@@ -99,6 +99,32 @@ end
 
 
 
+function Base.:(==)(arr::NDArray, julia_array::Matrix)
+    if (cuNumeric.size(arr) != prod(Base.size(julia_array)))
+        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(Base.size(julia_array))!\n", color=:yellow, bold=true)
+        return false
+    end
+    
+    for i in 1:Base.size(julia_array, 1)
+        for j in 1:Base.size(julia_array, 2)
+            if arr[i, j] != julia_array[i, j]
+                # not equal
+                return false
+            end
+        end
+    end
+
+    # successful completion
+    return true
+end
+
+
+
+function Base.:(==)(julia_array::Matrix, arr::NDArray)
+    # flip LHS and RHS
+    return (arr == julia_array)
+end
+
 
 #* not sure the out arr can be same as input array
 # function Base.:+=(lhs::NDArray, rhs::NDArray)
