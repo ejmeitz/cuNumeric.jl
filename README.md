@@ -27,13 +27,13 @@ git submodule init
 git submodule update
 ```
 
-#### install with julia build
+#### install with Julia pkg manager
 ```julia
     pkg>  activate .
     pkg>  build
 ```
 
-#### test
+#### test the Julia package
 ```julia
     pkg>  test
 ```
