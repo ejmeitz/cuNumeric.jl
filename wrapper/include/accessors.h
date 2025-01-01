@@ -1,5 +1,6 @@
 #include "jlcxx/jlcxx.hpp"
 #include "legate.h"
+#include "legion.h"
 #include <vector>
 
 namespace jlcxx {
@@ -34,16 +35,19 @@ struct ApplyAccessorWO
 struct WrapAccessorRO {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
+    // This is the AccessorRO with specific template instantiations
     using WrappedT = typename TypeWrapperT::type;
 
-    // no idea why this doesnt work
+    // THESE NEED TO BE PUBLIC IN AccessorRO to work
     // int DimT = WrappedT::N;
+    // using AccessedT = typename WrappedT::FT;
+    // using DimT = typename WrappedT::N;
 
     // wrapped.method("read", &WrappedT::read);
 
     //free method
     wrapped.module().method("acc_read", [] (const WrappedT& acc, std::vector<uint64_t> dims) {
-        // auto p = Realm::make_point(dims);
+        // Legion::Point<DimT> = HOW TO CONSTRUCT? INITIALIZER LIST ISNT DYNAMIC
         // return acc.read(p);
         return 0;
     });
@@ -54,10 +58,6 @@ struct WrapAccessorWO {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
     using WrappedT = typename TypeWrapperT::type;
-
-    // from template names defined in legate/typdedefs.h
-    // int DimT = WrappedT::N;
-
-    // wrapped.method("write", &WrappedT::write);
+      //implement later, missing stuff in legate
   }
 };

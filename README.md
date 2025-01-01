@@ -31,3 +31,11 @@ Optional: You can create a file called `.localenv` in order to add anything to t
 
 ## build wrapper
 `sh ./build.sh`
+
+
+
+## Wish List / Question
+- Add public typedefs for template parameters in FieldAccessor/AccessorRO/AccessorWO so we can generate templated functions that use these classes
+- Where is MachineQueryInterface abstract interface implemented? Would be nice to have access to cpus(), gpus() etc. info
+    - Is there a way to use CuPyNumericRuntime to access this? legate_runtime_ is private
+        so no access to machine info that legate found

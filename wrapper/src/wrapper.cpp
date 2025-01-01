@@ -18,6 +18,7 @@
  */
 
 #include <type_traits>
+#include <string> //needed for return type of toString methods
 
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
@@ -35,38 +36,24 @@ struct WrapCppOptional {
   }
 };
 
-// double read_double_2d(legate::AccessorRO<double, 2> acc,
-//                       std::vector<uint64_t> dims) {
-//   Legion::Point<2> p = {dims[0], dims[1]};
-//   return acc.read(p);
+double read_double_2d(legate::AccessorRO<double, 2> acc,
+                      std::vector<uint64_t> dims) {
+  Legion::Point<2> p = {dims[0], dims[1]};
+  return acc.read(p);
+}
+
+void write_double_2d(legate::AccessorWO<double, 2> acc,
+                     std::vector<uint64_t> dims, double val) {
+  Legion::Point<2> p = {dims[0], dims[1]};
+  acc.write(p, val);
+}
+
+// std::string get_machine_info(){
+//   auto runtime = CuPyNumericRuntime::get_runtime();
+//   //how access legate_runtime_?? its private
+//   return legate_runtime.get_machine().to_string();
 // }
 
-// void write_double_2d(legate::AccessorWO<double, 2> acc,
-//                      std::vector<uint64_t> dims, double val) {
-//   Legion::Point<2> p = {dims[0], dims[1]};
-//   acc.write(p, val);
-// }
-
-//this feels like a lot to just wrap Legion::Point....
-// struct WrapPoint
-// {
-//   template<typename TypeWrapperT>
-//   void operator()(TypeWrapperT&& wrapped)
-//   {
-//     typedef typename TypeWrapperT::type WrappedT;
-//   }
-// };
-
-// template<int n_dims, typename T>
-// struct BuildParameterList<Legion::Point<n_dims, T>>
-// {
-//   using type = ParameterList<std::integral_constant<int_t, n_dims>, T>;
-// };
-
-// struct ApplyPoint
-// {
-//   template<typename n_dims, typename T> using apply = Legion::Point<n_dims::value, T>;
-// };
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
@@ -82,9 +69,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using allowed_dims = ParameterList<std::integral_constant<int, 1>, std::integral_constant<int, 2>, std::integral_constant<int, 3>>;
 
   // These are used in stencil.cc, seem important
-  mod.method("start_legate", &legate::start);  // no idea where this is
-  mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
-  mod.method("legate_finish", &legate::finish);  // no idea where this is
+  mod.method("start_legate", &legate::start);  // in legate/runtime.h
+  mod.method("initialize_cunumeric", &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
+  mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
+
+  mod.add_type<legate::Runtime>("LegateRuntime")
+     .method("node_count", &legate::Runtime::node_count);
+
+  mod.method("get_machine_info", &get_machine_info);
+  
+  //This builds but doesnt work in JULIA?????
+//   mod.add_type<legate::mapping::Machine>("Machine")
+//         .method("to_string", &legate::mapping::Machine::to_string);
 
   wrap_type_enums(mod);
   mod.add_type<legate::Type>("LegateType");
@@ -100,31 +96,24 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
-  // mod.add_type<legate::AccessorRO<double, 2>>("AccessorRO_double_2d");
-  // mod.add_type<legate::AccessorRO<float, 2>>("AccessorRO_float_2d");
+  mod.add_type<legate::AccessorRO<double, 2>>("AccessorRO_double_2d");
+  mod.add_type<legate::AccessorRO<float, 2>>("AccessorRO_float_2d");
 
-  // mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
-  // mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
+  mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
+  mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
-  // MAKE THIS USE `allowed_dims` instead of hard coded
-  // mod.add_type<Parametric<TypeVar<1>>>("Point")
-  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto wrapped){
-
-  //   });
-
-  // mod.method("make_point", &Realm::make_point);
-
+  // this cannot work until some changes are made to Legion or I can see the src
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
-  auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-  auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
-  accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
+//   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+//   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
+//   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
 
-  auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-  auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
-  accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
+//   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+//   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
+//   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
 
-  // mod.method("read_double_2d", &read_double_2d);
-  // mod.method("write_double_2d", &write_double_2d);
+  mod.method("read_double_2d", &read_double_2d);
+  mod.method("write_double_2d", &write_double_2d);
 
   // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
   mod.add_type<cupynumeric::NDArray>("NDArray")
