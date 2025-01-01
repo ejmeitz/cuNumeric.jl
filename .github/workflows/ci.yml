@@ -14,6 +14,6 @@ jobs:
         with:
           version: '1.10'
       - name: Install Dependencies
-        run: julia --project=@. -e 'using Pkg; Pkg.instantiate()'
+        run: julia --project=@./pkg -e 'using Pkg; Pkg.instantiate()'
       - name: Run Tests
-        run: julia --project=@. -e 'using Pkg; Pkg.test()'
+        run: julia --project=@./pkg -e 'using Pkg; Pkg.test()'
