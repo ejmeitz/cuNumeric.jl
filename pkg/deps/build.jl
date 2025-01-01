@@ -21,7 +21,7 @@
 using Pkg;
 using Libdl;
 
-env_file = joinpath(@__DIR__, "../../ENV")
+env_file = abspath(joinpath(@__DIR__, "../../ENV"))
 @info "Sourcing environment file: $env_file"
 
 # env script
