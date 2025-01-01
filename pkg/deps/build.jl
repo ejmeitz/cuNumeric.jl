@@ -27,10 +27,16 @@ env_file = joinpath(@__DIR__, "../../ENV")
 # env script
 if isfile(env_file)
     @info "Setting environment variables from $env_file"
-    run(`bash -c "source $env_file && env"`)
+    run(`bash -c "source $env_file && env > env.log"`)
+    for line in readlines("env.log")
+        key, value = split(line, "=", limit=2)
+        ENV[key] = value
+    end
 else
     @error "Environment file not found: $env_file"
 end
+
+@info ENV["CUNUMERIC_JL_HOME"]
 
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
