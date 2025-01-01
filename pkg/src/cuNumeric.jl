@@ -25,10 +25,14 @@ module cuNumeric
 
 using CxxWrap
 
+abstract type AbstractAccessorRO{T,N} end
+abstract type AbstractAccessorWO{T,N} end
+
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
 include("ndarray.jl")
+
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
