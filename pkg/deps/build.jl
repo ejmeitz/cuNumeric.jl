@@ -48,5 +48,3 @@ run(`bash $build_libcxxwrap`)
 build_cupynumeric_wrapper = joinpath(ENV["CUNUMERIC_JL_HOME"], "build.sh")
 @info "Running cuNumeric.jl build script: $build_cupynumeric_wrapper"
 run(`bash $build_cupynumeric_wrapper`)
-
-
