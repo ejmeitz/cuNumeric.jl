@@ -57,4 +57,4 @@ For technical questions, please either contact
 `krasow(at)u.northwestern.edu` OR
 `emeitz(at)andrew.cmu.edu`
 
-If the issue is building the package, please include the `build.log` found in `cuNumeric.jl/pkg/deps/build.log`
+If the issue is building the package, please include the `build.log` and `env.log` found in `cuNumeric.jl/pkg/deps/` 
