@@ -27,7 +27,7 @@ env_file = abspath(joinpath(@__DIR__, "../../ENV"))
 # env script
 if isfile(env_file)
     @info "Setting environment variables from $env_file"
-    run(`bash -c "source $env_file && env"`)
+    run(`source $env_file && env`)
 else
     @error "Environment file not found: $env_file"
 end

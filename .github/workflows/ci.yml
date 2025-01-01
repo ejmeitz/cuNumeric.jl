@@ -10,10 +10,48 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install CUDA 12.2
+        run: |
+          # Add the NVIDIA package repository for CUDA 12.2
+          sudo apt-get update
+          sudo apt-get install -y \
+            gnupg2 \
+            curl \
+            lsb-release \
+            build-essential \
+            software-properties-common
+          curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-12.2.0_520.61.05-1_amd64.deb -o cuda-12.2.deb
+          sudo dpkg -i cuda-12.2.deb
+          sudo apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub
+          sudo apt-get update
+          sudo apt-get install -y cuda
+
+   
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          conda-version: 'latest'
+          environment-file: environment.yml  # Optional: use an environment file
+          auto-activate-base: false
+
+      - name: Create Conda environment
+        run: |
+          conda create --name myenv python=3.10 -y
+          conda activate myenv
+
+      - name: Install cupynumeric using Conda
+        run: |
+          conda activate myenv
+          CONDA_OVERRIDE_CUDA="12.2" conda install -c conda-forge -c legate cupynumeric
+
+      - name: Install Julia 
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1.10'
+          
       - name: Install Dependencies
         run: julia --project=./pkg -e 'using Pkg; Pkg.instantiate()'
+
       - name: Run Tests
-        run: julia --project=./pkg -e 'using Pkg; Pkg.test()'
+        run: julia --project=./pkg -e 'using Pkg; Pkg.build(); Pkg.test()'
