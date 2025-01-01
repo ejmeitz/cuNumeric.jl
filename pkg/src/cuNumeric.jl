@@ -66,6 +66,4 @@ function __init__()
     # void return
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 end
-
-
 end
