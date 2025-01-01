@@ -27,32 +27,28 @@ git submodule init
 git submodule update
 ```
 
-## install with julia build
+#### install with julia build
 ```julia
     pkg>  activate .
     pkg>  build
 ```
 
-## test
+#### test
 ```julia
     pkg>  test
 ```
 
 ## custom install
 
-#### setup env 
 Optional: You can create a file called `.localenv` in order to add anything to the path. 
 
 `source ENV` will setup the enviroment variables and source optional `.localenv`
 
-#### install packages
-`sh scripts/install_cxxwrap.sh`
+`sh scripts/install_cxxwrap.sh`  builds the Julia CXX wrapper https://github.com/JuliaInterop/libcxxwrap-julia
 
-#### patch legion
-`sh scripts/legion_redop_patch.inl`
+`sh scripts/legion_redop_patch.inl` patches Legion https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 
-#### build wrapper
-`sh ./build.sh`
+`sh ./build.sh` will create `libcupynumericwrapper.so` in `$CUNUMERIC_JL_HOME/build`
 
 
 
