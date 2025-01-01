@@ -26,17 +26,15 @@
     -- x[:, :] colon notation for reading entire NDArray to a Julia array
     -- x[:, :] colon notation for filling entire NDArray with scalar
 =#
-global TEST_PASS = true
-global TEST_FAIL = false
 
-function daxby_advanced()
+function daxpy_advanced()
     seed = 10
 
     N = 100
     dims = (N, N)
 
     α = 56.6
-    
+
     # base Julia arrays
     x_cpu = zeros(dims);
     y_cpu = zeros(dims);
@@ -47,11 +45,9 @@ function daxby_advanced()
 
     # test fill with scalar of all elements of the NDArray
     x[:, :] = 4.23
-
-    if (x != fill(4.23, dims))
-        return TEST_FAIL
-    end
-
+    
+    @test x == fill(4.23, dims)
+     
     # create two random arrays
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
@@ -64,13 +60,8 @@ function daxby_advanced()
     result = α * x + y
 
     # check results 
-    if result == (α * x_cpu + y_cpu)
-        # switch LHS and RHS to check different overloading
-        if (α * x_cpu + y_cpu) == result
-            # successful completion
-            return TEST_PASS
-        end
-    end
+    @test result == (α * x_cpu + y_cpu)
+    @test (α * x_cpu + y_cpu) == result
 
-    return TEST_FAIL
+    nothing
 end
