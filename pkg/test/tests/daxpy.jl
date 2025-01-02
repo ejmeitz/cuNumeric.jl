@@ -24,7 +24,7 @@
     --          shows both [i, j] and [(i, j)] working
     -- NDArray addition and multiplication
 =#
-function daxby_basic()
+function daxpy_basic()
     N = 100
     dims = (N, N)
 

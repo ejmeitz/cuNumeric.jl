@@ -36,5 +36,5 @@ if [ -z "$CUNUMERIC_JL_HOME" ]; then
 fi
 
 # newer build
-CMAKE_PREFIX_PATH=$CONDA_PREFIX cmake -S $CUNUMERIC_JL_HOME -B $CUNUMERIC_JL_HOME/build -D CMAKE_BUILD_TYPE=Debug
+CMAKE_PREFIX_PATH=$CONDA_PREFIX cmake -S $CUNUMERIC_JL_HOME -B $CUNUMERIC_JL_HOME/build # -D CMAKE_BUILD_TYPE=Debug
 cmake --build $CUNUMERIC_JL_HOME/build --parallel 8 --verbose
