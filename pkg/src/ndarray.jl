@@ -33,22 +33,11 @@ const type_map = Dict{Type, Symbol}(
     Float16 => :float16, 
     Float32 => :float32, 
     Float64 => :float64,
-    ComplexF16 => :complex32,  #COMMENTED OUT IN WRAPPER
+    # ComplexF16 => :complex32,  #COMMENTED OUT IN WRAPPER
     ComplexF32 => :complex64, 
     ComplexF64 => :complex128
 )
 
-
-# struct ArrayDesc{N,T}
-#     dims::StdVector{UInt64}
-#     type::StdOptional
-# end
-
-# function ArrayDesc(dims::NTuple{N, Integer}, type::Type = Float64) where N
-#     opt = StdOptional{LegateType}(eval(type_map[type])())
-#     # arr = NDArray(dims, opt)
-#     return ArrayDesc{N, type}(StdVector(UInt64.([d for d in dims])), opt);
-# end
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
