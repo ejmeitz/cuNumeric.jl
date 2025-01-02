@@ -68,6 +68,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using int_types = ParameterList<int8_t, int16_t, int32_t, int64_t>;
   using uint_types = ParameterList<uint8_t, uint16_t, uint32_t, uint64_t>;
   using allowed_dims = ParameterList<std::integral_constant<int, 1>, std::integral_constant<int, 2>, std::integral_constant<int, 3>>;
+  // using privilege_modes = ParameterList<LEGION_WRITE_DISCARD, LEGION_READ_ONLY>;
 
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // in legate/runtime.h
@@ -131,6 +132,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*);
 
+  // Wrap FieldAccessor so we can create the more species RO and WO accessors
+  // mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>("FieldAccessor")
+  //   .apply_combination<ApplyFieldAccessor, privilege_modes, fp_types, allowed_dims>(WrapFieldAccessor());
+
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
@@ -141,11 +146,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
   
   
-  auto get_accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorRO");
-  get_accessor_base_RO.apply_combination<ApplyGetAccessorRO, fp_types, allowed_dims>(WrapGetAccessorRO());
+  // auto get_accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorRO");
+  // get_accessor_base_RO.apply_combination<ApplyGetAccessorRO, fp_types, allowed_dims>(WrapGetAccessorRO());
 
-  auto get_accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorWO");
-  get_accessor_base_RO.apply_combination<ApplyGetAccessorWO, fp_types, allowed_dims>(WrapGetAccessorWO());
+  // auto get_accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorWO");
+  // get_accessor_base_RO.apply_combination<ApplyGetAccessorWO, fp_types, allowed_dims>(WrapGetAccessorWO());
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);

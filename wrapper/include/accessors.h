@@ -40,6 +40,13 @@ struct ExposedAccessorWO{
 };
 
 namespace jlcxx {
+
+// template <Legion::PrivilegeMode PM, typename FT, int N>
+// struct BuildParameterList<Legion::FieldAccessor<PM, FT, N, T, Realm::AffineAccessor<FT, N, T>>
+// {
+//   using type = ParameterList<FT, std::integral_constant<int_t, N>>;
+// };
+
 template<typename T, int n_dims>
 struct BuildParameterList<ExposedAccessorRO<T, n_dims>>
 {
@@ -52,6 +59,12 @@ struct BuildParameterList<ExposedAccessorWO<T, n_dims>>
   using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
 };
 }
+
+// struct ApplyFieldAccessor
+// {
+//   template<Legion::PrivilegeMode PM, typename T, typename N>
+//   using apply = Legion::FieldAccessor<PM, FT, N::value, T, Realm::AffineAccessor<FT, N::value, T>>
+// };
 
 struct ApplyAccessorRO
 {
@@ -66,7 +79,19 @@ struct ApplyAccessorWO
 };
 
 
+// struct WrapFieldAccessor{
+//   template <typename TypeWrapperT>
+//   void operator()(TypeWrapperT&& wrapped) {}
+// };
+
+template<typename T, int32_t DIM>
+legate::AccessorRO<T, DIM> _get_read_accessor(cupynumeric::NDArray& arr){
+  return arr.get_read_accessor<T, DIM>();
+}
+
 struct WrapAccessorRO {
+
+  
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
 
@@ -88,8 +113,15 @@ struct WrapAccessorRO {
         return acc.read(p);
     });
 
+    // this lets us wrap the tempalted getters with the same types
+    wrapped.module().method("get_read_accessor", &_get_read_accessor<VT, n_dims>);
   }
 };
+
+template<typename T, int32_t DIM>
+legate::AccessorWO<T, DIM> _get_write_accessor(cupynumeric::NDArray& arr){
+  return arr.get_write_accessor<T, DIM>();
+}
 
 struct WrapAccessorWO {
   template <typename TypeWrapperT>
@@ -100,7 +132,7 @@ struct WrapAccessorWO {
     using VT = typename WrappedT::ValueType;
     constexpr int n_dims = WrappedT::get_n_dims();
 
-    //free method
+    //free methods
     wrapped.module().method("write", [n_dims](const LegateAccessorT& acc, const std::vector<uint64_t>& dims, VT val)
     {
         // feels suboptimal
@@ -112,87 +144,8 @@ struct WrapAccessorWO {
         return acc.write(p, val);
     });
 
+    // this lets us wrap the tempalted getters with the same types
+    wrapped.module().method("get_write_accessor", &_get_write_accessor<VT, n_dims>);
 
-  }
-};
-
-
-////////////////////////////
-////////////////////////////
-
-template<typename T, int n_dims>
-struct GetReadAccessor
-{
-  using ValueType = T;
-  
-  legate::AccessorRO<ValueType, n_dims> get_read_accessor(cupynumeric::NDArray& arr){
-    return arr.get_read_accessor();
-  }
-
-  static constexpr int_t get_n_dims() {
-    return n_dims;
-  }
-};
-
-template<typename T, int n_dims>
-struct GetWriteAccessor
-{
-  using ValueType = T;
-
-  legate::AccessorWO<ValueType, n_dims> get_write_accessor(cupynumeric::NDArray& arr){
-    return arr.get_write_accessor();
-  }
-
-  static constexpr int_t get_n_dims() {
-    return n_dims;
-  }
-};
-
-namespace jlcxx {
-template<typename T, int n_dims>
-struct BuildParameterList<GetReadAccessor<T, n_dims>>
-{
-  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
-};
-
-template<typename T, int n_dims>
-struct BuildParameterList<GetWriteAccessor<T, n_dims>>
-{
-  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
-};
-}
-
-struct ApplyGetAccessorRO
-{
-  template<typename T, typename n_dims>
-  using apply = GetReadAccessor<T, n_dims::value>;
-};
-
-struct ApplyGetAccessorWO
-{
-  template<typename T, typename n_dims>
-  using apply = GetWriteAccessor<T, n_dims::value>;
-};
-
-
-struct WrapGetAccessorRO{
-  template <typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped) {
-    using WrappedT = typename TypeWrapperT::type;
-    using VT = typename WrappedT::ValueType;
-    constexpr int n_dims = WrappedT::get_n_dims(); 
-
-    wrapped.method("get_read_accessor", &WrappedT::get_read_accessor<VT, n_dims>);
-  }
-};
-
-struct WrapGetAccessorWO{
-  template <typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped) {
-    using WrappedT = typename TypeWrapperT::type;
-    using VT = typename WrappedT::ValueType;
-    constexpr int n_dims = WrappedT::get_n_dims(); 
-
-    wrapped.method("get_write_accessor", &WrappedT::get_write_accessor<VT, n_dims>);
   }
 };
