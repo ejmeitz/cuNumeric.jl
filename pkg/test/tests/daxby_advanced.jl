@@ -22,7 +22,8 @@
     -- add overloading support for [double/float scalar] * NDArray
     -- equavalence operator between a cuNumeric and Julia array without looping
     --          result == (α_cpu * x_cpu + y_cpu)
-    --          (α_cpu * x_cpu + y_cpu) == result
+    --          (α_cpu * x_cpu + y_cpu) == 
+    -- NDArray copy method allocates a new NDArray and copies all elements
     -- x[:, :] colon notation for reading entire NDArray to a Julia array
     -- x[:, :] colon notation for filling entire NDArray with scalar
 =#
@@ -52,10 +53,21 @@ function daxpy_advanced()
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
 
+    # create a reference of NDArray
+    x_ref = x
+    y_ref = y
+    @test x_ref == x
+    @test y_ref == y
+
+    # create a copy of NDArray
+    x_copy = copy(x)
+    y_copy = copy(y)
+    @test x_copy == x
+    @test y_copy == y
+
     # set all the elements of each NDArray to the CPU array equivalent
     x_cpu = x[:, :]
     y_cpu = y[:, :]
-
 
     result = α * x + y
 
