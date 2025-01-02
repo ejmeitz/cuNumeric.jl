@@ -21,16 +21,15 @@ using Test
 using cuNumeric
 
 
-include("tests/daxby.jl")
-include("tests/daxby_advanced.jl")
+include("tests/daxpy.jl")
+include("tests/daxpy_advanced.jl")
 
 
 @testset "This is checking 1 == 1" begin
     @test 1 == 1
 end
 
-@testset verbose = true "daxby Tests" begin
-    # include("tests/daxby.jl")
-    @testset daxby_basic()
+@testset verbose = true "daxpy Tests" begin
+    @testset daxpy_basic()
     @testset daxpy_advanced()
 end

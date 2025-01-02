@@ -17,8 +17,7 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-#= Purpose of test: daxby_advanced
-    -- Test arbitrary types and dimensions (not done)
+#= Purpose of test: daxpy_advanced
     -- add overloading support for [double/float scalar] * NDArray
     -- equavalence operator between a cuNumeric and Julia array without looping
     --          result == (α_cpu * x_cpu + y_cpu)

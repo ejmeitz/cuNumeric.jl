@@ -17,7 +17,7 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-#= Purpose of test: daxby
+#= Purpose of test: daxpy
     -- Focused on double 2 dimenional. Does not test other types or dims. 
     -- NDArray intialization 
     -- NDArray writing and reading scalar indexing

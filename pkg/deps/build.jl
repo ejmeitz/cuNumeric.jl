@@ -38,7 +38,6 @@ end
 
 @info ENV["CUNUMERIC_JL_HOME"]
 
-#=
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 legion_patch = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/patch_legion.sh")
@@ -50,7 +49,6 @@ run(`bash $legion_patch`)
 build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
 @info "Running libcxxwrap build script: $build_libcxxwrap"
 run(`bash $build_libcxxwrap`)
-=#
 
 # create libcupynumericwrapper.so in CUNUMERIC_JL_HOME/build
 build_cupynumeric_wrapper = joinpath(ENV["CUNUMERIC_JL_HOME"], "build.sh")
