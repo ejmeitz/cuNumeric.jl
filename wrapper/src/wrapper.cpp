@@ -19,12 +19,11 @@
 
 #include <type_traits>
 
+#include "accessors.h"
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
 #include "legate.h"
 #include "legion.h"
-
-#include "accessors.h"
 #include "types.h"
 
 struct WrapCppOptional {
@@ -47,15 +46,15 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
   acc.write(p, val);
 }
 
-//this feels like a lot to just wrap Legion::Point....
-// struct WrapPoint
-// {
-//   template<typename TypeWrapperT>
-//   void operator()(TypeWrapperT&& wrapped)
-//   {
-//     typedef typename TypeWrapperT::type WrappedT;
-//   }
-// };
+// this feels like a lot to just wrap Legion::Point....
+//  struct WrapPoint
+//  {
+//    template<typename TypeWrapperT>
+//    void operator()(TypeWrapperT&& wrapped)
+//    {
+//      typedef typename TypeWrapperT::type WrappedT;
+//    }
+//  };
 
 // template<int n_dims, typename T>
 // struct BuildParameterList<Legion::Point<n_dims, T>>
@@ -65,13 +64,13 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
 
 // struct ApplyPoint
 // {
-//   template<typename n_dims, typename T> using apply = Legion::Point<n_dims::value, T>;
+//   template<typename n_dims, typename T> using apply =
+//   Legion::Point<n_dims::value, T>;
 // };
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
-
-  using jlcxx::Parametric;
   using jlcxx::ParameterList;
+  using jlcxx::Parametric;
   using jlcxx::TypeVar;
 
   // These are the types/dims used to generate templated functions
@@ -79,7 +78,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using fp_types = ParameterList<double, float>;
   using int_types = ParameterList<int8_t, int16_t, int32_t, int64_t>;
   using uint_types = ParameterList<uint8_t, uint16_t, uint32_t, uint64_t>;
-  using allowed_dims = ParameterList<std::integral_constant<int, 1>, std::integral_constant<int, 2>, std::integral_constant<int, 3>>;
+  using allowed_dims = ParameterList<std::integral_constant<int, 1>,
+                                     std::integral_constant<int, 2>,
+                                     std::integral_constant<int, 3>>;
 
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // no idea where this is
@@ -108,20 +109,25 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   // MAKE THIS USE `allowed_dims` instead of hard coded
   // mod.add_type<Parametric<TypeVar<1>>>("Point")
-  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto wrapped){
+  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto
+  //   wrapped){
 
   //   });
 
   // mod.method("make_point", &Realm::make_point);
 
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
-//   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-//   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
-//   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
+  //   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+  //   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorRO", parent_type_RO);
+  //   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types,
+  //   allowed_dims>(WrapAccessorRO());
 
-//   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-//   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
-//   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
+  //   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+  //   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorWO", parent_type_WO);
+  //   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types,
+  //   allowed_dims>(WrapAccessorWO());
 
   mod.method("read_double_2d", &read_double_2d);
   mod.method("write_double_2d", &write_double_2d);

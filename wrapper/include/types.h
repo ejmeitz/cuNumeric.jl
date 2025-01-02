@@ -16,13 +16,13 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
- 
-#include "jlcxx/jlcxx.hpp"
-#include "legion.h"
-#include "legate.h"
 
-//Wraps the enums which define how legate
-// and cupynumeric types map to legion types
+#include "jlcxx/jlcxx.hpp"
+#include "legate.h"
+#include "legion.h"
+
+// Wraps the enums which define how legate
+//  and cupynumeric types map to legion types
 void wrap_type_enums(jlcxx::Module& mod);
 
 // Wraps the legate functions which return the
