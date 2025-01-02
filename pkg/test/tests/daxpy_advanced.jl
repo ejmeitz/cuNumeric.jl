@@ -43,6 +43,11 @@ function daxpy_advanced()
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
 
+    @test x_cpu == x
+    @test y_cpu == y
+    @test x == x_cpu # LHS and RHS are switched
+    @test y == y_cpu
+
     # test fill with scalar of all elements of the NDArray
     x[:, :] = 4.23
     
@@ -72,7 +77,7 @@ function daxpy_advanced()
 
     # check results 
     @test result == (α * x_cpu + y_cpu)
-    @test (α * x_cpu + y_cpu) == result
+    @test (α * x_cpu + y_cpu) == result # LHS and RHS switched
 
     nothing
 end
