@@ -45,6 +45,9 @@ function daxpy_advanced()
     # cunumeric arrays
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
+    
+    @test cuNumeric.dim(x) == 2
+    @test cuNumeric.dim(y) == 2
 
     @test x_cpu == x
     @test y_cpu == y

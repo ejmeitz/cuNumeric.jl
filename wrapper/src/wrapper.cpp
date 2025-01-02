@@ -46,14 +46,13 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
   acc.write(p, val);
 }
 
-double read_double_1d(legate::AccessorRO<double, 1> acc,
-                      uint64_t e) {
+double read_double_1d(legate::AccessorRO<double, 1> acc, uint64_t e) {
   Legion::Point<1> p = e;
   return acc.read(p);
 }
 
-void write_double_1d(legate::AccessorWO<double, 1> acc,
-                     uint64_t e, double val) {
+void write_double_1d(legate::AccessorWO<double, 1> acc, uint64_t e,
+                     double val) {
   Legion::Point<1> p = e;
   acc.write(p, val);
 }
@@ -119,7 +118,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
-  
   mod.add_type<legate::AccessorRO<double, 1>>("AccessorRO_double_1d");
   mod.add_type<legate::AccessorRO<float, 1>>("AccessorRO_float_1d");
 
@@ -164,9 +162,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("assign",
               (void(cupynumeric::NDArray::*)(const cupynumeric::NDArray&)) &
                   cupynumeric::NDArray::assign)
-      .method("_reshape",
-              (cupynumeric::NDArray(cupynumeric::NDArray::*)(std::vector<int64_t>)) &
-                  cupynumeric::NDArray::reshape)
+      .method("_reshape", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              std::vector<int64_t>)) &
+                              cupynumeric::NDArray::reshape)
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
