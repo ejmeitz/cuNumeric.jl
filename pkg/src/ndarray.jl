@@ -143,8 +143,8 @@ function Base.:(==)(arr1::NDArray, arr2::NDArray)
     arr1_dims = shape(arr1)
     arr2_dims = shape(arr2)
 
-    if (arr1_dims != arr2_dims)
-        printstyled("WARNING: left NDArray is $(arr1_dims) and right NDArray array is $(arr2_dims)!\n", color=:yellow, bold=true)
+    if (size(arr1) != size(arr2))
+        printstyled("WARNING: left NDArray is $(arr1_dims[1]) by $(arr1_dims[2]) and right NDArray array is $(arr2_dims[1]) by $(arr2_dims[2])!\n", color=:yellow, bold=true)
         return false
     end
     

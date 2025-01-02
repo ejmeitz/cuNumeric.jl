@@ -23,6 +23,7 @@
     --          result == (α_cpu * x_cpu + y_cpu)
     --          (α_cpu * x_cpu + y_cpu) == 
     -- NDArray copy method allocates a new NDArray and copies all elements
+    -- NDArray assign method assigns the contents from one NDArray to another NDArray
     -- x[:, :] colon notation for reading entire NDArray to a Julia array
     -- x[:, :] colon notation for filling entire NDArray with scalar
 =#
@@ -68,6 +69,20 @@ function daxpy_advanced()
     y_copy = copy(y)
     @test x_copy == x
     @test y_copy == y
+
+    # assign elements to a new array
+    x_assign = cuNumeric.zeros(dims)
+    y_assign = cuNumeric.zeros(dims)
+    cuNumeric.assign(x_assign, x)
+    cuNumeric.assign(y_assign, y)
+    # lets check that it didn't assign with zeros
+    # this is a check ensuring we didn't mess up the argument order
+    @test x_assign != cuNumeric.zeros(dims)
+    @test y_assign != cuNumeric.zeros(dims)
+    # check the assigned values
+    @test x_assign == x
+    @test y_assign == y
+
 
     # set all the elements of each NDArray to the CPU array equivalent
     x_cpu = x[:, :]

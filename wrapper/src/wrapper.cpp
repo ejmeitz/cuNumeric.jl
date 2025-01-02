@@ -141,6 +141,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
       .method("copy", &cupynumeric::NDArray::copy)
+      .method("assign", (void (cupynumeric::NDArray::*)(const cupynumeric::NDArray&)) &cupynumeric::NDArray::assign)
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
