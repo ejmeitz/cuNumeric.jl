@@ -75,11 +75,31 @@ function get_initial_legate_settings()
     default = getfield(settings, opt)
     setfield!(settings, opt, @load_preference(opt, default))
   end
+  println(settings)
   return make_cmd(settings)
 end
 
-#TODO
-Base.show(io::IO, ls::LegateSettings) = print("THESE ARE THE LEGATE SETTINGS, NOT IMPLEMENTED")
+function Base.show(io::IO, ls::LegateSettings)
+  if ls.nodes > 0 && ls.launcher != not_passed
+    println("$(ls.nodes) nodes with $(String(Symbol(ls.launcher)))")
+  end
+
+  if ls.cpus > 0
+    println("CPUs: $(ls.cpus)")
+  end
+
+  if ls.gpus > 0
+    println("GPUs: $(ls.gpus)")
+  end
+
+  if ls.omps > 0
+    println("OMPs: $(ls.omps)")
+  end
+
+  if ls.ompthreads > 0
+    println("OMP Threads: $(ls.ompthreads)")
+  end
+end
 
 function legate_capabilities()
   #output from legate --info
