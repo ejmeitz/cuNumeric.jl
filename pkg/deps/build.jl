@@ -18,8 +18,8 @@
 =#
 
 # deps/build.jl
-using Pkg;
-using Libdl;
+using Pkg
+using Libdl
 
 env_file = abspath(joinpath(@__DIR__, "../../ENV"))
 @info "Sourcing environment file: $env_file"
@@ -29,8 +29,12 @@ if isfile(env_file)
     @info "Setting environment variables from $env_file"
     run(`bash -c "source $env_file && env > env.log"`)
     for line in readlines("env.log")
-        key, value = split(line, "=", limit=2)
-        ENV[key] = value
+        try
+            key, value = split(line, "=", limit=2)
+            ENV[key] = value
+        catch 
+            @error "Error parsing env.log line: $(line)"
+        end
     end
 else
     @error "Environment file not found: $env_file"
