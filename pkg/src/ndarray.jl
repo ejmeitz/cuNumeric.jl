@@ -106,10 +106,13 @@ function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Int64, 
 end
 
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
-    # TODO fix temp hardcoded solution
-    nrows = 100
-    ncols = 100
-    
+    # TODO this only works on 2D arrays
+    # Flatten array NDAray.flat() ?
+    # Maybe use Legion PointInRect iterator ?
+
+    arr_dims = shape(arr)
+    nrows = Int64(arr_dims[1])
+    ncols = Int64(arr_dims[2])
 
     julia_array = Base.zeros((nrows, ncols))
     for i in 1:nrows
@@ -120,15 +123,51 @@ function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
     return julia_array
 end
 
-
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, rows::Colon, cols::Colon)
+# arr[:] = value
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c::Colon)
     fill(arr, LegateScalar(value))
 end
 
+# arr[:, :] = value
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c1::Colon, c2::Colon)
+    fill(arr, LegateScalar(value))
+end
 
+# arr1 == arr2
+function Base.:(==)(arr1::NDArray, arr2::NDArray)
+    # TODO this only works on 2D arrays
+    # should we use a lazy hashing approach? 
+    # something like this? would this be better than looping thru the elements?
+    # hash(arr1.data) == hash(arr2.data)
+
+    arr1_dims = shape(arr1)
+    arr2_dims = shape(arr2)
+
+    if (size(arr1) != size(arr2))
+        printstyled("WARNING: left NDArray is $(arr1_dims[1]) by $(arr1_dims[2]) and right NDArray array is $(arr2_dims[1]) by $(arr2_dims[2])!\n", color=:yellow, bold=true)
+        return false
+    end
+    
+    nrows = Int64(arr1_dims[1])
+    ncols = Int64(arr1_dims[2])
+
+    for i in 1:nrows
+        for j in 1:ncols
+            if arr1[i, j] != arr2[i, j]
+                # not equal
+                return false
+            end
+        end
+    end
+
+    # successful completion
+    return true
+end
+
+# arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Matrix)
     if (cuNumeric.size(arr) != prod(Base.size(julia_array)))
-        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(Base.size(julia_array))!\n", color=:yellow, bold=true)
+        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(prod(Base.size(julia_array)))!\n", color=:yellow, bold=true)
         return false
     end
     
@@ -146,7 +185,7 @@ function Base.:(==)(arr::NDArray, julia_array::Matrix)
 end
 
 
-
+# julia_array == arr
 function Base.:(==)(julia_array::Matrix, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)

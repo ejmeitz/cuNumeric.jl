@@ -17,26 +17,25 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-#= Purpose of test: daxby_advanced
-    -- Test arbitrary types and dimensions (not done)
+#= Purpose of test: daxpy_advanced
     -- add overloading support for [double/float scalar] * NDArray
     -- equavalence operator between a cuNumeric and Julia array without looping
     --          result == (α_cpu * x_cpu + y_cpu)
-    --          (α_cpu * x_cpu + y_cpu) == result
+    --          (α_cpu * x_cpu + y_cpu) == 
+    -- NDArray copy method allocates a new NDArray and copies all elements
+    -- NDArray assign method assigns the contents from one NDArray to another NDArray
     -- x[:, :] colon notation for reading entire NDArray to a Julia array
     -- x[:, :] colon notation for filling entire NDArray with scalar
 =#
-global TEST_PASS = true
-global TEST_FAIL = false
 
-function daxby_advanced()
+function daxpy_advanced()
     seed = 10
 
     N = 100
     dims = (N, N)
 
     α = 56.6
-    
+
     # base Julia arrays
     x_cpu = zeros(dims);
     y_cpu = zeros(dims);
@@ -45,32 +44,55 @@ function daxby_advanced()
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
 
+    @test x_cpu == x
+    @test y_cpu == y
+    @test x == x_cpu # LHS and RHS are switched
+    @test y == y_cpu
+
     # test fill with scalar of all elements of the NDArray
     x[:, :] = 4.23
-
-    if (x != fill(4.23, dims))
-        return TEST_FAIL
-    end
-
+    
+    @test x == fill(4.23, dims)
+     
     # create two random arrays
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
+
+    # create a reference of NDArray
+    x_ref = x
+    y_ref = y
+    @test x_ref == x
+    @test y_ref == y
+
+    # create a copy of NDArray
+    x_copy = copy(x)
+    y_copy = copy(y)
+    @test x_copy == x
+    @test y_copy == y
+
+    # assign elements to a new array
+    x_assign = cuNumeric.zeros(dims)
+    y_assign = cuNumeric.zeros(dims)
+    cuNumeric.assign(x_assign, x)
+    cuNumeric.assign(y_assign, y)
+    # lets check that it didn't assign with zeros
+    # this is a check ensuring we didn't mess up the argument order
+    @test x_assign != cuNumeric.zeros(dims)
+    @test y_assign != cuNumeric.zeros(dims)
+    # check the assigned values
+    @test x_assign == x
+    @test y_assign == y
+
 
     # set all the elements of each NDArray to the CPU array equivalent
     x_cpu = x[:, :]
     y_cpu = y[:, :]
 
-
     result = α * x + y
 
     # check results 
-    if result == (α * x_cpu + y_cpu)
-        # switch LHS and RHS to check different overloading
-        if (α * x_cpu + y_cpu) == result
-            # successful completion
-            return TEST_PASS
-        end
-    end
+    @test result == (α * x_cpu + y_cpu)
+    @test (α * x_cpu + y_cpu) == result # LHS and RHS switched
 
-    return TEST_FAIL
+    nothing
 end
