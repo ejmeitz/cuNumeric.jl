@@ -145,13 +145,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
   
-  
-  // auto get_accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorRO");
-  // get_accessor_base_RO.apply_combination<ApplyGetAccessorRO, fp_types, allowed_dims>(WrapGetAccessorRO());
-
-  // auto get_accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("GetAccessorWO");
-  // get_accessor_base_RO.apply_combination<ApplyGetAccessorWO, fp_types, allowed_dims>(WrapGetAccessorWO());
-
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
 
