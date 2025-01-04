@@ -42,7 +42,6 @@ function __init__()
     if @has_preference("use_local_prefs")
       @info "Found LocalPrferences.toml"
       init_settings = get_initial_legate_settings()
-      println(init_settings)
       global ARGV = ArgcArgv([Base.julia_cmd()[1], init_settings...])
     else
       @info "No LocalPreferences.toml using command line arguments, if any"
