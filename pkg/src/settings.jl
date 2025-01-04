@@ -75,7 +75,7 @@ function get_initial_legate_settings()
     default = getfield(settings, opt)
     setfield!(settings, opt, @load_preference(opt, default))
   end
-  return make_cmd(defaults)
+  return make_cmd(settings)
 end
 
 #TODO
