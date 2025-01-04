@@ -73,7 +73,12 @@ function get_initial_legate_settings()
 
   for opt in keys(settings)
     default = getfield(settings, opt)
-    setfield!(settings, opt, @load_preference(opt, default))
+    if opt == :launcher
+      pref_symbol = Symbol(@load_preference(String(opt), default))
+      setfield!(settings, opt, eval(pref_symbol))
+    else
+      setfield!(settings, opt, @load_preference(String(opt), default))
+    end
   end
   println(settings)
   return make_cmd(settings)
