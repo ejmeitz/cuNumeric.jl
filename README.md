@@ -29,7 +29,7 @@ git submodule update
 
 #### install with Julia pkg manager
 ```julia
-    pkg>  activate .
+    pkg>  activate ./pkg
     pkg>  build
 ```
 
