@@ -4,3 +4,5 @@
 #     cpus
 #     gpus
 # end
+struct TestASD
+end
