@@ -49,7 +49,6 @@ function __init__()
       global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
     end
     
-    println(ARGV)
     
     res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
     if res == 0

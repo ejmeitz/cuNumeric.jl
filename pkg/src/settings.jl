@@ -34,33 +34,35 @@ Base.@kwdef mutable struct LegateSettings
   # do that until someone asks for that feature
 end
 
+Base.keys(::LegateSettings) = String.(fieldnames(LegateSettings))
+
 # Returns as list of strings (how argv expects minus prog name)
 function make_cmd(ls::LegateSettings)
   cmd = ""
 
-  if nodes > 0 && launcher != not_passed
+  if ls.nodes > 0 && ls.launcher != not_passed
     cmd *= "--nodes $(ls.nodes) --launcher $(String(Symbol(ls.launcher)))"
-  elseif nodes > 0 && launcher == not_passed
-    throw("Asked for $(nodes) nodes but did not pass a launcher.")
+  elseif ls.nodes > 0 && ls.launcher == not_passed
+    throw("Asked for $(ls.nodes) nodes but did not pass a launcher.")
   end
 
-  if cpus > 0
+  if ls.cpus > 0
     cmd *= "--cpus $(ls.cpus)"
   end
 
-  if gpus > 0
+  if ls.gpus > 0
     cmd *= "--gpus $(ls.gpus)"
   end
 
-  if omps > 0
+  if ls.omps > 0
     cmd *= "--omps $(ls.omps)"
   end
 
-  if ompthreads > 0
+  if ls.ompthreads > 0
     cmd *= "--ompthreads $(ls.ompthreads)"
   end
 
-  return cmd.split()
+  return split(cmd)
 end
 
 # Parse from LocalPreferences.toml if it exists
@@ -69,7 +71,7 @@ end
 function get_initial_legate_settings()
   defaults = LegateSettings()
 
-  for opt in keys(legate_default_options)
+  for opt in keys(defaults)
     if @has_preference(opt)
 
     end
