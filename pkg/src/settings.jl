@@ -34,7 +34,7 @@ Base.@kwdef mutable struct LegateSettings
   # do that until someone asks for that feature
 end
 
-Base.keys(::LegateSettings) = String.(fieldnames(LegateSettings))
+Base.keys(::LegateSettings) = fieldnames(LegateSettings)
 
 # Returns as list of strings (how argv expects minus prog name)
 function make_cmd(ls::LegateSettings)
@@ -69,12 +69,11 @@ end
 # These are the settings used inside __init__ 
 # to start legate the first time
 function get_initial_legate_settings()
-  defaults = LegateSettings()
+  settings = LegateSettings()
 
-  for opt in keys(defaults)
-    if @has_preference(opt)
-
-    end
+  for opt in keys(settings)
+    default = getfield(settings, opt)
+    setfield!(settings, opt, @load_preference(opt, default))
   end
   return make_cmd(defaults)
 end
