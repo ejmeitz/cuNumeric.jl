@@ -41,28 +41,28 @@ function make_cmd(ls::LegateSettings)
   cmd = ""
 
   if ls.nodes > 0 && ls.launcher != not_passed
-    cmd *= "--nodes $(ls.nodes) --launcher $(String(Symbol(ls.launcher)))"
+    cmd *= "--nodes $(ls.nodes) --launcher $(String(Symbol(ls.launcher))) "
   elseif ls.nodes > 0 && ls.launcher == not_passed
     throw("Asked for $(ls.nodes) nodes but did not pass a launcher.")
   end
 
   if ls.cpus > 0
-    cmd *= "--cpus $(ls.cpus)"
+    cmd *= "--cpus $(ls.cpus) "
   end
 
   if ls.gpus > 0
-    cmd *= "--gpus $(ls.gpus)"
+    cmd *= "--gpus $(ls.gpus) "
   end
 
   if ls.omps > 0
-    cmd *= "--omps $(ls.omps)"
+    cmd *= "--omps $(ls.omps) "
   end
 
   if ls.ompthreads > 0
-    cmd *= "--ompthreads $(ls.ompthreads)"
+    cmd *= "--ompthreads $(ls.ompthreads) "
   end
 
-  return split(cmd)
+  return String.(split(cmd[1:end-1]))
 end
 
 # Parse from LocalPreferences.toml if it exists
