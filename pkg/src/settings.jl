@@ -80,7 +80,6 @@ function get_initial_legate_settings()
       setfield!(settings, opt, @load_preference(String(opt), default))
     end
   end
-  println(settings)
   return make_cmd(settings)
 end
 
@@ -102,7 +101,7 @@ function Base.show(io::IO, ls::LegateSettings)
   end
 
   if ls.ompthreads > 0
-    println("OMP Threads: $(ls.ompthreads)")
+    print("OMP Threads: $(ls.ompthreads)")
   end
 end
 
