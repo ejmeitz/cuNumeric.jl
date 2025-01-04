@@ -19,6 +19,7 @@
 
 #include <type_traits>
 #include <string> //needed for return type of toString methods
+#include <iostream>
 
 #include "jlcxx/jlcxx.hpp"
 #include "cupynumeric.h"
@@ -50,9 +51,10 @@ struct WrapCppOptional {
 // }
 
 // WHY THIS NOT WORK????? no symbol for to_string???
-std::string get_machine_info(){
+void get_machine_info(){
   auto runtime = legate::Runtime::get_runtime();
-  return runtime->get_machine().to_string();
+  std::string s = runtime->get_machine().to_string();
+  std::cout << s << std::endl;
 }
 
 
@@ -75,15 +77,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.method("initialize_cunumeric", &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
   mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
 
-  mod.add_type<legate::Runtime>("LegateRuntime");
+  // mod.add_type<legate::Runtime>("LegateRuntime");
+  // mod.add_type<legate::mapping::Machine>("Machine");
+    // .method("to_string", &legate::mapping::Machine::to_string);
 
   //// WHY THIS NOT WORK?????
   mod.method("get_machine_info", &get_machine_info);
   
-  //This builds but doesnt work in JULIA?????
-//   mod.add_type<legate::mapping::Machine>("Machine")
-//         .method("to_string", &legate::mapping::Machine::to_string);
-
   wrap_type_enums(mod);
   mod.add_type<legate::Type>("LegateType");
   wrap_type_getters(mod);
@@ -137,13 +137,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //   .apply_combination<ApplyFieldAccessor, privilege_modes, fp_types, allowed_dims>(WrapFieldAccessor());
 
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
-  auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-  auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
-  accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
+  // auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+  // auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
+  // accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
 
-  auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-  auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
-  accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
+  // auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+  // auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
+  // accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
   
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);

@@ -1,6 +1,6 @@
 
 
-struct MachineInfo
-    cpus
-    gpus
-end
+# struct MachineInfo
+#     cpus
+#     gpus
+# end
