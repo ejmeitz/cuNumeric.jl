@@ -24,8 +24,10 @@
     --          (α_cpu * x_cpu + y_cpu) == 
     -- NDArray copy method allocates a new NDArray and copies all elements
     -- NDArray assign method assigns the contents from one NDArray to another NDArray
-    -- x[:, :] colon notation for reading entire NDArray to a Julia array
-    -- x[:, :] colon notation for filling entire NDArray with scalar
+    -- x[:] colon notation for reading entire 1D NDArray to a Julia array 
+    -- x[:, :] colon notation for reading entire 2D NDArray to a Julia array
+    -- x[:, :] colon notation for filling entire 2D NDArray with scalar
+    -- reshape method. we test a reshape from NxN to N*N
 =#
 
 function daxpy_advanced()
@@ -43,6 +45,9 @@ function daxpy_advanced()
     # cunumeric arrays
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
+    
+    @test cuNumeric.dim(x) == 2
+    @test cuNumeric.dim(y) == 2
 
     @test x_cpu == x
     @test y_cpu == y
@@ -84,9 +89,24 @@ function daxpy_advanced()
     @test y_assign == y
 
 
-    # set all the elements of each NDArray to the CPU array equivalent
+    # set all the elements of each NDArray to the CPU 2D array equivalent
     x_cpu = x[:, :]
     y_cpu = y[:, :]
+    @test x_cpu == x
+    @test y_cpu == y
+
+    # reshape a 2D array into 1D
+    x_1d = cuNumeric.reshape(x, N * N)
+    y_1d = cuNumeric.reshape(y, N * N)
+    @test cuNumeric.dim(x_1d) == 1
+    @test cuNumeric.dim(y_1d) == 1
+
+    # set all the elements of each NDArray to the CPU 1D array equivalent
+    x_cpu_1D = x_1d[:]
+    y_cpu_1D = y_1d[:]
+    @test x_cpu_1D == x_1d
+    @test y_cpu_1D == y_1d
+
 
     result = α * x + y
 
