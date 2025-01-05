@@ -1,4 +1,4 @@
-#= Copyright 2025 Northwestern University, 
+/* Copyright 2025 Northwestern University,
  *                   Carnegie Mellon University University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,21 +15,16 @@
  *
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
-=#
+ */
 
-using Test
-using cuNumeric
+#include "jlcxx/jlcxx.hpp"
+#include "legate.h"
+#include "legion.h"
 
+// Wraps the enums which define how legate
+//  and cupynumeric types map to legion types
+void wrap_type_enums(jlcxx::Module& mod);
 
-include("tests/daxpy.jl")
-include("tests/daxpy_advanced.jl")
-
-
-@testset "This is checking 1 == 1" begin
-    @test 1 == 1
-end
-
-@testset verbose = true "daxpy Tests" begin
-    @testset daxpy_basic()
-    @testset daxpy_advanced()
-end
+// Wraps the legate functions which return the
+// specified legate::Type. (e.g. legate::int8())
+void wrap_type_getters(jlcxx::Module& mod);

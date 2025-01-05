@@ -18,8 +18,8 @@
 =#
 
 # deps/build.jl
-using Pkg;
-using Libdl;
+using Pkg
+using Libdl
 
 env_file = abspath(joinpath(@__DIR__, "../../ENV"))
 @info "Sourcing environment file: $env_file"
@@ -27,17 +27,26 @@ env_file = abspath(joinpath(@__DIR__, "../../ENV"))
 # env script
 if isfile(env_file)
     @info "Setting environment variables from $env_file"
-    run(`source $env_file && env`)
+    run(`bash -c "source $env_file && env > env.log"`)
+    for line in readlines("env.log")
+        try
+            key, value = split(line, "=", limit=2)
+            ENV[key] = value
+        catch 
+            @error "Error parsing env.log line: $(line)"
+        end
+    end
 else
     @error "Environment file not found: $env_file"
 end
+
+@info ENV["CUNUMERIC_JL_HOME"]
 
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 legion_patch = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/patch_legion.sh")
 @info "Running legion patch script: $legion_patch"
 run(`bash $legion_patch`)
-
 
 # build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
 build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")

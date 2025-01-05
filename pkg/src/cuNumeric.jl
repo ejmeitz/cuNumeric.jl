@@ -16,6 +16,7 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
+
 module cuNumeric
 
 # DEBUG HELP: use tool `c++filt -t [St8optionalIN11cupynumeric7NDArrayEE]`
@@ -24,6 +25,9 @@ module cuNumeric
 
 using CxxWrap
 using Preferences
+
+abstract type AbstractAccessorRO{T,N} end
+abstract type AbstractAccessorWO{T,N} end
 
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))

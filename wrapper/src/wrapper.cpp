@@ -17,23 +17,15 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
 
+#include <type_traits>
+
+#include "accessors.h"
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
+#include "legate/mapping/machine.h"
 #include "legate.h"
 #include "legion.h"
-
-// legate::PrimitiveType takes a value from the legate::Type::Code enum
-// but I can't wrap that enum explicitly so I will hardcode
-// an enum in Julia that has the same mappings and just
-// pass integeters to construct PrimitiveTypes
-
-// cuPyNumeric C++ API:
-// https://github.com/nv-legate/cupynumeric/blob/branch-24.11/src/cupynumeric/operators.h
-
-// legate::Type defined here:
-// https://github.com/nv-legate/legate/blob/main/src/core/type/type_info.h
-// can find inside of conda here:
-// /home/emeitz/.conda/envs/cunumeric/include/legate/legate/type/type_info.h
+#include "types.h"
 
 struct WrapCppOptional {
   template <typename TypeWrapperT>
@@ -55,82 +47,81 @@ void write_double_2d(legate::AccessorWO<double, 2> acc,
   acc.write(p, val);
 }
 
-JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+double read_double_1d(legate::AccessorRO<double, 1> acc, uint64_t e) {
+  Legion::Point<1> p = e;
+  return acc.read(p);
+}
 
+void write_double_1d(legate::AccessorWO<double, 1> acc, uint64_t e,
+                     double val) {
+  Legion::Point<1> p = e;
+  acc.write(p, val);
+}
+
+// this feels like a lot to just wrap Legion::Point....
+//  struct WrapPoint
+//  {
+//    template<typename TypeWrapperT>
+//    void operator()(TypeWrapperT&& wrapped)
+//    {
+//      typedef typename TypeWrapperT::type WrappedT;
+//    }
+//  };
+
+// template<int n_dims, typename T>
+// struct BuildParameterList<Legion::Point<n_dims, T>>
+// {
+//   using type = ParameterList<std::integral_constant<int_t, n_dims>, T>;
+// };
+
+// struct ApplyPoint
+// {
+//   template<typename n_dims, typename T> using apply =
+//   Legion::Point<n_dims::value, T>;
+// };
+
+std::string get_machine_info(){
+  auto runtime = legate::Runtime::get_runtime();
+  return runtime->get_machine().to_string();
+}
+
+void print_machine_info(){
+  std::cout << get_machine_info() << std::endl;     
+}
+
+
+
+JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+  using jlcxx::ParameterList;
   using jlcxx::Parametric;
   using jlcxx::TypeVar;
+
+  // These are the types/dims used to generate templated functions
+  // i.e. only these types/dims can be used from Julia side
+  using fp_types = ParameterList<double, float>;
+  using int_types = ParameterList<int8_t, int16_t, int32_t, int64_t>;
+  using uint_types = ParameterList<uint8_t, uint16_t, uint32_t, uint64_t>;
+  using allowed_dims = ParameterList<std::integral_constant<int, 1>,
+                                     std::integral_constant<int, 2>,
+                                     std::integral_constant<int, 3>>;
 
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // no idea where this is
   mod.method("initialize_cunumeric", &cupynumeric::initialize);  // runtime.cc
   mod.method("legate_finish", &legate::finish);  // no idea where this is
 
-  mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
-  mod.set_const("LEGION_TYPE_BOOL", 0);
-  mod.set_const("LEGION_TYPE_INT8", 1);
-  mod.set_const("LEGION_TYPE_INT16", 2);
-  mod.set_const("LEGION_TYPE_INT32", 3);
-  mod.set_const("LEGION_TYPE_INT64", 4);
-  mod.set_const("LEGION_TYPE_UINT8", 5);
-  mod.set_const("LEGION_TYPE_UINT16", 6);
-  mod.set_const("LEGION_TYPE_UINT32", 7);
-  mod.set_const("LEGION_TYPE_UINT64", 8);
-  mod.set_const("LEGION_TYPE_FLOAT16", 9);
-  mod.set_const("LEGION_TYPE_FLOAT32", 10);
-  mod.set_const("LEGION_TYPE_FLOAT64", 11);
-  mod.set_const("LEGION_TYPE_COMPLEX32", 12);
-  mod.set_const("LEGION_TYPE_COMPLEX64", 13);
-  mod.set_const("LEGION_TYPE_COMPLEX128", 14);
-  mod.set_const("LEGION_TYPE_TOTAL", 15);
+  mod.method("get_machine_info", &get_machine_info);
+  mod.method("print_machine_info", &print_machine_info);
 
-  mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
-  mod.set_const("BOOL", legion_type_id_t::LEGION_TYPE_BOOL);
-  mod.set_const("INT8", legion_type_id_t::LEGION_TYPE_INT8);
-  mod.set_const("INT16", legion_type_id_t::LEGION_TYPE_INT16);
-  mod.set_const("INT32", legion_type_id_t::LEGION_TYPE_INT32);
-  mod.set_const("INT64", legion_type_id_t::LEGION_TYPE_INT64);
-  mod.set_const("UINT8", legion_type_id_t::LEGION_TYPE_UINT8);
-  mod.set_const("UINT16", legion_type_id_t::LEGION_TYPE_UINT16);
-  mod.set_const("UINT32", legion_type_id_t::LEGION_TYPE_UINT32);
-  mod.set_const("UINT64", legion_type_id_t::LEGION_TYPE_UINT64);
-  mod.set_const("FLOAT16", legion_type_id_t::LEGION_TYPE_FLOAT16);
-  mod.set_const("FLOAT32", legion_type_id_t::LEGION_TYPE_FLOAT32);
-  mod.set_const("FLOAT64", legion_type_id_t::LEGION_TYPE_FLOAT64);
-  mod.set_const("COMPLEX64", legion_type_id_t::LEGION_TYPE_COMPLEX64);
-  mod.set_const("COMPLEX128", legion_type_id_t::LEGION_TYPE_COMPLEX128);
-  mod.set_const("NIL", 15);
-  mod.set_const("BINARY", 16);
-  mod.set_const("FIXED_ARRAY", 17);
-  mod.set_const("STRUCT", 18);
-  mod.set_const("STRING", 19);
-  mod.set_const("LIST", 20);
-
+  wrap_type_enums(mod);
   mod.add_type<legate::Type>("LegateType");
+  wrap_type_getters(mod);
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
       .apply<std::optional<legate::Type>>(WrapCppOptional());
 
-  // these likely aren't needed. LegateTypeAllocated
-  mod.method("bool_", &legate::bool_);
-  mod.method("int8", &legate::int8);
-  mod.method("int16", &legate::int16);
-  mod.method("int32", &legate::int32);
-  mod.method("int64", &legate::int64);
-  mod.method("uint8", &legate::uint8);
-  mod.method("uint16", &legate::uint16);
-  mod.method("uint32", &legate::uint32);
-  mod.method("uint64", &legate::uint64);
-  mod.method("float16", &legate::float16);
-  mod.method("float32", &legate::float32);
-  mod.method("float64", &legate::float64);
-  // mod.method("complex32", &legate::complex32);
-  mod.method("complex64", &legate::complex64);
-  mod.method("complex128", &legate::complex128);
-
   mod.add_type<legate::LogicalStore>(
       "LogicalStore");  // might be useful with ndarray.get_store
-
-  // in scalar.h
 
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
@@ -142,28 +133,35 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
 
-  // mod.add_type<Parametric<TypeVar<1>,
-  // TypeVar<2>>>("AccessorRO_2d")
-  //   .apply_combination<legate::AccessorRO,
-  //    jlcxx::ParameterList<float, double>,
-  //    jlcxx::ParameterList<std::integral_constant<int, 1>,
-  //                         std::integral_constant<int, 2>,
-  //                         std::integral_constant<int, 3>>>
-  //   ([](auto wrapped)
-  //     {
-  //       typedef typename decltype(wrapped)::type WrappedT;
-  //       wrapped.method("read", &WrappedT::read);
-  //     });
+  mod.add_type<legate::AccessorRO<double, 1>>("AccessorRO_double_1d");
+  mod.add_type<legate::AccessorRO<float, 1>>("AccessorRO_float_1d");
 
-  // mod.add_type<Parametric<TypeVar<1>,
-  // TypeVar<2>>>("AccessorWO_2d") .apply_combination<legate::AccessorWO,
-  // jlcxx::ParameterList<float, double>, jlcxx::ParameterList<1,2,3,4>>([](auto
-  // wrapped)
-  //   {
-  //     typedef typename decltype(wrapped)::type WrappedT;
-  //     wrapped.method("write", &WrappedT::read);
+  mod.add_type<legate::AccessorWO<float, 1>>("AccessorWO_float_1d");
+  mod.add_type<legate::AccessorWO<double, 1>>("AccessorWO_double_1d");
+
+  // MAKE THIS USE `allowed_dims` instead of hard coded
+  // mod.add_type<Parametric<TypeVar<1>>>("Point")
+  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto
+  //   wrapped){
+
   //   });
 
+  // mod.method("make_point", &Realm::make_point);
+
+  // Creates tempalte instantiations forall combinations of RO and WO Accessors
+  //   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+  //   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorRO", parent_type_RO);
+  //   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types,
+  //   allowed_dims>(WrapAccessorRO());
+
+  //   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+  //   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorWO", parent_type_WO);
+  //   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types,
+  //   allowed_dims>(WrapAccessorWO());
+  mod.method("read_double_1d", &read_double_1d);
+  mod.method("write_double_1d", &write_double_1d);
   mod.method("read_double_2d", &read_double_2d);
   mod.method("write_double_2d", &write_double_2d);
 
@@ -173,12 +171,24 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .constructor<const cupynumeric::NDArray&>()
       .method("dim", &cupynumeric::NDArray::dim)
       .method("size", &cupynumeric::NDArray::size)
+      .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
+      .method("copy", &cupynumeric::NDArray::copy)
+      .method("assign",
+              (void(cupynumeric::NDArray::*)(const cupynumeric::NDArray&)) &
+                  cupynumeric::NDArray::assign)
+      .method("_reshape", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              std::vector<int64_t>)) &
+                              cupynumeric::NDArray::reshape)
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
+      .method("get_read_accessor_double_1d",
+              &cupynumeric::NDArray::get_read_accessor<double, 1>)
+      .method("get_write_accessor_double_1d",
+              &cupynumeric::NDArray::get_write_accessor<double, 1>)
       .method("get_read_accessor_double_2d",
               &cupynumeric::NDArray::get_read_accessor<double, 2>)
       .method("get_read_accessor_float_2d",

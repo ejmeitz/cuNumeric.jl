@@ -29,7 +29,9 @@ message(STATUS "Found JlCxx at ${JlCxx_location}")
 
 
 # Julia Wrapper Library
-add_library(cupynumericwrapper SHARED wrapper/wrapper.cpp)
+add_library(cupynumericwrapper SHARED
+             wrapper/src/wrapper.cpp
+             wrapper/src/types.cpp)
 
 # both can be private I think
 target_link_libraries(cupynumericwrapper 
@@ -40,6 +42,7 @@ target_link_libraries(cupynumericwrapper
 
 target_include_directories(cupynumericwrapper PRIVATE 
                             ${JULIA_PATH}/include/julia
+                            wrapper/include
                         )
 
 install(TARGETS cupynumericwrapper 
