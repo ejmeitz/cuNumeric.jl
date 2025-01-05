@@ -1,0 +1,476 @@
+bash: module: line 1: syntax error: unexpected end of file
+bash: error importing function definition for `BASH_FUNC_module'
+bash: module: line 1: syntax error: unexpected end of file
+bash: error importing function definition for `BASH_FUNC_module'
+Using julia at: /home/emeitz/.juliaup/bin/julia
+HEAD is now at f7bb672... Update testing to use only CxxWrap 0.16
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+┌ Warning: Error initializing Revise
+│   exception =
+│    ArgumentError: Package Revise not found in current path.
+│    - Run `import Pkg; Pkg.add("Revise")` to install the Revise package.
+│    Stacktrace:
+│      [1] macro expansion
+│        @ Base ./loading.jl:1766 [inlined]
+│      [2] macro expansion
+│        @ Base ./lock.jl:267 [inlined]
+│      [3] __require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1747
+│      [4] #invoke_in_world#3
+│        @ Base ./essentials.jl:921 [inlined]
+│      [5] invoke_in_world
+│        @ Base ./essentials.jl:918 [inlined]
+│      [6] require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1740
+│      [7] top-level scope
+│        @ ~/.julia/config/startup.jl:2
+│      [8] include
+│        @ Base ./Base.jl:495 [inlined]
+│      [9] load_julia_startup()
+│        @ Base ./client.jl:364
+│     [10] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:281
+│     [11] _start()
+│        @ Base ./client.jl:552
+└ @ Main ~/.julia/config/startup.jl:4
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+┌ Warning: Error initializing Revise
+│   exception =
+│    ArgumentError: Package Revise not found in current path.
+│    - Run `import Pkg; Pkg.add("Revise")` to install the Revise package.
+│    Stacktrace:
+│      [1] macro expansion
+│        @ Base ./loading.jl:1766 [inlined]
+│      [2] macro expansion
+│        @ Base ./lock.jl:267 [inlined]
+│      [3] __require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1747
+│      [4] #invoke_in_world#3
+│        @ Base ./essentials.jl:921 [inlined]
+│      [5] invoke_in_world
+│        @ Base ./essentials.jl:918 [inlined]
+│      [6] require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1740
+│      [7] top-level scope
+│        @ ~/.julia/config/startup.jl:2
+│      [8] include
+│        @ Base ./Base.jl:495 [inlined]
+│      [9] load_julia_startup()
+│        @ Base ./client.jl:364
+│     [10] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:281
+│     [11] _start()
+│        @ Base ./client.jl:552
+└ @ Main ~/.julia/config/startup.jl:4
+  Activating project at `~/tests/cuNumeric.jl/pkg`
+    Updating `~/tests/cuNumeric.jl/pkg/Project.toml`
+  [1f15a43c] + CxxWrap v0.16.0
+⌅ [3eaa8342] + libcxxwrap_julia_jll v0.13.3+0
+  [44cfe95a] ~ Pkg ⇒ v1.10.0
+    Updating `~/tests/cuNumeric.jl/pkg/Manifest.toml`
+  [1f15a43c] + CxxWrap v0.16.0
+  [692b3bcd] + JLLWrappers v1.7.0
+  [1914dd2f] + MacroTools v0.5.13
+  [21216c6a] + Preferences v1.4.3
+⌅ [3eaa8342] + libcxxwrap_julia_jll v0.13.3+0
+  [0dad84c5] + ArgTools v1.1.1
+  [56f22d72] + Artifacts
+  [2a0f44e3] + Base64
+  [ade2ca70] + Dates
+  [f43a241f] + Downloads v1.6.0
+  [7b1f6079] + FileWatching
+  [b77e0a4c] + InteractiveUtils
+  [b27032c2] + LibCURL v0.6.4
+  [76f85450] + LibGit2
+  [8f399da3] + Libdl
+  [56ddb016] + Logging
+  [d6f4376e] + Markdown
+  [ca575930] + NetworkOptions v1.2.0
+  [44cfe95a] + Pkg v1.10.0
+  [de0858da] + Printf
+  [3fa0cd96] + REPL
+  [9a3f8284] + Random
+  [ea8e919c] + SHA v0.7.0
+  [9e88b42a] + Serialization
+  [6462fe0b] + Sockets
+  [fa267f1f] + TOML v1.0.3
+  [a4e569a6] + Tar v1.10.0
+  [cf7118a7] + UUIDs
+  [4ec0a83e] + Unicode
+  [deac9b47] + LibCURL_jll v8.4.0+0
+  [e37daf67] + LibGit2_jll v1.6.4+0
+  [29816b5a] + LibSSH2_jll v1.11.0+1
+  [c8ffd9c3] + MbedTLS_jll v2.28.2+1
+  [14a3606d] + MozillaCACerts_jll v2023.1.10
+  [83775a58] + Zlib_jll v1.2.13+1
+  [8e850ede] + nghttp2_jll v1.52.0+1
+  [3f19e933] + p7zip_jll v17.4.0+2
+        Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`
+Precompiling CxxWrap
+[32m  ✓ [39mlibcxxwrap_julia_jll
+[32m  ✓ [39mCxxWrap
+  2 dependencies successfully precompiled in 21 seconds. 3 already precompiled.
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+┌ Warning: Error initializing Revise
+│   exception =
+│    ArgumentError: Package Revise not found in current path.
+│    - Run `import Pkg; Pkg.add("Revise")` to install the Revise package.
+│    Stacktrace:
+│      [1] macro expansion
+│        @ Base ./loading.jl:1766 [inlined]
+│      [2] macro expansion
+│        @ Base ./lock.jl:267 [inlined]
+│      [3] __require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1747
+│      [4] #invoke_in_world#3
+│        @ Base ./essentials.jl:921 [inlined]
+│      [5] invoke_in_world
+│        @ Base ./essentials.jl:918 [inlined]
+│      [6] require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1740
+│      [7] top-level scope
+│        @ ~/.julia/config/startup.jl:2
+│      [8] include
+│        @ Base ./Base.jl:495 [inlined]
+│      [9] load_julia_startup()
+│        @ Base ./client.jl:364
+│     [10] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:281
+│     [11] _start()
+│        @ Base ./client.jl:552
+└ @ Main ~/.julia/config/startup.jl:4
+  Activating project at `~/tests/cuNumeric.jl/pkg`
+     Cloning git-repo `https://github.com/JuliaBinaryWrappers/libcxxwrap_julia_jll.jl.git`
+   Resolving package versions...
+    Updating `~/tests/cuNumeric.jl/pkg/Project.toml`
+  [3eaa8342] ~ libcxxwrap_julia_jll v0.13.3+0 ⇒ v0.13.3+0 `~/.julia/dev/libcxxwrap_julia_jll`
+    Updating `~/tests/cuNumeric.jl/pkg/Manifest.toml`
+  [3eaa8342] ~ libcxxwrap_julia_jll v0.13.3+0 ⇒ v0.13.3+0 `~/.julia/dev/libcxxwrap_julia_jll`
+   Resolving package versions...
+    Updating `/tmp/jl_EYXBth/Project.toml`
+  [3eaa8342] + libcxxwrap_julia_jll v0.13.3+0 `~/.julia/dev/libcxxwrap_julia_jll`
+    Updating `/tmp/jl_EYXBth/Manifest.toml`
+  [692b3bcd] + JLLWrappers v1.7.0
+  [21216c6a] + Preferences v1.4.3
+  [3eaa8342] + libcxxwrap_julia_jll v0.13.3+0 `~/.julia/dev/libcxxwrap_julia_jll`
+  [56f22d72] + Artifacts
+  [ade2ca70] + Dates
+  [8f399da3] + Libdl
+  [de0858da] + Printf
+  [fa267f1f] + TOML v1.0.3
+  [4ec0a83e] + Unicode
+[ Info: libcxxwrap_julia_jll dev'ed out to /home/emeitz/.julia/dev/libcxxwrap_julia_jll with pre-populated override directory
+-- The C compiler identification is GNU 11.2.1
+-- The CXX compiler identification is GNU 11.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /opt/rh/devtoolset-11/root/usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-11/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found Julia executable: /home/emeitz/.juliaup/bin/julia
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_VERSION_STRING: 1.10.0
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_INCLUDE_DIRS:   /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/include/julia
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_LIBRARY_DIR:    /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib
+-- Julia_LIBRARY:        /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib/libjulia.so.1.10
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- JULIA_HOME:           /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/bin
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_LLVM_VERSION:   v15.0.7
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_WORD_SIZE:      64
+-- Found Julia: /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib/libjulia.so.1.10 (found version "1.10.0") 
+-- JlCxx version: v0.13.3
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY
+-- Performing Test COMPILER_HAS_HIDDEN_INLINE_VISIBILITY - Success
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR
+-- Performing Test COMPILER_HAS_DEPRECATED_ATTR - Success
+-- Configuring done (4.1s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/emeitz/.julia/dev/libcxxwrap_julia_jll/override
+[  2%] Building CXX object CMakeFiles/cxxwrap_julia.dir/src/c_interface.cpp.o
+[  4%] Building CXX object CMakeFiles/cxxwrap_julia.dir/src/jlcxx.cpp.o
+[  6%] Building CXX object CMakeFiles/cxxwrap_julia.dir/src/functions.cpp.o
+[  9%] Linking CXX shared library lib/libcxxwrap_julia.so
+[  9%] Built target cxxwrap_julia
+[ 11%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_vector.cpp.o
+[ 13%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl.cpp.o
+[ 18%] Building CXX object test/CMakeFiles/test_cxxwrap.dir/test_cxxwrap.cpp.o
+[ 18%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_queue.cpp.o
+[ 22%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_priority_queue.cpp.o
+[ 22%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_valarray.cpp.o
+[ 25%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_deque.cpp.o
+[ 29%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_multiset.cpp.o
+[ 29%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_set.cpp.o
+[ 34%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_unordered_multiset.cpp.o
+[ 34%] Building CXX object examples/CMakeFiles/except.dir/except.cpp.o
+[ 36%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_unique_ptr.cpp.o
+[ 38%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_unordered_set.cpp.o
+[ 45%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_shared_ptr.cpp.o
+[ 45%] Building CXX object CMakeFiles/cxxwrap_julia_stl.dir/src/stl_weak_ptr.cpp.o
+[ 45%] Building CXX object test/CMakeFiles/test_type_init.dir/test_type_init.cpp.o
+[ 47%] Linking CXX shared library ../lib/libexcept.so
+[ 47%] Built target except
+[ 50%] Linking CXX executable test_cxxwrap
+[ 52%] Linking CXX executable test_type_init
+[ 52%] Built target test_cxxwrap
+[ 52%] Built target test_type_init
+[ 54%] Linking CXX shared library lib/libcxxwrap_julia_stl.so
+[ 54%] Built target cxxwrap_julia_stl
+[ 56%] Building CXX object examples/CMakeFiles/functions.dir/functions.cpp.o
+[ 68%] Building CXX object examples/CMakeFiles/types.dir/types.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/basic_types.dir/basic_types.cpp.o
+[ 72%] Building CXX object examples/CMakeFiles/hello.dir/hello.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/jlcxx_containers.dir/containers.cpp.o
+[ 77%] Building CXX object test/CMakeFiles/test_module.dir/test_module.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/parametric.dir/parametric.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/extended.dir/extended.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/inheritance.dir/inheritance.cpp.o
+[ 77%] Building CXX object examples/CMakeFiles/pointer_modification.dir/pointer_modification.cpp.o
+[ 79%] Linking CXX shared library ../lib/libhello.so
+[ 81%] Linking CXX shared library ../lib/libextended.so
+[ 81%] Built target hello
+[ 81%] Built target extended
+[ 84%] Linking CXX shared library ../lib/libjlcxx_containers.so
+[ 86%] Linking CXX shared library ../lib/libpointer_modification.so
+[ 88%] Linking CXX shared library ../lib/libbasic_types.so
+[ 88%] Built target jlcxx_containers
+[ 88%] Built target basic_types
+[ 88%] Built target pointer_modification
+[ 90%] Linking CXX shared library ../lib/libfunctions.so
+[ 90%] Built target functions
+[ 93%] Linking CXX executable test_module
+[ 95%] Linking CXX shared library ../lib/libparametric.so
+[ 95%] Built target test_module
+[ 97%] Linking CXX shared library ../lib/libinheritance.so
+[ 97%] Built target parametric
+[ 97%] Built target inheritance
+[100%] Linking CXX shared library ../lib/libtypes.so
+[100%] Built target types
+bash: module: line 1: syntax error: unexpected end of file
+bash: error importing function definition for `BASH_FUNC_module'
+-- The C compiler identification is GNU 11.2.1
+-- The CXX compiler identification is GNU 11.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /opt/rh/devtoolset-11/root/usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /opt/rh/devtoolset-11/root/usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found CUDAToolkit: /usr/local/cuda-12.4/include (found version "12.4.99") 
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed
+-- Looking for pthread_create in pthreads
+-- Looking for pthread_create in pthreads - not found
+-- Looking for pthread_create in pthread
+-- Looking for pthread_create in pthread - found
+-- Found Threads: TRUE  
+CMake Warning (dev) at /home/emeitz/software/cmake-3.27.7/Modules/FindPackageHandleStandardArgs.cmake:447 (message):
+  `find_package()` specify a version range but the module CUDAToolkit does
+  not support this capability.  Only the lower endpoint of the range will be
+  used.
+Call Stack (most recent call first):
+  /home/emeitz/software/cmake-3.27.7/Modules/FindCUDAToolkit.cmake:938 (find_package_handle_standard_args)
+  /home/emeitz/.conda/envs/cunumeric-gpu/share/Legion/cmake/FindCUDAToolkit.cmake:21 (include)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/legate/legate-dependencies.cmake:34 (find_package)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/legate/legate-config.cmake:72 (include)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/cupynumeric/cupynumeric-dependencies.cmake:20 (find_package)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/cupynumeric/cupynumeric-config.cmake:72 (include)
+  CMakeLists.txt:13 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found MPI_CXX: /home/emeitz/.conda/envs/cunumeric-gpu/lib/libmpi.so (found version "3.1") 
+-- Found MPI: TRUE (found version "3.1") found components: CXX 
+-- Found Thrust: /home/emeitz/.conda/envs/cunumeric-gpu/lib/rapids/cmake/thrust/thrust-config.cmake (found suitable exact version "2.5.0.0") 
+-- Found CCCL: /home/emeitz/.conda/envs/cunumeric-gpu/lib/rapids/cmake/cccl/cccl-config.cmake (found version "2.5.0.0") 
+-- Found Python3: /home/emeitz/.conda/envs/cunumeric-gpu/bin/python3.12 (found version "3.12.8") found components: Interpreter Development Development.Module Development.Embed 
+CMake Warning (dev) at /home/emeitz/software/cmake-3.27.7/Modules/FindPackageHandleStandardArgs.cmake:447 (message):
+  `find_package()` specify a version range but the module CUDAToolkit does
+  not support this capability.  Only the lower endpoint of the range will be
+  used.
+Call Stack (most recent call first):
+  /home/emeitz/software/cmake-3.27.7/Modules/FindCUDAToolkit.cmake:938 (find_package_handle_standard_args)
+  /home/emeitz/.conda/envs/cunumeric-gpu/share/Legion/cmake/FindCUDAToolkit.cmake:21 (include)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/legate/legate-dependencies.cmake:34 (find_package)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/legate/legate-config.cmake:72 (include)
+  /home/emeitz/software/cmake-3.27.7/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/cupynumeric/cupynumeric-dependencies.cmake:21 (find_dependency)
+  /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/cupynumeric/cupynumeric-config.cmake:72 (include)
+  CMakeLists.txt:13 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found OpenMP_CXX: -fopenmp (found version "4.5") 
+-- Found OpenMP: TRUE (found version "4.5") found components: CXX 
+-- Found legate: /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/legate/legate-config.cmake (found version "24.11.01") 
+-- Found BLAS: /home/emeitz/.conda/envs/cunumeric-gpu/lib/libopenblas.so  
+-- Found tblis: /home/emeitz/.conda/envs/cunumeric-gpu/lib/libtblis.so  
+-- Found cupynumeric: /home/emeitz/.conda/envs/cunumeric-gpu/lib/cmake/cupynumeric/cupynumeric-config.cmake (found version "24.11.02") 
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+┌ Warning: Error initializing Revise
+│   exception =
+│    ArgumentError: Package Revise not found in current path.
+│    - Run `import Pkg; Pkg.add("Revise")` to install the Revise package.
+│    Stacktrace:
+│      [1] macro expansion
+│        @ Base ./loading.jl:1766 [inlined]
+│      [2] macro expansion
+│        @ Base ./lock.jl:267 [inlined]
+│      [3] __require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1747
+│      [4] #invoke_in_world#3
+│        @ Base ./essentials.jl:921 [inlined]
+│      [5] invoke_in_world
+│        @ Base ./essentials.jl:918 [inlined]
+│      [6] require(into::Module, mod::Symbol)
+│        @ Base ./loading.jl:1740
+│      [7] top-level scope
+│        @ ~/.julia/config/startup.jl:2
+│      [8] include
+│        @ Base ./Base.jl:495 [inlined]
+│      [9] load_julia_startup()
+│        @ Base ./client.jl:364
+│     [10] exec_options(opts::Base.JLOptions)
+│        @ Base ./client.jl:281
+│     [11] _start()
+│        @ Base ./client.jl:552
+└ @ Main ~/.julia/config/startup.jl:4
+-- Found Julia executable: /home/emeitz/.juliaup/bin/julia
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_VERSION_STRING: 1.10.0
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_INCLUDE_DIRS:   /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/include/julia
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_LIBRARY_DIR:    /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib
+-- Julia_LIBRARY:        /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib/libjulia.so.1.10
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- JULIA_HOME:           /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/bin
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_LLVM_VERSION:   v15.0.7
+The latest version of Julia in the `release` channel is 1.11.2+0.x64.linux.gnu. You currently have `1.10.0+0.x64.linux.gnu` installed. Run:
+
+  juliaup update
+
+in your terminal shell to install Julia 1.11.2+0.x64.linux.gnu and update the `release` channel to that version.
+-- Julia_WORD_SIZE:      64
+-- Found Julia: /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib/libjulia.so.1.10 (found version "1.10.0") 
+-- Found JlCxx at /home/emeitz/.julia/dev/libcxxwrap_julia_jll/override/lib
+-- Configuring done (9.2s)
+CMake Warning at CMakeLists.txt:32 (add_library):
+  Cannot generate a safe runtime search path for target cupynumericwrapper
+  because files in some directories may conflict with libraries in implicit
+  directories:
+
+    runtime library [libgomp.so] in /opt/rh/devtoolset-11/root/usr/lib/gcc/x86_64-redhat-linux/11 may be hidden by files in:
+      /home/emeitz/.conda/envs/cunumeric-gpu/lib
+
+  Some of these libraries may not be found correctly.
+
+
+-- Generating done (0.0s)
+-- Build files have been written to: /home/emeitz/tests/cuNumeric.jl/build
+Change Dir: '/home/emeitz/tests/cuNumeric.jl/build'
+
+Run Build Command(s): /home/emeitz/software/cmake-3.27.7/bin/cmake -E env VERBOSE=1 /opt/rh/devtoolset-11/root/usr/bin/gmake -f Makefile -j8
+/home/emeitz/software/cmake-3.27.7/bin/cmake -S/home/emeitz/tests/cuNumeric.jl -B/home/emeitz/tests/cuNumeric.jl/build --check-build-system CMakeFiles/Makefile.cmake 0
+/home/emeitz/software/cmake-3.27.7/bin/cmake -E cmake_progress_start /home/emeitz/tests/cuNumeric.jl/build/CMakeFiles /home/emeitz/tests/cuNumeric.jl/build//CMakeFiles/progress.marks
+/opt/rh/devtoolset-11/root/usr/bin/gmake  -f CMakeFiles/Makefile2 all
+gmake[1]: Entering directory '/home/emeitz/tests/cuNumeric.jl/build'
+/opt/rh/devtoolset-11/root/usr/bin/gmake  -f CMakeFiles/cupynumericwrapper.dir/build.make CMakeFiles/cupynumericwrapper.dir/depend
+gmake[2]: Entering directory '/home/emeitz/tests/cuNumeric.jl/build'
+cd /home/emeitz/tests/cuNumeric.jl/build && /home/emeitz/software/cmake-3.27.7/bin/cmake -E cmake_depends "Unix Makefiles" /home/emeitz/tests/cuNumeric.jl /home/emeitz/tests/cuNumeric.jl /home/emeitz/tests/cuNumeric.jl/build /home/emeitz/tests/cuNumeric.jl/build /home/emeitz/tests/cuNumeric.jl/build/CMakeFiles/cupynumericwrapper.dir/DependInfo.cmake "--color="
+gmake[2]: Leaving directory '/home/emeitz/tests/cuNumeric.jl/build'
+/opt/rh/devtoolset-11/root/usr/bin/gmake  -f CMakeFiles/cupynumericwrapper.dir/build.make CMakeFiles/cupynumericwrapper.dir/build
+gmake[2]: Entering directory '/home/emeitz/tests/cuNumeric.jl/build'
+[ 33%] Building CXX object CMakeFiles/cupynumericwrapper.dir/wrapper/src/types.cpp.o
+/opt/rh/devtoolset-11/root/usr/bin/c++ -DJULIA_ENABLE_THREADING -DLIBCUDACXX_ENABLE_HOST_NVFP16=1 -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -DUSE_CUDA -Dcupynumericwrapper_EXPORTS -I/include/julia -I/home/emeitz/tests/cuNumeric.jl/wrapper/include -I/home/emeitz/.conda/envs/cunumeric-gpu/include/rapids -I/home/emeitz/.conda/envs/cunumeric-gpu/include/rapids/libcudacxx -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/cupynumeric -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/legate -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/mappers -isystem /usr/local/cuda-12.4/include -isystem /home/emeitz/tests/cuNumeric.jl/libcxxwrap-julia/include -isystem /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/include/julia -std=gnu++20 -fPIC -UTHRUST_DEVICE_SYSTEM -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP -fopenmp -MD -MT CMakeFiles/cupynumericwrapper.dir/wrapper/src/types.cpp.o -MF CMakeFiles/cupynumericwrapper.dir/wrapper/src/types.cpp.o.d -o CMakeFiles/cupynumericwrapper.dir/wrapper/src/types.cpp.o -c /home/emeitz/tests/cuNumeric.jl/wrapper/src/types.cpp
+[ 66%] Building CXX object CMakeFiles/cupynumericwrapper.dir/wrapper/src/wrapper.cpp.o
+/opt/rh/devtoolset-11/root/usr/bin/c++ -DJULIA_ENABLE_THREADING -DLIBCUDACXX_ENABLE_HOST_NVFP16=1 -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_CUDA -DTHRUST_HOST_SYSTEM=THRUST_HOST_SYSTEM_CPP -DUSE_CUDA -Dcupynumericwrapper_EXPORTS -I/include/julia -I/home/emeitz/tests/cuNumeric.jl/wrapper/include -I/home/emeitz/.conda/envs/cunumeric-gpu/include/rapids -I/home/emeitz/.conda/envs/cunumeric-gpu/include/rapids/libcudacxx -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/cupynumeric -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/legate -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include -isystem /home/emeitz/.conda/envs/cunumeric-gpu/include/mappers -isystem /usr/local/cuda-12.4/include -isystem /home/emeitz/tests/cuNumeric.jl/libcxxwrap-julia/include -isystem /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/include/julia -std=gnu++20 -fPIC -UTHRUST_DEVICE_SYSTEM -DTHRUST_DEVICE_SYSTEM=THRUST_DEVICE_SYSTEM_OMP -fopenmp -MD -MT CMakeFiles/cupynumericwrapper.dir/wrapper/src/wrapper.cpp.o -MF CMakeFiles/cupynumericwrapper.dir/wrapper/src/wrapper.cpp.o.d -o CMakeFiles/cupynumericwrapper.dir/wrapper/src/wrapper.cpp.o -c /home/emeitz/tests/cuNumeric.jl/wrapper/src/wrapper.cpp
+[100%] Linking CXX shared library libcupynumericwrapper.so
+/home/emeitz/software/cmake-3.27.7/bin/cmake -E cmake_link_script CMakeFiles/cupynumericwrapper.dir/link.txt --verbose=1
+/opt/rh/devtoolset-11/root/usr/bin/c++ -fPIC -shared -Wl,-soname,libcupynumericwrapper.so -o libcupynumericwrapper.so CMakeFiles/cupynumericwrapper.dir/wrapper/src/wrapper.cpp.o CMakeFiles/cupynumericwrapper.dir/wrapper/src/types.cpp.o   -L/usr/local/cuda-12.4/lib64  -Wl,-rpath,/usr/local/cuda-12.4/lib64:/usr/local/cuda-12.4/targets/x86_64-linux/lib:/home/emeitz/.conda/envs/cunumeric-gpu/lib:/home/emeitz/.julia/dev/libcxxwrap_julia_jll/override/lib:/home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib: /home/emeitz/.conda/envs/cunumeric-gpu/lib/libcupynumeric.so /home/emeitz/.conda/envs/cunumeric-gpu/lib/liblegate.so.24.11.01 /home/emeitz/.julia/dev/libcxxwrap_julia_jll/override/lib/libcxxwrap_julia.so.0.13.3 /home/emeitz/.conda/envs/cunumeric-gpu/lib/liblegion.so.1 /home/emeitz/.conda/envs/cunumeric-gpu/lib/librealm.so.1 /usr/lib64/libcuda.so -latomic -ldl -lgomp -lpthread /usr/local/cuda-12.4/targets/x86_64-linux/lib/libcudart.so /home/emeitz/.julia/juliaup/julia-1.10.0+0.x64.linux.gnu/lib/libjulia.so.1.10 -Wl,-rpath-link,/home/emeitz/.conda/envs/cunumeric-gpu/lib 
+gmake[2]: Leaving directory '/home/emeitz/tests/cuNumeric.jl/build'
+[100%] Built target cupynumericwrapper
+gmake[1]: Leaving directory '/home/emeitz/tests/cuNumeric.jl/build'
+/home/emeitz/software/cmake-3.27.7/bin/cmake -E cmake_progress_start /home/emeitz/tests/cuNumeric.jl/build/CMakeFiles 0
+
+[ Info: Sourcing environment file: /home/emeitz/tests/cuNumeric.jl/ENV
+[ Info: Setting environment variables from /home/emeitz/tests/cuNumeric.jl/ENV
+┌ Error: Error parsing env.log line: }
+└ @ Main ~/tests/cuNumeric.jl/pkg/deps/build.jl:36
+[ Info: /home/emeitz/tests/cuNumeric.jl
+[ Info: Running legion patch script: /home/emeitz/tests/cuNumeric.jl/scripts/patch_legion.sh
+[ Info: Running libcxxwrap build script: /home/emeitz/tests/cuNumeric.jl/scripts/install_cxxwrap.sh
+[ Info: Running cuNumeric.jl build script: /home/emeitz/tests/cuNumeric.jl/build.sh

@@ -61,3 +61,10 @@ void wrap_type_getters(jlcxx::Module& mod){
     mod.method("complex64", &legate::complex64);
     mod.method("complex128", &legate::complex128);
 }
+
+void wrap_privilege_modes(jlcxx::Module& mod){
+    //from legion_config.h
+    mod.add_bits<legion_privilege_mode_t>("LegionPrivilegeMode", jlcxx::julia_type("CppEnum"));
+    mod.set_const("LEGION_READ_ONLY", 0x00000001);
+    mod.set_const("LEGION_WRITE_DISCARD", 0x10000007);
+}
