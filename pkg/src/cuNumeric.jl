@@ -24,7 +24,7 @@ module cuNumeric
 # the above yields:: std::optional<cupynumeric::NDArray>
 
 using CxxWrap
-
+abstract type AbstractFieldAccessor{PM,FT,n_dims} end
 abstract type AbstractAccessorRO{T,N} end
 abstract type AbstractAccessorWO{T,N} end
 

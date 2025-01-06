@@ -62,6 +62,8 @@ void get_machine_info(){
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   // Wrap Enums
+  mod.add_type<legate::Type>("LegateType");
+
   wrap_privilege_modes(mod);
   wrap_type_enums(mod);
   wrap_type_getters(mod);
@@ -75,7 +77,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using fp_types = ParameterList<double, float>;
   using int_types = ParameterList<int8_t, int16_t, int32_t, int64_t>;
   using uint_types = ParameterList<uint8_t, uint16_t, uint32_t, uint64_t>;
-  using allowed_dims = ParameterList<std::integral_constant<int, 1>, std::integral_constant<int, 2>, std::integral_constant<int, 3>>;
+  using allowed_dims = ParameterList<std::integral_constant<int_t, 1>, std::integral_constant<int_t, 2>, std::integral_constant<int_t, 3>>;
   using privilege_modes = ParameterList<std::integral_constant<legion_privilege_mode_t,LEGION_WRITE_DISCARD>, \
                                         std::integral_constant<legion_privilege_mode_t,LEGION_READ_ONLY>>;
 
@@ -91,7 +93,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //// WHY THIS NOT WORK?????
   mod.method("get_machine_info", &get_machine_info);
   
-  mod.add_type<legate::Type>("LegateType");
+  
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
       .apply<std::optional<legate::Type>>(WrapCppOptional());
@@ -139,17 +141,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 
   //template<PrivilegeMode,typename,int,typename,typename,bool> class FieldAccessor;
   // Wrap FieldAccessor so we can create the more species RO and WO accessors
-  mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>>("FieldAccessor")
-    .apply_combination<ApplyFieldAccessor, privilege_modes, fp_types, allowed_dims>(WrapFieldAccessor());
+  auto parent_type_field = jlcxx::julia_type("AbstractFieldAccessor");
+  auto FieldAccessor = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>>("FieldAccessor", parent_type_field);
+  FieldAccessor.apply_combination<ApplyFieldAccessor, privilege_modes, fp_types, allowed_dims>(WrapFieldAccessor());
 
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
-  // auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-  // auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
-  // accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
+  auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+  auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorRO", parent_type_RO);
+  accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(WrapAccessorRO());
 
-  // auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-  // auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
-  // accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
+  auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+  auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorWO", parent_type_WO);
+  accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(WrapAccessorWO());
 
   /// Add a non-member function that uses Foo3
   // typedef jlcxx::combine_types<ApplyAccessorRO, fp_types, allowed_dims> accessor_ro_types;
