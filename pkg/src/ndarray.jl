@@ -98,7 +98,7 @@ end
 # end
 
 function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-    T = legate_code_map[code(type(arr))]
+    T = legion_type_map[code(type(arr))]
     acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
 end
@@ -106,7 +106,7 @@ end
 
 function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
     acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
-    write(acc, to_cpp_indx(tuple(idxs...)), value) #* this probably allocates the tuple
+    write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
 end
 
 
