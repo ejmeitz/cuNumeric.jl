@@ -38,6 +38,25 @@ const type_map = Dict{Type, Symbol}(
     ComplexF64 => :complex128
 )
 
+const legion_type_map = Dict{LegionType, Type}(
+    cuNumeric.BOOL => Bool,
+    cuNumeric.INT8 => Int8,
+    cuNumeric.INT16 => Int16,
+    cuNumeric.INT32 => Int32,
+    cuNumeric.INT64 => Int64,
+    cuNumeric.UINT8 => UInt8,
+    cuNumeric.UINT16 => UInt16,
+    cuNumeric.UINT32 => UInt32,
+    cuNumeric.UINT64 => UInt64,
+    cuNumeric.FLOAT16 => Float16,
+    cuNumeric.FLOAT32 => Float32,
+    cuNumeric.FLOAT64 => Float64,
+    cuNumeric.COMPLEX64 => ComplexF32,
+    cuNumeric.COMPLEX128 => ComplexF64,
+    # has different type than the rest cause its just an int in the enum
+    # cuNumeric.STRING => String
+)
+
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
@@ -72,27 +91,34 @@ function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
 end
 
 
-function Base.getindex(arr::NDArray, i::Dims{N}) where N
-    # TODO retriving the accessor each read like this? 
-    acc = get_read_accessor_double_2d(arr); 
-    return read_double_2d(acc, to_cpp_index(i))
+# function Base.getindex(arr::NDArray, i::Dims{N}) where N
+#     # TODO retriving the accessor each read like this? 
+#     acc = get_read_accessor_double_2d(arr); 
+#     return read_double_2d(acc, to_cpp_index(i))
+# end
+
+function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
+    T = legate_code_map[code(type(arr))]
+    acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
+    return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
 end
 
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Dims{N}) where N
-    acc = get_write_accessor_double_2d(arr);
-    write_double_2d(acc, to_cpp_index(i), value)
+
+function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
+    acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
+    write(acc, to_cpp_indx(tuple(idxs...)), value) #* this probably allocates the tuple
 end
 
 
-function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    acc = get_read_accessor_double_2d(arr); 
-    return read_double_2d(acc, to_cpp_index((i, j)))
-end
+# function Base.getindex(arr::NDArray, i::Int64, j::Int64)
+#     acc = get_read_accessor_double_2d(arr); 
+#     return read_double_2d(acc, to_cpp_index((i, j)))
+# end
 
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Int64, j::Int64)
-    acc = get_write_accessor_double_2d(arr);
-    write_double_2d(acc, to_cpp_index((i, j)), value)
-end
+# function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, i::Int64, j::Int64)
+#     acc = get_write_accessor_double_2d(arr);
+#     write_double_2d(acc, to_cpp_index((i, j)), value)
+# end
 
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
     # TODO fix temp hardcoded solution

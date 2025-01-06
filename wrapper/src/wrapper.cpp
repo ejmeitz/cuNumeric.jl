@@ -28,6 +28,8 @@
 #include "legate/mapping/machine.h"
 #include "legion.h"
 #include "legion/legion_config.h"
+
+
 #include "types.h"
 
 struct WrapCppOptional {
@@ -58,8 +60,6 @@ void get_machine_info() {
 }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
-  // Wrap Enums
-  mod.add_type<legate::Type>("LegateType");
 
   wrap_privilege_modes(mod);
   wrap_type_enums(mod);

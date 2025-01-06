@@ -25,8 +25,11 @@ module cuNumeric
 
 using CxxWrap
 abstract type AbstractFieldAccessor{PM,FT,n_dims} end
-abstract type AbstractAccessorRO{T,N} end
+abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
 abstract type AbstractAccessorWO{T,N} end
+
+
+struct CppEnum end
 
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
