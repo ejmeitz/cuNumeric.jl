@@ -118,7 +118,8 @@ struct WrapFieldAccessor {
 struct WrapAccessorRO {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
-    using WrappedT = typename TypeWrapperT::type;  // ExposedAccessorRO<T,n_dims>
+    using WrappedT =
+        typename TypeWrapperT::type;  // ExposedAccessorRO<T,n_dims>
     using LegateAccessorT =
         typename WrappedT::AccessorT;  // legate::AccessorRO<T,n_dims>
     using VT = typename WrappedT::ValueType;
@@ -127,8 +128,8 @@ struct WrapAccessorRO {
     // free method
     //  does this need to be uint64_t
     wrapped.module().method("read",
-                            [n_dims](const LegateAccessorT& acc,
-                                     const std::vector<uint64_t>& dims) {
+                            [](const LegateAccessorT& acc,
+                                     const std::vector<uint64_t>& dims) -> auto {
                               // feels suboptimal
                               // each call to [] in julia will call this
                               auto p = Realm::Point<n_dims>(0);
@@ -147,7 +148,8 @@ struct WrapAccessorRO {
 struct WrapAccessorWO {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
-    using WrappedT = typename TypeWrapperT::type;  // ExposedAccessorWO<T,n_dims>
+    using WrappedT =
+        typename TypeWrapperT::type;  // ExposedAccessorWO<T,n_dims>
     using LegateAccessorT =
         typename WrappedT::AccessorT;  // legate::AccessorWO<T,n_dims>
     using VT = typename WrappedT::ValueType;
@@ -155,8 +157,8 @@ struct WrapAccessorWO {
 
     // free methods
     wrapped.module().method(
-        "write", [n_dims](const LegateAccessorT& acc,
-                          const std::vector<uint64_t>& dims, VT val) {
+        "write", [](const LegateAccessorT& acc,
+                          const std::vector<uint64_t>& dims, VT val) -> auto {
           // feels suboptimal
           // each call to [] in julia will call this
           auto p = Realm::Point<n_dims>(0);

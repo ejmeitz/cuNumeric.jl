@@ -74,6 +74,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using fp_types = ParameterList<double, float>;
   using int_types = ParameterList<int8_t, int16_t, int32_t, int64_t>;
   using uint_types = ParameterList<uint8_t, uint16_t, uint32_t, uint64_t>;
+
+  using all_types =  ParameterList<double, float, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t>;
   using allowed_dims = ParameterList<std::integral_constant<int_t, 1>,
                                      std::integral_constant<int_t, 2>,
                                      std::integral_constant<int_t, 3>>;
@@ -148,24 +150,24 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   auto FieldAccessor =
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>>(
           "FieldAccessor", parent_type_field);
-  FieldAccessor.apply_combination<ApplyFieldAccessor, privilege_modes, fp_types,
+  FieldAccessor.apply_combination<ApplyFieldAccessor, privilege_modes, all_types,
                                   allowed_dims>(WrapFieldAccessor());
 
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>(
       "AccessorRO", parent_type_RO);
-  accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types, allowed_dims>(
+  accessor_base_RO.apply_combination<ApplyAccessorRO, all_types, allowed_dims>(
       WrapAccessorRO());
 
   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>(
       "AccessorWO", parent_type_WO);
-  accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types, allowed_dims>(
+  accessor_base_WO.apply_combination<ApplyAccessorWO, all_types, allowed_dims>(
       WrapAccessorWO());
 
   /// Add a non-member function that uses Foo3
-  // typedef jlcxx::combine_types<ApplyAccessorRO, fp_types, allowed_dims>
+  // typedef jlcxx::combine_types<ApplyAccessorRO, all_types, allowed_dims>
   // accessor_ro_types;
   // jlcxx::for_each_type<accessor_ro_types>(GetAccessorROFreeMethod(mod));
 
