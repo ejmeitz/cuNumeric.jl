@@ -143,6 +143,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                       const legate::Scalar&) const) &
                       cupynumeric::NDArray::operator*);
 
+
+  mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorTypeContainer")
+    .apply_combination<ApplyAccessorTypeContainer, all_types, allowed_dims>(EmptyWrapper());
+ 
   // template<PrivilegeMode,typename,int,typename,typename,bool> class
   // FieldAccessor;
   //  Wrap FieldAccessor so we can create the more species RO and WO accessors
@@ -151,7 +155,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>>(
           "FieldAccessor", parent_type_field);
   FieldAccessor.apply_combination<ApplyFieldAccessor, privilege_modes, all_types,
-                                  allowed_dims>(WrapFieldAccessor());
+                                  allowed_dims>(EmptyWrapper());
 
   // Creates tempalte instantiations forall combinations of RO and WO Accessors
   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
@@ -167,9 +171,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       WrapAccessorWO());
 
   /// Add a non-member function that uses Foo3
-  // typedef jlcxx::combine_types<ApplyAccessorRO, all_types, allowed_dims>
-  // accessor_ro_types;
-  // jlcxx::for_each_type<accessor_ro_types>(GetAccessorROFreeMethod(mod));
+//   typedef jlcxx::combine_types<ApplyAccessorRO, all_types, allowed_dims> accessor_ro_types;
+//   jlcxx::for_each_type<accessor_ro_types>(GetAccessorROFreeMethod(mod));
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);

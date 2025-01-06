@@ -21,6 +21,24 @@ using coord_t = long long;
 // since they are not always public in legate or cupynumeric and this
 // is easier than making a PR there.
 
+
+
+// We can used instances of this struct to function parameters
+// to differentiate functions for Julia multiple dispatch to work
+template<typename... Args>
+struct TypeContainer{};
+
+template<typename T, int n_dims>
+using AccessorTypeContainer = TypeContainer<T, std::integral_constant<int, n_dims>>;
+
+struct EmptyWrapper{
+  template <typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {}
+};
+
+
+////////////////////
+
 template <typename T, int n_dims>
 struct ExposedAccessorRO {
   using AccessorT = legate::AccessorRO<T, n_dims>;
@@ -36,6 +54,8 @@ struct ExposedAccessorWO {
 
   static constexpr int_t get_n_dims() { return n_dims; }
 };
+
+///////////////////////////////
 
 namespace jlcxx {
 
@@ -57,7 +77,20 @@ template <typename T, int n_dims>
 struct BuildParameterList<ExposedAccessorWO<T, n_dims>> {
   using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
 };
+
+//specializaiton of TypeContainer for accessors
+template <typename T, int n_dims>
+struct BuildParameterList<AccessorTypeContainer<T, n_dims>>{
+  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>; 
+};
 }  // namespace jlcxx
+
+///////////////////////
+
+struct ApplyAccessorTypeContainer{
+  template <typename T, typename n_dims>
+  using apply = AccessorTypeContainer<T, n_dims::value>;
+};
 
 struct ApplyAccessorRO {
   template <typename T, typename n_dims>
@@ -77,43 +110,20 @@ struct ApplyFieldAccessor {
                             false>;
 };
 
+//////////////////////////////
+
+// Need the extra type container parameters
+// to differentaite betwen functions in Julia
 template <typename T, int32_t DIM>
-legate::AccessorRO<T, DIM> _get_read_accessor(cupynumeric::NDArray& arr) {
+legate::AccessorRO<T, DIM> _get_read_accessor(cupynumeric::NDArray& arr, AccessorTypeContainer<T, DIM> tc) {
   return arr.get_read_accessor<T, DIM>();
 }
 
 template <typename T, int32_t DIM>
-legate::AccessorWO<T, DIM> _get_write_accessor(cupynumeric::NDArray& arr) {
+legate::AccessorWO<T, DIM> _get_write_accessor(cupynumeric::NDArray& arr, AccessorTypeContainer<T, DIM> tc) {
   return arr.get_write_accessor<T, DIM>();
 }
 
-// struct GetAccessorROFreeMethod
-// {
-//   GetAccessorROFreeMethod(jlcxx::Module& mod) : m_module(mod)
-//   {
-//   }
-
-//   template<typename T>
-//   void operator()()
-//   {
-//     // using LegateAccessorT = typename T::AccessorT;
-//     // // using VT = typename T::ValueType;
-//     // constexpr int n_dims = T::get_n_dims();
-
-//     m_module.method("get_read_accessor", [](cupynumeric::NDArray& arr) {
-//       std::cout << "IN HERE" << std::endl;
-//       // using VT = typename T::ValueType;
-//       // return arr.get_read_accessor<VT, n_dims>();
-//     });
-//   }
-
-//   jlcxx::Module& m_module;
-// };
-
-struct WrapFieldAccessor {
-  template <typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped) {}
-};
 
 struct WrapAccessorRO {
   template <typename TypeWrapperT>
@@ -140,8 +150,7 @@ struct WrapAccessorRO {
                             });
 
     // this lets us wrap the tempalted getters with the same types
-    wrapped.module().method("get_read_accessor",
-                            &_get_read_accessor<VT, n_dims>);
+    wrapped.module().method("get_read_accessor", &_get_read_accessor<VT, n_dims>);
   }
 };
 
@@ -169,7 +178,6 @@ struct WrapAccessorWO {
         });
 
     // this lets us wrap the tempalted getters with the same types
-    wrapped.module().method("get_write_accessor",
-                            &_get_write_accessor<VT, n_dims>);
+    wrapped.module().method("get_write_accessor", &_get_write_accessor<VT, n_dims>);
   }
 };
