@@ -40,6 +40,7 @@ global ARGV::ArgcArgv
 
 # Runtime initilization
 # Called once in lifetime of code
+# https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/examples/cpp/stencil/stencil.cc#L82
 function __init__()
     @initcxx
 
@@ -51,8 +52,6 @@ function __init__()
       @info "No LocalPreferences.toml using command line arguments, if any"
       global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
     end
-    
-    
     res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
     if res == 0
         @info "Started Legate successfully"
@@ -60,9 +59,9 @@ function __init__()
         @error "Failed to start Legate, got exit code $(res), exiting"
         Base.exit(res)
     end
-    Base.atexit(cuNumeric.legate_finish)
-
     # void return
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+
+    Base.atexit(cuNumeric.legate_finish)
 end
 end
