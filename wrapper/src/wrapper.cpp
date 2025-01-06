@@ -22,8 +22,8 @@
 #include "accessors.h"
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
-#include "legate/mapping/machine.h"
 #include "legate.h"
+#include "legate/mapping/machine.h"
 #include "legion.h"
 #include "types.h"
 
@@ -80,16 +80,12 @@ void write_double_1d(legate::AccessorWO<double, 1> acc, uint64_t e,
 //   Legion::Point<n_dims::value, T>;
 // };
 
-std::string get_machine_info(){
+std::string get_machine_info() {
   auto runtime = legate::Runtime::get_runtime();
   return runtime->get_machine().to_string();
 }
 
-void print_machine_info(){
-  std::cout << get_machine_info() << std::endl;     
-}
-
-
+void print_machine_info() { std::cout << get_machine_info() << std::endl; }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using jlcxx::ParameterList;
