@@ -93,21 +93,3 @@ void wrap_privilege_modes(jlcxx::Module& mod) {
   mod.set_const("LEGION_WRITE_DISCARD",
                 legion_privilege_mode_t::LEGION_WRITE_DISCARD);
 }
-
-void wrap_type_getters(jlcxx::Module& mod) {
-  mod.method("bool_", &legate::bool_);
-  mod.method("int8", &legate::int8);
-  mod.method("int16", &legate::int16);
-  mod.method("int32", &legate::int32);
-  mod.method("int64", &legate::int64);
-  mod.method("uint8", &legate::uint8);
-  mod.method("uint16", &legate::uint16);
-  mod.method("uint32", &legate::uint32);
-  mod.method("uint64", &legate::uint64);
-  mod.method("float16", &legate::float16);
-  mod.method("float32", &legate::float32);
-  mod.method("float64", &legate::float64);
-  // mod.method("complex32", &legate::complex32);
-  mod.method("complex64", &legate::complex64);
-  mod.method("complex128", &legate::complex128);
-}
