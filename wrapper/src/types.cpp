@@ -20,7 +20,6 @@
 #include "types.h"
 
 void wrap_type_enums(jlcxx::Module& mod) {
-
   auto lt = mod.add_type<legate::Type>("LegateType");
 
   mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
@@ -62,7 +61,6 @@ void wrap_type_enums(jlcxx::Module& mod) {
   mod.set_const("STRUCT", 18);
   mod.set_const("STRING", 19);
   mod.set_const("LIST", 20);
-
 
   lt.method("code", &legate::Type::code);
 }

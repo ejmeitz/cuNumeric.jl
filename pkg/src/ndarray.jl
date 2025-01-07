@@ -64,6 +64,8 @@ to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 
 #julia is 1 indexed vs c is 0 indexed. added the -1 
 to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
+to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
+
 
 function zeros(dims::Dims{N}, type::Type = Float64) where N
     opt = StdOptional{LegateType}(eval(type_map[type])())
@@ -144,12 +146,13 @@ function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: 
 end
 
 
-function Base.getindex(arr::NDArray, i::Int64)
+function Base.getindex(arr::NDArray, i::Int64) 
+    T = type_code_map[LEGION_TYPE_FLOAT64]
     acc = NDArrayAccessor{T,1}()
-    return read(acc, arr, i - 1)
+    return read(acc, arr, to_cpp_index(i))
 end
 
-function Base.setindex!(arr::NDArray, value::T, i::Int64)
+function Base.setindex!(arr::NDArray, value::T, i::Int64) where {T <: Number}
     acc = NDArrayAccessor{T,1}()
     write(acc, arr,  i - 1, value)
 end
