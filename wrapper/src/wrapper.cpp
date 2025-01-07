@@ -50,7 +50,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   wrap_type_enums(mod);
   wrap_type_getters(mod);
 
-
   using jlcxx::ParameterList;
   using jlcxx::Parametric;
   using jlcxx::TypeVar;
@@ -187,8 +186,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   ndarray_accessor
       .apply_combination<ApplyNDArrayAccessor, all_types, allowed_dims>(
           WrapNDArrayAccessor());
-
-
 
   mod.method("_zeros", &cupynumeric::zeros);  // operators.cc, 152
   mod.method("_full", &cupynumeric::full);    // operators.cc, 162

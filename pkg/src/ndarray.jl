@@ -33,29 +33,65 @@ const type_map = Dict{Type, Symbol}(
     Float16 => :float16, 
     Float32 => :float32, 
     Float64 => :float64,
-    # ComplexF16 => :complex32,  #COMMENTED OUT IN WRAPPER
+    # ComplexF16 => :complex32,  #COMMENTED OUT IN qWRAPPER
     ComplexF32 => :complex64, 
     ComplexF64 => :complex128
 )
 
-const type_code_map = Dict{Int32, Type}(
-    LEGION_TYPE_BOOL => Bool,
-    LEGION_TYPE_INT8 => Int8,
-    LEGION_TYPE_INT16 => Int16,
-    LEGION_TYPE_INT32 => Int32,
-    LEGION_TYPE_INT64 => Int64,
-    LEGION_TYPE_UINT8 => UInt8,
-    LEGION_TYPE_UINT16 => UInt16,
-    LEGION_TYPE_UINT32 => UInt32,
-    LEGION_TYPE_UINT64 => UInt64,
-    LEGION_TYPE_FLOAT16 => Float16,
-    LEGION_TYPE_FLOAT32 => Float32,
-    LEGION_TYPE_FLOAT64 => Float64,
-    LEGION_TYPE_COMPLEX64 => ComplexF32,
-    LEGION_TYPE_COMPLEX128 => ComplexF64,
-    # has different type than the rest cause its just an int in the enum
-    # cuNumeric.STRING => String
+const legate_string_julia_type_map = Dict{String, Type}(
+    "bool_" => Bool, 
+    "int8" => Int8,
+    "int16" => Int16,
+    "int32" => Int32,
+    "int64" => Int64,
+    "uint8" => UInt8,
+    "uint16" => UInt16,
+    "uint32" => UInt32, 
+    "uint64" => UInt64, 
+    "float16" => Float16, 
+    "float32" => Float32, 
+    "float64" => Float64,
+    # "complex32" => ComplexF16,  #COMMENTED OUT IN WRAPPER
+    "complex64" => ComplexF32, 
+    "complex128" => ComplexF64
 )
+
+# const code_type_map = Dict{UInt32, Type}(
+#     LEGION_TYPE_BOOL => Bool,
+#     LEGION_TYPE_INT8 => Int8,
+#     LEGION_TYPE_INT16 => Int16,
+#     LEGION_TYPE_INT32 => Int32,
+#     LEGION_TYPE_INT64 => Int64,
+#     LEGION_TYPE_UINT8 => UInt8,
+#     LEGION_TYPE_UINT16 => UInt16,
+#     LEGION_TYPE_UINT32 => UInt32,
+#     LEGION_TYPE_UINT64 => UInt64,
+#     LEGION_TYPE_FLOAT16 => Float16,
+#     LEGION_TYPE_FLOAT32 => Float32,
+#     LEGION_TYPE_FLOAT64 => Float64,
+#     LEGION_TYPE_COMPLEX64 => ComplexF32,
+#     LEGION_TYPE_COMPLEX128 => ComplexF64,
+#     # has different type than the rest cause its just an int in the enum
+#     # cuNumeric.STRING => String
+# )
+
+
+# const int_code_map  = Dict{UInt32, UInt32}(
+#     0x00000000 => LEGION_TYPE_BOOL,
+#     0x00000001 => LEGION_TYPE_INT8,
+#     0x00000002 => LEGION_TYPE_INT16,
+#     0x00000003 => LEGION_TYPE_INT32,
+#     0x00000004 => LEGION_TYPE_INT64,
+#     0x00000005 => LEGION_TYPE_UINT8,
+#     0x00000006 => LEGION_TYPE_UINT16,
+#     0x00000007 => LEGION_TYPE_UINT32,
+#     0x00000008 => LEGION_TYPE_UINT64,
+#     0x00000009 => LEGION_TYPE_FLOAT16,
+#     0x00000010 => LEGION_TYPE_FLOAT32,
+#     0x00000011 => LEGION_TYPE_FLOAT64,
+#     0x00000012 => LEGION_TYPE_COMPLEX64,
+#     0x00000013 => LEGION_TYPE_COMPLEX128,
+# )
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
@@ -112,18 +148,14 @@ end
 # end
 
 function Base.getindex(arr::NDArray, i::Dims{N}) where N
-    # TODO this is what we want
-    # T = type_map[type_code_map[cuNumeric.type(arr)]]
-
-    T = type_code_map[LEGION_TYPE_FLOAT64]
-
+    T = legate_string_julia_type_map[to_string(type(arr))]
     acc = NDArrayAccessor{T,N}()
     return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
 end
 
 
 function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    T = type_code_map[LEGION_TYPE_FLOAT64]
+    T = legate_string_julia_type_map[to_string(type(arr))]
     acc = NDArrayAccessor{T,2}()
     return read(acc, arr, to_cpp_index((i, j)))
 end
@@ -147,7 +179,7 @@ end
 
 
 function Base.getindex(arr::NDArray, i::Int64) 
-    T = type_code_map[LEGION_TYPE_FLOAT64]
+    T = legate_string_julia_type_map[to_string(type(arr))]
     acc = NDArrayAccessor{T,1}()
     return read(acc, arr, to_cpp_index(i))
 end

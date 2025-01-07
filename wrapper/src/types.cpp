@@ -63,6 +63,7 @@ void wrap_type_enums(jlcxx::Module& mod) {
   mod.set_const("LIST", 20);
 
   lt.method("code", &legate::Type::code);
+  lt.method("to_string", &legate::Type::to_string);
 }
 
 void wrap_type_getters(jlcxx::Module& mod) {
