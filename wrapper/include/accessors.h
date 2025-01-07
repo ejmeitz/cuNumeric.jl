@@ -187,8 +187,10 @@ using coord_t = long long;
 
 
 template <typename T, int n_dims>
-struct NDArrayAccessor{
-
+class NDArrayAccessor{
+public:
+  NDArrayAccessor() { }
+  ~NDArrayAccessor() { }
   //static
   T read(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims){
     auto p = Realm::Point<n_dims>(0);

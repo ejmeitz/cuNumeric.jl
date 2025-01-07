@@ -57,7 +57,6 @@ const type_code_map = Dict{Int32, Type}(
     # cuNumeric.STRING => String
 )
 
-
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
 #julia is 1 indexed vs c is 0 indexed. added the -1 
@@ -97,10 +96,17 @@ end
 #     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
 # end
 
-function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-    T = type_code_map[code(type(arr))]
+function Base.getindex(arr::NDArray, i::Dims{N}) where N
+    T = type_code_map[code(cuNumeric.type(arr))]
     acc = NDArrayAccessor{T,N}()
-    return read(acc, arr, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
+    return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
+end
+
+
+function Base.getindex(arr::NDArray, i::Int64, j::Int64)
+    T = type_code_map[code(cuNumeric.type(arr))]
+    acc = NDArrayAccessor{T,N}()
+    return read(acc, arr, to_cpp_index((i, j)))
 end
 
 
@@ -109,11 +115,16 @@ end
 #     write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
 # end
 
-function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
+function Base.setindex!(arr::NDArray, value::T, i::Dims{N}) where {T <: Number, N}
     acc = NDArrayAccessor{T,N}()
-    write(acc, arr, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
+    write(acc, arr, to_cpp_index(i), value) #* this probably allocates the tuple
 end
 
+
+function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: Number}
+    acc = NDArrayAccessor{T,2}()
+    write(acc, arr, to_cpp_index((i, j)), value)
+end
 
 
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
