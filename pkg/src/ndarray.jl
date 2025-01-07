@@ -97,15 +97,19 @@ end
 # end
 
 function Base.getindex(arr::NDArray, i::Dims{N}) where N
-    T = type_code_map[code(cuNumeric.type(arr))]
+    # TODO this is what we want
+    # T = type_map[type_code_map[cuNumeric.type(arr)]]
+
+    T = type_code_map[LEGION_TYPE_FLOAT64]
+
     acc = NDArrayAccessor{T,N}()
     return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
 end
 
 
 function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    T = type_code_map[code(cuNumeric.type(arr))]
-    acc = NDArrayAccessor{T,N}()
+    T = type_code_map[LEGION_TYPE_FLOAT64]
+    acc = NDArrayAccessor{T,2}()
     return read(acc, arr, to_cpp_index((i, j)))
 end
 

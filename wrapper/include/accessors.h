@@ -21,21 +21,19 @@ using coord_t = long long;
 // since they are not always public in legate or cupynumeric and this
 // is easier than making a PR there.
 
-
-
 // We can used instances of this struct to function parameters
 // to differentiate functions for Julia multiple dispatch to work
 // template<typename... Args>
 // struct TypeContainer{};
 
 // template<typename T, int n_dims>
-// using AccessorTypeContainer = TypeContainer<T, std::integral_constant<int, n_dims>>;
+// using AccessorTypeContainer = TypeContainer<T, std::integral_constant<int,
+// n_dims>>;
 
 // struct EmptyWrapper{
 //   template <typename TypeWrapperT>
 //   void operator()(TypeWrapperT&& wrapped) {}
 // };
-
 
 // ////////////////////
 
@@ -62,7 +60,8 @@ using coord_t = long long;
 // template <legion_privilege_mode_t PM, typename FT, int n_dims>
 // struct BuildParameterList<
 //     Legion::FieldAccessor<PM, FT, n_dims, coord_t,
-//                           Realm::AffineAccessor<FT, n_dims, coord_t>, false>> {
+//                           Realm::AffineAccessor<FT, n_dims, coord_t>, false>>
+//                           {
 //   using type =
 //       ParameterList<std::integral_constant<legion_privilege_mode_t, PM>, FT,
 //                     std::integral_constant<int_t, n_dims>>;
@@ -81,7 +80,7 @@ using coord_t = long long;
 // //specializaiton of TypeContainer for accessors
 // template <typename T, int n_dims>
 // struct BuildParameterList<AccessorTypeContainer<T, n_dims>>{
-//   using type = ParameterList<T, std::integral_constant<int_t, n_dims>>; 
+//   using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
 // };
 // }  // namespace jlcxx
 
@@ -106,8 +105,8 @@ using coord_t = long long;
 //   template <typename PM, typename FT, typename n_dims>
 //   using apply =
 //       Legion::FieldAccessor<PM::value, FT, n_dims::value, coord_t,
-//                             Realm::AffineAccessor<FT, n_dims::value, coord_t>,
-//                             false>;
+//                             Realm::AffineAccessor<FT, n_dims::value,
+//                             coord_t>, false>;
 // };
 
 // //////////////////////////////
@@ -115,15 +114,16 @@ using coord_t = long long;
 // // Need the extra type container parameters
 // // to differentaite betwen functions in Julia
 // template <typename T, int32_t DIM>
-// legate::AccessorRO<T, DIM> _get_read_accessor(cupynumeric::NDArray& arr, AccessorTypeContainer<T, DIM> tc) {
+// legate::AccessorRO<T, DIM> _get_read_accessor(cupynumeric::NDArray& arr,
+// AccessorTypeContainer<T, DIM> tc) {
 //   return arr.get_read_accessor<T, DIM>();
 // }
 
 // template <typename T, int32_t DIM>
-// legate::AccessorWO<T, DIM> _get_write_accessor(cupynumeric::NDArray& arr, AccessorTypeContainer<T, DIM> tc) {
+// legate::AccessorWO<T, DIM> _get_write_accessor(cupynumeric::NDArray& arr,
+// AccessorTypeContainer<T, DIM> tc) {
 //   return arr.get_write_accessor<T, DIM>();
 // }
-
 
 // struct WrapAccessorRO {
 //   template <typename TypeWrapperT>
@@ -139,7 +139,8 @@ using coord_t = long long;
 //     //  does this need to be uint64_t
 //     wrapped.module().method("read",
 //                             [](const LegateAccessorT& acc,
-//                                      const std::vector<uint64_t>& dims) -> auto {
+//                                      const std::vector<uint64_t>& dims) ->
+//                                      auto {
 //                               // feels suboptimal
 //                               // each call to [] in julia will call this
 //                               auto p = Realm::Point<n_dims>(0);
@@ -150,7 +151,8 @@ using coord_t = long long;
 //                             });
 
 //     // this lets us wrap the tempalted getters with the same types
-//     wrapped.module().method("get_read_accessor", &_get_read_accessor<VT, n_dims>);
+//     wrapped.module().method("get_read_accessor", &_get_read_accessor<VT,
+//     n_dims>);
 //   }
 // };
 
@@ -167,7 +169,8 @@ using coord_t = long long;
 //     // free methods
 //     wrapped.module().method(
 //         "write", [](const LegateAccessorT& acc,
-//                           const std::vector<uint64_t>& dims, VT val) -> auto {
+//                           const std::vector<uint64_t>& dims, VT val) -> auto
+//                           {
 //           // feels suboptimal
 //           // each call to [] in julia will call this
 //           auto p = Realm::Point<n_dims>(0);
@@ -178,21 +181,20 @@ using coord_t = long long;
 //         });
 
 //     // this lets us wrap the tempalted getters with the same types
-//     wrapped.module().method("get_write_accessor", &_get_write_accessor<VT, n_dims>);
+//     wrapped.module().method("get_write_accessor", &_get_write_accessor<VT,
+//     n_dims>);
 //   }
 // };
 
-
 /////////TEST
 
-
 template <typename T, int n_dims>
-class NDArrayAccessor{
-public:
-  NDArrayAccessor() { }
-  ~NDArrayAccessor() { }
-  //static
-  T read(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims){
+class NDArrayAccessor {
+ public:
+  NDArrayAccessor() {}
+  ~NDArrayAccessor() {}
+  // static
+  T read(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims) {
     auto p = Realm::Point<n_dims>(0);
     for (int i = 0; i < n_dims; ++i) {
       p[i] = dims[i];
@@ -201,33 +203,31 @@ public:
     return acc.read(p);
   }
 
-  //static
-  void write(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims, T val){
+  // static
+  void write(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims,
+             T val) {
     auto p = Realm::Point<n_dims>(0);
     for (int i = 0; i < n_dims; ++i) {
       p[i] = dims[i];
     }
     auto acc = arr.get_write_accessor<T, n_dims>();
-    acc.write(p, val); // DOES THIS HAVE A RETURN??
+    acc.write(p, val);  // DOES THIS HAVE A RETURN??
   }
-
 };
-
 
 namespace jlcxx {
 template <typename T, int n_dims>
 struct BuildParameterList<NDArrayAccessor<T, n_dims>> {
   using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
 };
-}
+}  // namespace jlcxx
 
-struct ApplyNDArrayAccessor{
+struct ApplyNDArrayAccessor {
   template <typename T, typename n_dims>
   using apply = NDArrayAccessor<T, n_dims::value>;
 };
 
-
-struct WrapNDArrayAccessor{
+struct WrapNDArrayAccessor {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
     using WrappedT = typename TypeWrapperT::type;
