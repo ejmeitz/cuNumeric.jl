@@ -24,11 +24,12 @@
 #include "accessors.h"
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
+#include "legate/mapping/machine.h"
 #include "legate.h"
 #include "legate/mapping/machine.h"
 #include "legion.h"
-#include "legion/legion_config.h"
 
+#include "legion/legion_config.h"
 
 #include "types.h"
 
@@ -40,31 +41,29 @@ struct WrapCppOptional {
   }
 };
 
-// double read_double_2d(legate::AccessorRO<double, 2> acc,
-//                       std::vector<uint64_t> dims) {
-//   Legion::Point<2> p = {dims[0], dims[1]};
-//   return acc.read(p);
-// }
-
-// void write_double_2d(legate::AccessorWO<double, 2> acc,
-//                      std::vector<uint64_t> dims, double val) {
-//   Legion::Point<2> p = {dims[0], dims[1]};
-//   acc.write(p, val);
-// }
-
-// WHY THIS NOT WORK????? no symbol for to_string???
 void get_machine_info() {
   auto runtime = legate::Runtime::get_runtime();
   std::string s = runtime->get_machine().to_string();
   std::cout << s << std::endl;
 }
 
-JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
+
+std::string get_machine_info(){
+  auto runtime = legate::Runtime::get_runtime();
+  return runtime->get_machine().to_string();
+}
 
   wrap_privilege_modes(mod);
   wrap_type_enums(mod);
   wrap_type_getters(mod);
 
+void print_machine_info(){
+  std::cout << get_machine_info() << std::endl;     
+}
+
+
+
+JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using jlcxx::ParameterList;
   using jlcxx::Parametric;
   using jlcxx::TypeVar;
@@ -82,7 +81,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using privilege_modes = ParameterList<
       std::integral_constant<legion_privilege_mode_t, LEGION_WRITE_DISCARD>,
       std::integral_constant<legion_privilege_mode_t, LEGION_READ_ONLY>>;
-
+  using allowed_dims = ParameterList<std::integral_constant<int, 1>,
+                                     std::integral_constant<int, 2>,
+                                     std::integral_constant<int, 3>>;
   // These are used in stencil.cc, seem important
   mod.method("start_legate", &legate::start);  // in legate/runtime.h
   mod.method(
@@ -90,12 +91,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
   mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
 
-  // mod.add_type<legate::Runtime>("LegateRuntime");
-  // mod.add_type<legate::mapping::Machine>("Machine");
-  // .method("to_string", &legate::mapping::Machine::to_string);
 
-  //// WHY THIS NOT WORK?????
   mod.method("get_machine_info", &get_machine_info);
+  mod.method("print_machine_info", &print_machine_info);
+
+  wrap_type_enums(mod);
+  mod.add_type<legate::Type>("LegateType");
+  wrap_type_getters(mod);
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
       .apply<std::optional<legate::Type>>(WrapCppOptional());
@@ -107,14 +109,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
-  //   mod.add_type<legate::AccessorRO<double, 2>>("AccessorRO_double_2d");
-  //   mod.add_type<legate::AccessorRO<float, 2>>("AccessorRO_float_2d");
-
-  //   mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
-  //   mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
-
-  //   mod.method("read_double_2d", &read_double_2d);
-  //   mod.method("write_double_2d", &write_double_2d);
 
   // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
   auto ndarray_base =
@@ -177,6 +171,89 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   /// Add a non-member function that uses Foo3
 //   typedef jlcxx::combine_types<ApplyAccessorRO, all_types, allowed_dims> accessor_ro_types;
 //   jlcxx::for_each_type<accessor_ro_types>(GetAccessorROFreeMethod(mod));
+
+  mod.add_type<legate::AccessorRO<double, 2>>("AccessorRO_double_2d");
+  mod.add_type<legate::AccessorRO<float, 2>>("AccessorRO_float_2d");
+
+  mod.add_type<legate::AccessorWO<float, 2>>("AccessorWO_float_2d");
+  mod.add_type<legate::AccessorWO<double, 2>>("AccessorWO_double_2d");
+
+  mod.add_type<legate::AccessorRO<double, 1>>("AccessorRO_double_1d");
+  mod.add_type<legate::AccessorRO<float, 1>>("AccessorRO_float_1d");
+
+  mod.add_type<legate::AccessorWO<float, 1>>("AccessorWO_float_1d");
+  mod.add_type<legate::AccessorWO<double, 1>>("AccessorWO_double_1d");
+
+  // MAKE THIS USE `allowed_dims` instead of hard coded
+  // mod.add_type<Parametric<TypeVar<1>>>("Point")
+  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto
+  //   wrapped){
+
+  //   });
+
+  // mod.method("make_point", &Realm::make_point);
+
+  // Creates tempalte instantiations forall combinations of RO and WO Accessors
+  //   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
+  //   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorRO", parent_type_RO);
+  //   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types,
+  //   allowed_dims>(WrapAccessorRO());
+
+  //   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
+  //   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>,
+  //   TypeVar<2>>>("AccessorWO", parent_type_WO);
+  //   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types,
+  //   allowed_dims>(WrapAccessorWO());
+  mod.method("read_double_1d", &read_double_1d);
+  mod.method("write_double_1d", &write_double_1d);
+  mod.method("read_double_2d", &read_double_2d);
+  mod.method("write_double_2d", &write_double_2d);
+
+  // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
+  mod.add_type<cupynumeric::NDArray>("NDArray")
+      // .constructor<cupynumeric::NDArray&&>()
+      .constructor<const cupynumeric::NDArray&>()
+      .method("dim", &cupynumeric::NDArray::dim)
+      .method("size", &cupynumeric::NDArray::size)
+      .method("shape", &cupynumeric::NDArray::shape)
+      .method("type", &cupynumeric::NDArray::type)
+      .method("copy", &cupynumeric::NDArray::copy)
+      .method("assign",
+              (void(cupynumeric::NDArray::*)(const cupynumeric::NDArray&)) &
+                  cupynumeric::NDArray::assign)
+      .method("_reshape", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              std::vector<int64_t>)) &
+                              cupynumeric::NDArray::reshape)
+      .method("as_type", &cupynumeric::NDArray::as_type)
+      .method("binary_op", &cupynumeric::NDArray::binary_op)
+      .method("get_store", &cupynumeric::NDArray::get_store)
+      .method("random", &cupynumeric::NDArray::random)
+      .method("fill", &cupynumeric::NDArray::fill)
+      .method("get_read_accessor_double_1d",
+              &cupynumeric::NDArray::get_read_accessor<double, 1>)
+      .method("get_write_accessor_double_1d",
+              &cupynumeric::NDArray::get_write_accessor<double, 1>)
+      .method("get_read_accessor_double_2d",
+              &cupynumeric::NDArray::get_read_accessor<double, 2>)
+      .method("get_read_accessor_float_2d",
+              &cupynumeric::NDArray::get_read_accessor<float, 2>)
+      .method("get_write_accessor_double_2d",
+              &cupynumeric::NDArray::get_write_accessor<double, 2>)
+      .method("get_write_accessor_float_2d",
+              &cupynumeric::NDArray::get_write_accessor<float, 2>)
+      .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                         const cupynumeric::NDArray&) const) &
+                         cupynumeric::NDArray::operator+)
+      .method("multiply", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              const cupynumeric::NDArray&) const) &
+                              cupynumeric::NDArray::operator*)
+      .method("add_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                                const legate::Scalar&) const) &
+                                cupynumeric::NDArray::operator+)
+      .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                                     const legate::Scalar&) const) &
+                                     cupynumeric::NDArray::operator*);
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);

@@ -9,33 +9,52 @@ This is a Julia wrapper using libcxxwrap (https://github.com/JuliaInterop/libcxx
 - Ubuntu 20.04 or RHEL 8
 - Julia 1.10
 
-### download Julia 
+#### download cupynumeric 
+
+```bash 
+conda create --name myenv 
+conda activate myenv
+CONDA_OVERRIDE_CUDA="12.2" \
+  conda install -c conda-forge -c legate cupynumeric
+```
+
+#### download Julia 
 `curl -fsSL https://install.julialang.org | sh`
 
-## git submodules
+#### git submodules
 ```bash
 git submodule init
 git submodule update
-
 ```
-## setup env 
+
+#### install with Julia pkg manager
+```julia
+    pkg>  activate ./pkg
+    pkg>  build
+```
+
+#### test the Julia package
+```julia
+    pkg>  test
+```
+
+## custom install
+
 Optional: You can create a file called `.localenv` in order to add anything to the path. 
 
 `source ENV` will setup the enviroment variables and source optional `.localenv`
 
-## install packages
-`sh scripts/install_cxxwrap.sh`
+`sh scripts/install_cxxwrap.sh`  builds the Julia CXX wrapper https://github.com/JuliaInterop/libcxxwrap-julia
 
-## patch legion
-`sh scripts/legion_redop_patch.inl`
+`sh scripts/legion_redop_patch.inl` patches Legion https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 
-## build wrapper
-`sh ./build.sh`
+`sh ./build.sh` will create `libcupynumericwrapper.so` in `$CUNUMERIC_JL_HOME/build`
 
 
 
-## Wish List / Question
-- Add public typedefs for template parameters in FieldAccessor/AccessorRO/AccessorWO so we can generate templated functions that use these classes
-- Where is MachineQueryInterface abstract interface implemented? Would be nice to have access to cpus(), gpus() etc. info
-    - Is there a way to use CuPyNumericRuntime to access this? legate_runtime_ is private
-        so no access to machine info that legate found
+## Contact
+For technical questions, please either contact 
+`krasow(at)u.northwestern.edu` OR
+`emeitz(at)andrew.cmu.edu`
+
+If the issue is building the package, please include the `build.log` and `env.log` found in `cuNumeric.jl/pkg/deps/` 

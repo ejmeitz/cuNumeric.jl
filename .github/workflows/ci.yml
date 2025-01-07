@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Create Conda environment
+        run: |
+          mkdir -p ~/miniconda3
+          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+          bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+          rm ~/miniconda3/miniconda.sh
+          source ~/miniconda3/bin/activate
+          conda init --all
+          export PATH="$HOME/miniconda/bin:$PATH"
+          conda create --name myenv python=3.10 -y
+          conda activate myenv
+          conda install -c conda-forge -c legate cupynumeric -y
+
+      - name: Install Julia 
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.10'
+          
+      - name: Install Dependencies
+        run: |
+          git submodule init
+          git submodule update
+          export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
+          julia --project=./pkg -e 'using Pkg; Pkg.build(); Pkg.instantiate()'
+
+      - name: Run Tests
+        run: julia --project=./pkg -e 'using Pkg; Pkg.test()'

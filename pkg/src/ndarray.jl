@@ -59,6 +59,9 @@ const type_code_map = Dict{Int32, Type}(
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
+to_cpp_dims_int(dims::Dims{N}, int_type::Type = Int64) where N = StdVector(int_type.([d for d in dims]))
+to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
+
 #julia is 1 indexed vs c is 0 indexed. added the -1 
 to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
 
@@ -71,6 +74,16 @@ end
 function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
     dims_uint64 = to_cpp_dims(dims)
     return _full(dims_uint64, LegateScalar(val))
+end
+
+function reshape(arr::NDArray, i::Dims{N}) where N
+    i_int64 = to_cpp_dims_int(i)
+    return _reshape(arr, i_int64)
+end
+
+function reshape(arr::NDArray, i::Int64)
+    i_int64 = to_cpp_dims_int(i)
+    return _reshape(arr, i_int64)
 end
 
 function Base.:*(arr1::NDArray, arr2::NDArray)
@@ -131,11 +144,24 @@ function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: 
 end
 
 
+function Base.getindex(arr::NDArray, i::Int64)
+    acc = NDArrayAccessor{T,1}()
+    return read(acc, arr, i - 1)
+end
+
+function Base.setindex!(arr::NDArray, value::T, i::Int64)
+    acc = NDArrayAccessor{T,1}()
+    write(acc, arr,  i - 1, value)
+end
+
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
-    # TODO fix temp hardcoded solution
-    nrows = 100
-    ncols = 100
-    
+    # TODO this only works on 2D arrays
+    # Flatten array NDAray.flat() ?
+    # Maybe use Legion PointInRect iterator ?
+
+    arr_dims = cuNumeric.shape(arr)
+    nrows = Int64(arr_dims[1])
+    ncols = Int64(arr_dims[2])
 
     julia_array = Base.zeros((nrows, ncols))
     for i in 1:nrows
@@ -146,15 +172,84 @@ function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
     return julia_array
 end
 
-
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, rows::Colon, cols::Colon)
-    fill(arr, LegateScalar(value))
+function Base.getindex(arr::NDArray, e::Colon)
+    elems = Int64(cuNumeric.size(arr));
+    julia_array = Base.zeros(elems)
+    for i in 1:elems
+        julia_array[i] = arr[i]
+    end
+    return julia_array
 end
 
 
+# arr[:] = value
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c::Colon)
+    fill(arr, LegateScalar(value))
+end
+
+# arr[:, :] = value
+function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c1::Colon, c2::Colon)
+    fill(arr, LegateScalar(value))
+end
+
+# arr1 == arr2
+function Base.:(==)(arr1::NDArray, arr2::NDArray)
+    # TODO this only works on 2D arrays
+    # should we use a lazy hashing approach? 
+    # something like this? would this be better than looping thru the elements?
+    # hash(arr1.data) == hash(arr2.data)
+    if (cuNumeric.dim(arr1) != cuNumeric.dim(arr2))
+        return false
+    end
+
+    if(cuNumeric.dim(arr1) >= 3)
+        return false
+    end
+
+    dim_array = cuNumeric.dim(arr1) 
+    if(dim_array == 1)
+        if (cuNumeric.size(arr1) != cuNumeric.size(arr2))
+            printstyled("WARNING: left NDArray is $size(arr1) and right NDArray array is $(size(arr1))!\n", color=:yellow, bold=true)
+            return false
+        end
+        
+        for i in 1:size(arr1)
+            if arr1[i] != arr2[i]
+                # not equal
+                return false
+            end
+        end
+
+
+    elseif(dim_array == 2)
+        arr1_dims = cuNumeric.shape(arr1)
+        arr2_dims = cuNumeric.shape(arr2)
+
+        if (cuNumeric.size(arr1) != cuNumeric.size(arr2))
+            printstyled("WARNING: left NDArray is $(arr1_dims[1]) by $(arr1_dims[2]) and right NDArray array is $(arr2_dims[1]) by $(arr2_dims[2])!\n", color=:yellow, bold=true)
+            return false
+        end
+        
+        nrows = Int64(arr1_dims[1])
+        ncols = Int64(arr1_dims[2])
+
+        for i in 1:nrows
+            for j in 1:ncols
+                if arr1[i, j] != arr2[i, j]
+                    # not equal
+                    return false
+                end
+            end
+        end
+    end
+    # successful completion
+    return true
+end
+
+# arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Matrix)
     if (cuNumeric.size(arr) != prod(Base.size(julia_array)))
-        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(Base.size(julia_array))!\n", color=:yellow, bold=true)
+        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(prod(Base.size(julia_array)))!\n", color=:yellow, bold=true)
         return false
     end
     
@@ -173,7 +268,32 @@ end
 
 
 
+# arr == julia_array
+function Base.:(==)(arr::NDArray, julia_array::Vector)
+    elems = Int64(cuNumeric.size(arr));
+    if (elems != prod(Base.size(julia_array)))
+        printstyled("WARNING: left NDArray is $(elems) and right Julia array is $(prod(Base.size(julia_array)))!\n", color=:yellow, bold=true)
+        return false
+    end
+    
+    for i in 1:elems
+        if arr[i] != julia_array[i]
+            # not equal
+            return false
+        end
+    end
+    return true    
+end
+
+
+# julia_array == arr
 function Base.:(==)(julia_array::Matrix, arr::NDArray)
+    # flip LHS and RHS
+    return (arr == julia_array)
+end
+
+# julia_array == arr
+function Base.:(==)(julia_array::Vector, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)
 end

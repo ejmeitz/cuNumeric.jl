@@ -17,51 +17,51 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-#= Purpose of test: daxby_advanced
-    -- Test arbitrary types and dimensions (not done)
-    -- add overloading support for [double/float scalar] * NDArray
-    -- equavalence operator between a cuNumeric and Julia array without looping
-    --          result == (α_cpu * x_cpu + y_cpu)
-    --          (α_cpu * x_cpu + y_cpu) == result
-    -- x[:, :] colon notation for reading entire NDArray to a Julia array
-    -- x[:, :] colon notation for filling entire NDArray with scalar
+#= Purpose of test: daxpy
+    -- Focused on double 2 dimenional. Does not test other types or dims. 
+    -- NDArray intialization 
+    -- NDArray writing and reading scalar indexing
+    --          shows both [i, j] and [(i, j)] working
+    -- NDArray addition and multiplication
 =#
-
-function daxpy_advanced()
-    seed = 10
-
+function daxpy_basic()
     N = 100
     dims = (N, N)
 
-    α = 56.6
 
-    # base Julia arrays
+    α_cpu = 56.6
     x_cpu = zeros(dims);
     y_cpu = zeros(dims);
 
     # cunumeric arrays
+
+    # TODO 
+    # result = α * x + y  
+    # ERROR: MethodError: no method matching *(::Float64, ::cuNumeric.NDArrayAllocated)     
+    α = cuNumeric.full(dims, Float64(56.6))
     x = cuNumeric.zeros(dims)
     y = cuNumeric.zeros(dims)
 
-    # test fill with scalar of all elements of the NDArray
-    x[:, :] = 4.23
-    
-    @test x == fill(4.23, dims)
-     
-    # create two random arrays
-    cuNumeric.random(x, seed)
-    cuNumeric.random(y, seed)
 
-    # set all the elements of each NDArray to the CPU array equivalent
-    x_cpu = x[:, :]
-    y_cpu = y[:, :]
+    for i in 1:N
+        for j in 1:N
+            x_cpu[i, j] = rand()
+            y_cpu[i, j] = rand()
+            # set cunumeric.jl arrays
+            x[i, j] = x_cpu[i, j]
+            y[i, j] = y_cpu[i, j]
+        end
+    end
 
 
     result = α * x + y
 
     # check results 
-    @test result == (α * x_cpu + y_cpu)
-    @test (α * x_cpu + y_cpu) == result
+    for i in 1:N
+        for j in 1:N
+            # we are explicity checking the == operator and not !=
+            @test (result[(i, j)] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
+        end
+    end
 
-    nothing
 end
