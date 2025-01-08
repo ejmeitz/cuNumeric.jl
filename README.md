@@ -1,6 +1,6 @@
 # cuNumeric.jl
  
-This is a Julia wrapper using libcxxwrap (https://github.com/JuliaInterop/libcxxwrap-julia) for cupynumeric (https://github.com/nv-legate/cupynumeric).
+This is a Julia wrapper using [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia) for [cupynumeric](https://github.com/nv-legate/cupynumeric).
 
 ## Minimum prereqs
 - g++ capable of C++20
