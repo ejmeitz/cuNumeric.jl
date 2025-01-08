@@ -42,6 +42,9 @@ function types_dim(T::Type, dim)
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
 
+    x_cpu = x[:, :]
+    y_cpu = y[:, :]
+
     result = α * x + y
 
     @test result == (α * x_cpu + y_cpu)

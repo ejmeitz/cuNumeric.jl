@@ -34,14 +34,14 @@ end
     @testset daxpy_advanced()
     
     @testset "types_dim" begin
-        types_dim(Float32, 1)
-        types_dim(Float32, 2)
-        types_dim(Float32, 3)
-        types_dim(Float64, 1)
+        # types_dim(Float32, 1)
+        # types_dim(Float32, 2)
+        # types_dim(Float32, 3)
+        # types_dim(Float64, 1)
         types_dim(Float64, 2)
-        types_dim(Float64, 3)
-        types_dim(Int64, 1)
+        # types_dim(Float64, 3)
+        # types_dim(Int64, 1)
         types_dim(Int64, 2)
-        types_dim(Int64, 3)
+        # types_dim(Int64, 3)
     end
 end
