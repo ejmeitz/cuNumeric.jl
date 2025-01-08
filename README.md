@@ -8,6 +8,7 @@ This is a Julia wrapper using libcxxwrap (https://github.com/JuliaInterop/libcxx
 - Python 3.10
 - Ubuntu 20.04 or RHEL 8
 - Julia 1.10
+- CMake 3.26.4 
 
 #### download cupynumeric 
 
