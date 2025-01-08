@@ -95,6 +95,7 @@ const legate_string_julia_type_map = Dict{String, Type}(
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
+to_cpp_dims(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d]))
 to_cpp_dims_int(dims::Dims{N}, int_type::Type = Int64) where N = StdVector(int_type.([d for d in dims]))
 to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 
@@ -109,7 +110,19 @@ function zeros(dims::Dims{N}, type::Type = Float64) where N
     return _zeros(dims_uint64, opt)
 end
 
-function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
+function zeros(dims::Int64, type::Type = Float64)
+    opt = StdOptional{LegateType}(eval(type_map[type])())
+    dims_uint64 = to_cpp_dims(dims)
+    return _zeros(dims_uint64, opt)
+end
+
+
+function full(dims::Dims{N}, val::T) where {T <: Number, N}
+    dims_uint64 = to_cpp_dims(dims)
+    return _full(dims_uint64, LegateScalar(val))
+end
+
+function full(dims::Int64, val::T) where {T <: Number}
     dims_uint64 = to_cpp_dims(dims)
     return _full(dims_uint64, LegateScalar(val))
 end
@@ -128,24 +141,18 @@ function Base.:*(arr1::NDArray, arr2::NDArray)
     return multiply(arr1, arr2)
 end
 
+function Base.:*(val::T, arr::NDArray) where {T <: Number}
+    return multiply_scalar(arr, LegateScalar(val))
+end
+
 function Base.:+(arr1::NDArray, arr2::NDArray)
     return add(arr1, arr2)
 end
 
-function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
+function Base.:+(val::T, arr::NDArray) where {T <: Number}
     return add_scalar(arr, LegateScalar(val))
 end
 
-function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
-    return multiply_scalar(arr, LegateScalar(val))
-end
-
-
-# function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-#     T = legion_type_map[code(type(arr))]
-#     acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
-#     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
-# end
 
 function Base.getindex(arr::NDArray, i::Dims{N}) where N
     T = legate_string_julia_type_map[to_string(type(arr))]
@@ -153,40 +160,16 @@ function Base.getindex(arr::NDArray, i::Dims{N}) where N
     return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
 end
 
-
-function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    T = legate_string_julia_type_map[to_string(type(arr))]
-    acc = NDArrayAccessor{T,2}()
-    return read(acc, arr, to_cpp_index((i, j)))
-end
-
-
-# function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
-#     acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
-#     write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
-# end
-
-function Base.setindex!(arr::NDArray, value::T, i::Dims{N}) where {T <: Number, N}
-    acc = NDArrayAccessor{T,N}()
-    write(acc, arr, to_cpp_index(i), value) #* this probably allocates the tuple
-end
-
-
-function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,2}()
-    write(acc, arr, to_cpp_index((i, j)), value)
-end
-
-
 function Base.getindex(arr::NDArray, i::Int64) 
     T = legate_string_julia_type_map[to_string(type(arr))]
     acc = NDArrayAccessor{T,1}()
     return read(acc, arr, to_cpp_index(i))
 end
 
-function Base.setindex!(arr::NDArray, value::T, i::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,1}()
-    write(acc, arr,  i - 1, value)
+function Base.getindex(arr::NDArray, i::Int64, j::Int64)
+    T = legate_string_julia_type_map[to_string(type(arr))]
+    acc = NDArrayAccessor{T,2}()
+    return read(acc, arr, to_cpp_index((i, j)))
 end
 
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
@@ -217,13 +200,42 @@ function Base.getindex(arr::NDArray, e::Colon)
 end
 
 
+# function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
+#     T = legion_type_map[code(type(arr))]
+#     acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
+#     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
+# end
+
+# function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
+#     acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
+#     write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
+# end
+
+function Base.setindex!(arr::NDArray, value::T, i::Dims{N}) where {T <: Number, N}
+    acc = NDArrayAccessor{T,N}()
+    write(acc, arr, to_cpp_index(i), value) #* this probably allocates the tuple
+end
+
+
+function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: Number}
+    acc = NDArrayAccessor{T,2}()
+    write(acc, arr, to_cpp_index((i, j)), value)
+end
+
+
+
+function Base.setindex!(arr::NDArray, value::T, i::Int64) where {T <: Number}
+    acc = NDArrayAccessor{T,1}()
+    write(acc, arr,  i - 1, value)
+end
+
 # arr[:] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c::Colon)
+function Base.setindex!(arr::NDArray, value::T, c::Colon) where {T <: Number}
     fill(arr, LegateScalar(value))
 end
 
 # arr[:, :] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c1::Colon, c2::Colon)
+function Base.setindex!(arr::NDArray, value::T, c1::Colon, c2::Colon) where {T <: Number}
     fill(arr, LegateScalar(value))
 end
 

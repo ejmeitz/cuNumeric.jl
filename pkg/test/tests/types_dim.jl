@@ -17,31 +17,32 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-using Test
-using cuNumeric
-
-
-include("tests/daxpy.jl")
-include("tests/daxpy_advanced.jl")
-include("tests/types_dim.jl")
-
-@testset "This is checking 1 == 1" begin
-    @test 1 == 1
-end
-
-@testset verbose = true "daxpy Tests" begin
-    @testset daxpy_basic()
-    @testset daxpy_advanced()
-    
-    @testset "types_dim" begin
-        types_dim(Float32, 1)
-        types_dim(Float32, 2)
-        types_dim(Float32, 3)
-        types_dim(Float64, 1)
-        types_dim(Float64, 2)
-        types_dim(Float64, 3)
-        types_dim(Int64, 1)
-        types_dim(Int64, 2)
-        types_dim(Int64, 3)
+#= Purpose of test: types_dim
+    runtests will call types_dim multiple times varying the Type and # of dims
+=#
+function types_dim(T::Type, dim)
+    if dim == 1
+        dims = (10000)
+    elseif dim == 2
+        dims = (100, 100)
+    elseif dim == 3
+        dims = (10, 10, 10)
     end
+
+    seed = 10
+
+    α = T(56)
+    
+    x_cpu = Base.zeros(T, dims);
+    y_cpu = Base.zeros(T, dims);
+
+    x = cuNumeric.zeros(dims, T)
+    y = cuNumeric.zeros(dims, T)
+
+    cuNumeric.random(x, seed)
+    cuNumeric.random(y, seed)
+
+    result = α * x + y
+
+    @test result == (α * x_cpu + y_cpu)
 end
