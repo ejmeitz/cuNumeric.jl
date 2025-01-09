@@ -28,10 +28,10 @@ git submodule init
 git submodule update
 ```
 
-#### install with Julia pkg manager
+#### Run the build script
 ```julia
-    pkg>  activate ./pkg
-    pkg>  build
+# Progress is piped into build.log and env.log
+julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```
 
 #### test the Julia package
