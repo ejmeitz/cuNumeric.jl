@@ -36,7 +36,12 @@ julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 
 #### test the Julia package
 ```julia
-    pkg>  test
+julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
+```
+alternatively enter the julia REPL, press `]` to activate the package manager and type
+```julia
+activate ./pkg
+test
 ```
 
 ## custom install
