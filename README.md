@@ -28,7 +28,7 @@ git submodule init
 git submodule update
 ```
 
-#### Run the build script
+#### Run the build script from the root of the repository
 ```julia
 # Progress is piped into build.log and env.log
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
