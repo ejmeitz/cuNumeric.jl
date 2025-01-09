@@ -38,10 +38,10 @@ struct WrapCppOptional {
   }
 };
 
-std::string get_machine_info() {
-  auto runtime = legate::Runtime::get_runtime();
-  return runtime->get_machine().to_string();
-}
+// std::string get_machine_info() {
+//   auto runtime = legate::Runtime::get_runtime();
+//   return runtime->get_machine().to_string();
+// }
 
 void print_machine_info() { std::cout << get_machine_info() << std::endl; }
 

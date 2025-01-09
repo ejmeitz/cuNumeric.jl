@@ -28,3 +28,14 @@ fi
 
 JULIA="julia"
 export JULIA_PATH=$(which $JULIA)
+
+# 0 : Disable automatic configuration
+# 1 : Enable automatic fongiruation
+export LEGATE_AUTO_CONFIG=0
+
+# 0 : Do no print reserved resources
+# 1 : Print reserverd resources on startup
+export LEGATE_SHOW_CONFIG=1
+
+export LEGATE_CONFIG="--cpus 10 --gpus 1"
+

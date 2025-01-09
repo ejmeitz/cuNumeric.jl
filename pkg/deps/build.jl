@@ -40,7 +40,10 @@ else
     @error "Environment file not found: $env_file"
 end
 
-@info ENV["CUNUMERIC_JL_HOME"]
+@info "CUNUMERIC_JL_HOME = $(ENV["CUNUMERIC_JL_HOME"])"
+
+@info "LEGATE_SHOW_CONFIG = $(ENV["LEGATE_SHOW_CONFIG"])"
+@info "LEGATE_CONFIG = $(ENV["LEGATE_CONFIG"])"
 
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md

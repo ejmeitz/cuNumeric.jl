@@ -57,10 +57,9 @@ global ARGV::ArgcArgv
 function __init__()
     @initcxx
 
-    # BREAK THE LEGATE/CUNUMERIC OPTIONS OUT INTO CLASS
-    # SO THEY CAN BE STARTED AND STOPPED MULTIPLE TIMES
-    # INSIDE OF A SINGLE JULIA CODE WITH DIFFERENT ARGS
-    global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
+    # Legate ignores these arguments
+    global ARGV = ArgcArgv([Base.julia_cmd()[1]])
+    
     
     res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
     if res == 0
@@ -71,7 +70,6 @@ function __init__()
     end
     Base.atexit(cuNumeric.legate_finish)
 
-    # void return
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 end
 end
