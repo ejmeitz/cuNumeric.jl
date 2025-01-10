@@ -16,7 +16,6 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
-export ArrayDesc
 
 # is legion Complex128 same as ComplexF64 in julia? 
 # These are methods that return a LegateTypeAllocated
@@ -38,60 +37,23 @@ const type_map = Dict{Type, Symbol}(
     ComplexF64 => :complex128
 )
 
-const legate_string_julia_type_map = Dict{String, Type}(
-    "bool_" => Bool, 
-    "int8" => Int8,
-    "int16" => Int16,
-    "int32" => Int32,
-    "int64" => Int64,
-    "uint8" => UInt8,
-    "uint16" => UInt16,
-    "uint32" => UInt32, 
-    "uint64" => UInt64, 
-    "float16" => Float16, 
-    "float32" => Float32, 
-    "float64" => Float64,
-    # "complex32" => ComplexF16,  #COMMENTED OUT IN WRAPPER
-    "complex64" => ComplexF32, 
-    "complex128" => ComplexF64
+const code_type_map = Dict{cuNumeric.TypeCode, Type}(
+    cuNumeric.BOOL => Bool,
+    cuNumeric.INT8 => Int8,
+    cuNumeric.INT16 => Int16,
+    cuNumeric.INT32 => Int32,
+    cuNumeric.INT64 => Int64,
+    cuNumeric.UINT8 => UInt8,
+    cuNumeric.UINT16 => UInt16,
+    cuNumeric.UINT32 => UInt32,
+    cuNumeric.UINT64 => UInt64,
+    cuNumeric.FLOAT16 => Float16,
+    cuNumeric.FLOAT32 => Float32,
+    cuNumeric.FLOAT64 => Float64,
+    cuNumeric.COMPLEX64 => ComplexF32,
+    cuNumeric.COMPLEX128 => ComplexF64,
+    cuNumeric.STRING => String
 )
-
-# const code_type_map = Dict{UInt32, Type}(
-#     LEGION_TYPE_BOOL => Bool,
-#     LEGION_TYPE_INT8 => Int8,
-#     LEGION_TYPE_INT16 => Int16,
-#     LEGION_TYPE_INT32 => Int32,
-#     LEGION_TYPE_INT64 => Int64,
-#     LEGION_TYPE_UINT8 => UInt8,
-#     LEGION_TYPE_UINT16 => UInt16,
-#     LEGION_TYPE_UINT32 => UInt32,
-#     LEGION_TYPE_UINT64 => UInt64,
-#     LEGION_TYPE_FLOAT16 => Float16,
-#     LEGION_TYPE_FLOAT32 => Float32,
-#     LEGION_TYPE_FLOAT64 => Float64,
-#     LEGION_TYPE_COMPLEX64 => ComplexF32,
-#     LEGION_TYPE_COMPLEX128 => ComplexF64,
-#     # has different type than the rest cause its just an int in the enum
-#     # cuNumeric.STRING => String
-# )
-
-
-# const int_code_map  = Dict{UInt32, UInt32}(
-#     0x00000000 => LEGION_TYPE_BOOL,
-#     0x00000001 => LEGION_TYPE_INT8,
-#     0x00000002 => LEGION_TYPE_INT16,
-#     0x00000003 => LEGION_TYPE_INT32,
-#     0x00000004 => LEGION_TYPE_INT64,
-#     0x00000005 => LEGION_TYPE_UINT8,
-#     0x00000006 => LEGION_TYPE_UINT16,
-#     0x00000007 => LEGION_TYPE_UINT32,
-#     0x00000008 => LEGION_TYPE_UINT64,
-#     0x00000009 => LEGION_TYPE_FLOAT16,
-#     0x00000010 => LEGION_TYPE_FLOAT32,
-#     0x00000011 => LEGION_TYPE_FLOAT64,
-#     0x00000012 => LEGION_TYPE_COMPLEX64,
-#     0x00000013 => LEGION_TYPE_COMPLEX128,
-# )
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
@@ -141,53 +103,19 @@ function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
 end
 
 
-# function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-#     T = legion_type_map[code(type(arr))]
-#     acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
-#     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
-# end
 
-function Base.getindex(arr::NDArray, i::Dims{N}) where N
-    T = legate_string_julia_type_map[to_string(type(arr))]
+function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
+    T = code_type_map[code(type(arr))]
     acc = NDArrayAccessor{T,N}()
-    return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
+    return read(acc, arr, to_cpp_index(idxs))
 end
 
 
-function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    T = legate_string_julia_type_map[to_string(type(arr))]
-    acc = NDArrayAccessor{T,2}()
-    return read(acc, arr, to_cpp_index((i, j)))
-end
-
-
-# function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
-#     acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
-#     write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
-# end
-
-function Base.setindex!(arr::NDArray, value::T, i::Dims{N}) where {T <: Number, N}
+function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
     acc = NDArrayAccessor{T,N}()
-    write(acc, arr, to_cpp_index(i), value) #* this probably allocates the tuple
+    write(acc, arr, to_cpp_index(idxs), value)
 end
 
-
-function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,2}()
-    write(acc, arr, to_cpp_index((i, j)), value)
-end
-
-
-function Base.getindex(arr::NDArray, i::Int64) 
-    T = legate_string_julia_type_map[to_string(type(arr))]
-    acc = NDArrayAccessor{T,1}()
-    return read(acc, arr, to_cpp_index(i))
-end
-
-function Base.setindex!(arr::NDArray, value::T, i::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,1}()
-    write(acc, arr,  i - 1, value)
-end
 
 function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
     # TODO this only works on 2D arrays

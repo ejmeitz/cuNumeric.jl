@@ -22,48 +22,50 @@
 void wrap_type_enums(jlcxx::Module& mod) {
   auto lt = mod.add_type<legate::Type>("LegateType");
 
-  mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
-  mod.set_const("LEGION_TYPE_BOOL", 0);
-  mod.set_const("LEGION_TYPE_INT8", 1);
-  mod.set_const("LEGION_TYPE_INT16", 2);
-  mod.set_const("LEGION_TYPE_INT32", 3);
-  mod.set_const("LEGION_TYPE_INT64", 4);
-  mod.set_const("LEGION_TYPE_UINT8", 5);
-  mod.set_const("LEGION_TYPE_UINT16", 6);
-  mod.set_const("LEGION_TYPE_UINT32", 7);
-  mod.set_const("LEGION_TYPE_UINT64", 8);
-  mod.set_const("LEGION_TYPE_FLOAT16", 9);
-  mod.set_const("LEGION_TYPE_FLOAT32", 10);
-  mod.set_const("LEGION_TYPE_FLOAT64", 11);
-  mod.set_const("LEGION_TYPE_COMPLEX32", 12);
-  mod.set_const("LEGION_TYPE_COMPLEX64", 13);
-  mod.set_const("LEGION_TYPE_COMPLEX128", 14);
-  mod.set_const("LEGION_TYPE_TOTAL", 15);
+  // mod.add_bits<legion_type_id_t>("LegionType", jlcxx::julia_type("CppEnum"));
+  // mod.set_const("LEGION_TYPE_BOOL", 0);
+  // mod.set_const("LEGION_TYPE_INT8", 1);
+  // mod.set_const("LEGION_TYPE_INT16", 2);
+  // mod.set_const("LEGION_TYPE_INT32", 3);
+  // mod.set_const("LEGION_TYPE_INT64", 4);
+  // mod.set_const("LEGION_TYPE_UINT8", 5);
+  // mod.set_const("LEGION_TYPE_UINT16", 6);
+  // mod.set_const("LEGION_TYPE_UINT32", 7);
+  // mod.set_const("LEGION_TYPE_UINT64", 8);
+  // mod.set_const("LEGION_TYPE_FLOAT16", 9);
+  // mod.set_const("LEGION_TYPE_FLOAT32", 10);
+  // mod.set_const("LEGION_TYPE_FLOAT64", 11);
+  // mod.set_const("LEGION_TYPE_COMPLEX32", 12);
+  // mod.set_const("LEGION_TYPE_COMPLEX64", 13);
+  // mod.set_const("LEGION_TYPE_COMPLEX128", 14);
+  // mod.set_const("LEGION_TYPE_TOTAL", 15);
 
+  // HARD CODED CAUSE ITS BREAK THINGS IN THE WRAPPER TO JUMP 
+  // AROUND BETWEEN 3 ENUMS
   mod.add_bits<legate::Type::Code>("TypeCode", jlcxx::julia_type("CppEnum"));
-  mod.set_const("BOOL", legion_type_id_t::LEGION_TYPE_BOOL);
-  mod.set_const("INT8", legion_type_id_t::LEGION_TYPE_INT8);
-  mod.set_const("INT16", legion_type_id_t::LEGION_TYPE_INT16);
-  mod.set_const("INT32", legion_type_id_t::LEGION_TYPE_INT32);
-  mod.set_const("INT64", legion_type_id_t::LEGION_TYPE_INT64);
-  mod.set_const("UINT8", legion_type_id_t::LEGION_TYPE_UINT8);
-  mod.set_const("UINT16", legion_type_id_t::LEGION_TYPE_UINT16);
-  mod.set_const("UINT32", legion_type_id_t::LEGION_TYPE_UINT32);
-  mod.set_const("UINT64", legion_type_id_t::LEGION_TYPE_UINT64);
-  mod.set_const("FLOAT16", legion_type_id_t::LEGION_TYPE_FLOAT16);
-  mod.set_const("FLOAT32", legion_type_id_t::LEGION_TYPE_FLOAT32);
-  mod.set_const("FLOAT64", legion_type_id_t::LEGION_TYPE_FLOAT64);
-  mod.set_const("COMPLEX64", legion_type_id_t::LEGION_TYPE_COMPLEX64);
-  mod.set_const("COMPLEX128", legion_type_id_t::LEGION_TYPE_COMPLEX128);
-  mod.set_const("NIL", 15);
-  mod.set_const("BINARY", 16);
-  mod.set_const("FIXED_ARRAY", 17);
-  mod.set_const("STRUCT", 18);
-  mod.set_const("STRING", 19);
-  mod.set_const("LIST", 20);
+  mod.set_const("BOOL", legate::Type::Code::BOOL); //legion_type_id_t::LEGION_TYPE_BOOL
+  mod.set_const("INT8", legate::Type::Code::INT8); //legion_type_id_t::LEGION_TYPE_INT8
+  mod.set_const("INT16", legate::Type::Code::INT16); // legion_type_id_t::LEGION_TYPE_INT16);
+  mod.set_const("INT32", legate::Type::Code::INT32); // legion_type_id_t::LEGION_TYPE_INT32);
+  mod.set_const("INT64", legate::Type::Code::INT64); // legion_type_id_t::LEGION_TYPE_INT64);
+  mod.set_const("UINT8", legate::Type::Code::UINT8); // legion_type_id_t::LEGION_TYPE_UINT8);
+  mod.set_const("UINT16", legate::Type::Code::UINT16); // legion_type_id_t::LEGION_TYPE_UINT16);
+  mod.set_const("UINT32", legate::Type::Code::UINT32); // legion_type_id_t::LEGION_TYPE_UINT32);
+  mod.set_const("UINT64", legate::Type::Code::UINT64); //legion_type_id_t::LEGION_TYPE_UINT64);
+  mod.set_const("FLOAT16", legate::Type::Code::FLOAT16); //legion_type_id_t::LEGION_TYPE_FLOAT16);
+  mod.set_const("FLOAT32", legate::Type::Code::FLOAT32); // legion_type_id_t::LEGION_TYPE_FLOAT32);
+  mod.set_const("FLOAT64", legate::Type::Code::FLOAT64); // legion_type_id_t::LEGION_TYPE_FLOAT64);
+  mod.set_const("COMPLEX64", legate::Type::Code::COMPLEX64); // legion_type_id_t::LEGION_TYPE_COMPLEX64);
+  mod.set_const("COMPLEX128", legate::Type::Code::COMPLEX128); // legion_type_id_t::LEGION_TYPE_COMPLEX128);
+  mod.set_const("NIL", legate::Type::Code::NIL);
+  mod.set_const("BINARY", legate::Type::Code::BINARY);
+  mod.set_const("FIXED_ARRAY", legate::Type::Code::FIXED_ARRAY);
+  mod.set_const("STRUCT", legate::Type::Code::STRUCT);
+  mod.set_const("STRING", legate::Type::Code::STRING);
+  mod.set_const("LIST", legate::Type::Code::LIST);
 
   lt.method("code", &legate::Type::code);
-  lt.method("to_string", &legate::Type::to_string);
+  // lt.method("to_string", &legate::Type::to_string); // ABI issue :)
 }
 
 void wrap_type_getters(jlcxx::Module& mod) {

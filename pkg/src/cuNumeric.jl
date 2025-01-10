@@ -24,12 +24,10 @@ module cuNumeric
 # the above yields:: std::optional<cupynumeric::NDArray>
 
 using CxxWrap
+
 # abstract type AbstractFieldAccessor{PM,FT,n_dims} end
 # abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
 # abstract type AbstractAccessorWO{T,N} end
-
-
-struct CppEnum end
 
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
@@ -52,6 +50,8 @@ mutable struct ArgcArgv
 getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
 global ARGV::ArgcArgv  
 
+
+
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
@@ -60,8 +60,20 @@ function __init__()
     # Legate ignores these arguments
     global ARGV = ArgcArgv([Base.julia_cmd()[1]])
     
-    
-    res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    res = -1
+    pipe = Pipe()
+    started = Base.Event()
+    writer = @async redirect_stdout(pipe) do
+        notify(started)
+        res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+        close(Base.pipe_writer(pipe))
+    end
+
+    wait(started)
+    legate_config_str = Base.read(pipe, String)
+    wait(writer) 
+    println("CONFIGURATION:\n $(legate_config_str)")
+
     if res == 0
         @info "Started Legate successfully"
     else
