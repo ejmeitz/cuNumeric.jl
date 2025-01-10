@@ -32,7 +32,7 @@ const type_map = Dict{Type, Symbol}(
     Float16 => :float16, 
     Float32 => :float32, 
     Float64 => :float64,
-    # ComplexF16 => :complex32,  #COMMENTED OUT IN qWRAPPER
+    # ComplexF16 => :complex32,  #COMMENTED OUT IN WRAPPER
     ComplexF32 => :complex64, 
     ComplexF64 => :complex128
 )
@@ -52,7 +52,7 @@ const code_type_map = Dict{cuNumeric.TypeCode, Type}(
     cuNumeric.FLOAT64 => Float64,
     cuNumeric.COMPLEX64 => ComplexF32,
     cuNumeric.COMPLEX128 => ComplexF64,
-    cuNumeric.STRING => String
+    cuNumeric.STRING => String # CxxString?
 )
 
 #probably some way to enforce this only gets passed int types
@@ -134,6 +134,7 @@ function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
     end
     return julia_array
 end
+
 
 function Base.getindex(arr::NDArray, e::Colon)
     elems = Int64(cuNumeric.size(arr));

@@ -57,9 +57,11 @@ global ARGV::ArgcArgv
 function __init__()
     @initcxx
 
-    # Legate ignores these arguments
+    # Legate ignores these arguments...
     global ARGV = ArgcArgv([Base.julia_cmd()[1]])
     
+    # Capture stdout from start_legate to 
+    # see the hardware configuration
     res = -1
     pipe = Pipe()
     started = Base.Event()
@@ -72,7 +74,7 @@ function __init__()
     wait(started)
     legate_config_str = Base.read(pipe, String)
     wait(writer) 
-    println("CONFIGURATION:\n $(legate_config_str)")
+    println(legate_config_str)
 
     if res == 0
         @info "Started Legate successfully"
