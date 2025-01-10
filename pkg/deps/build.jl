@@ -51,10 +51,17 @@ legion_patch = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/patch_legion.sh")
 @info "Running legion patch script: $legion_patch"
 run(`bash $legion_patch`)
 
-# build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
-build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
-@info "Running libcxxwrap build script: $build_libcxxwrap"
-run(`bash $build_libcxxwrap`)
+
+# Check if libcxxwrap is already built -- its slow
+libcxxwrap_build_path = joinpath(DEPOT_PATH[1], "dev/libcxxwrap_julia_jll/override/lib/libcxxwrap_julia.so")
+if isfile(libcxxwrap_build_path)
+    @info "Found existing libcxxwrap, skipping build"
+else
+    # build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
+    build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
+    @info "Running libcxxwrap build script: $build_libcxxwrap"
+    run(`bash $build_libcxxwrap`)
+end
 
 # create libcupynumericwrapper.so in CUNUMERIC_JL_HOME/build
 build_cupynumeric_wrapper = joinpath(ENV["CUNUMERIC_JL_HOME"], "build.sh")
