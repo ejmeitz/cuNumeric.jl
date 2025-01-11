@@ -18,7 +18,7 @@
 =#
 
 # is legion Complex128 same as ComplexF64 in julia? 
-# These are methods that return a LegateTypeAllocated
+# These are methods that return a Legate::Type
 global const type_map = Dict{Type, Symbol}(
     Bool => :bool_, 
     Int8 => :int8,

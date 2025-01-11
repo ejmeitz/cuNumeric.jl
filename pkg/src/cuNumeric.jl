@@ -47,7 +47,6 @@ mutable struct ArgcArgv
   end
   
 getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
-global ARGV::ArgcArgv  
 
 
 # Runtime initilization
@@ -56,7 +55,7 @@ function __init__()
     @initcxx
 
     # Legate ignores these arguments...
-    global ARGV = ArgcArgv([Base.julia_cmd()[1]])
+    AA = ArgcArgv([Base.julia_cmd()[1]])
 
     @info "Starting Legate"
     
@@ -67,7 +66,7 @@ function __init__()
     started = Base.Event()
     writer = @async redirect_stdout(pipe) do
         notify(started)
-        res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+        res = cuNumeric.start_legate(AA.argc, getargv(AA))
         close(Base.pipe_writer(pipe))
     end
 
@@ -84,7 +83,7 @@ function __init__()
     end
     Base.atexit(cuNumeric.legate_finish)
 
-    cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+    cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
 end
 
 
