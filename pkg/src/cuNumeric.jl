@@ -34,7 +34,6 @@ lib = "libcupynumericwrapper.so"
 
 include("ndarray.jl")
 
-
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
     argv
@@ -51,7 +50,6 @@ getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
 global ARGV::ArgcArgv  
 
 
-
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
@@ -59,6 +57,8 @@ function __init__()
 
     # Legate ignores these arguments...
     global ARGV = ArgcArgv([Base.julia_cmd()[1]])
+
+    @info "Starting Legate"
     
     # Capture stdout from start_legate to 
     # see the hardware configuration
@@ -74,7 +74,7 @@ function __init__()
     wait(started)
     legate_config_str = Base.read(pipe, String)
     wait(writer) 
-    println(legate_config_str)
+    print(legate_config_str)
 
     if res == 0
         @info "Started Legate successfully"
@@ -86,4 +86,6 @@ function __init__()
 
     cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
 end
+
+
 end
