@@ -72,7 +72,9 @@ to_legate_type(T::Type) = type_map[T]()
 
 
 # can use metaprogramming to generate a more generic version
-# of this that does not need a tuple passed in
+# of this that does not need a tuple passed in. Ideally both 
+# zeros([T=Float64,] dims::Int...)
+# zeros([T=Float64,] dims::Tuple)
 function zeros(dims::Dims{N}, type::Type = Float64) where N
     LT = to_legate_type(type)
     opt = StdOptional{LegateType}(LT)
