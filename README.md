@@ -43,13 +43,12 @@ julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
 ```julia
 using cuNumeric
 
-arr = cuNumeric.zeros(Float64, 5, 5)
-cuNumeric.random(arr, 0) #why does this function take an int?
+arr = cuNumeric.random(3,3)
 
 α = 1.32
 b = 2.0
 
-arr2 = α*arr + b
+arr2 = α*arr + b # does this allocate 1 or 2 new NDArrays
 arr2[:,:] # the current syntax for collecting all values and printing
 ```
 

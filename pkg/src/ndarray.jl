@@ -1,3 +1,6 @@
+export random!, random
+
+
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
  *
@@ -67,7 +70,7 @@ to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type
 to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
 
 # disgustingggggg
-get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
+Base.eltype(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
@@ -75,7 +78,7 @@ to_legate_type(T::Type) = type_map[T]()
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
 
 function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-    T = get_ndarray_type(arr)
+    T = eltype(arr)
     acc = NDArrayAccessor{T,N}()
     return read(acc, arr, to_cpp_index(idxs))
 end
@@ -92,7 +95,7 @@ end
 # whole new array in here. Not exactly what I expect form []
 function Base.getindex(arr::NDArray, c::Vararg{Colon, N}) where N
     arr_dims = Int.(cuNumeric.shape(arr))
-    T = get_ndarray_type(arr)
+    T = eltype(arr)
     julia_array = Base.zeros(T, arr_dims...)
 
     for CI in CartesianIndices(julia_array)
@@ -129,13 +132,13 @@ function Base.size(arr::NDArray, dim::Int)
 end
 
 function Base.show(io::IO, arr::NDArray)
-    T = get_ndarray_type(arr)
+    T = eltype(arr)
     dim = Base.size(arr)
     print(io, "NDArray of $(T)s, Dim: $(dim)")
 end
 
 function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
-    T = get_ndarray_type(arr)
+    T = eltype(arr)
     dim = Base.size(arr)
     print(io, "NDArray of $(T)s, Dim: $(dim)")
 end
@@ -188,6 +191,25 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
 end
 
 
+"""
+    cuNumeric.random!(arr::NDArray)
+
+Fills `arr` with Float64s uniformly at random
+"""
+
+#* WHAT DOES THIS INTEGER DO???
+random!(arr::NDArray) = cuNumeric.random(arr, 0)
+
+"""
+    cuNumeric.random(dims::Dims)
+    cuNumeric.random(dims::Int...)
+
+Create a new NDArray of size `dims`, filled with Float64s uniformly at random
+"""
+random(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+random(dims::Int...) = random(dims)
+
+
 #### OPERATIONS ####
 
 function reshape(arr::NDArray, i::Dims{N}) where N
@@ -216,15 +238,19 @@ function Base.:+(arr::NDArray, val::Union{Float32, Float64})
     return add_scalar(arr, LegateScalar(val))
 end
 
-#* not sure the out arr can be same as input array
-# function Base.:+=(lhs::NDArray, rhs::NDArray)
-#     return add(lhs, rhs, StdOptional{NDArray}(lhs)) 
-# end
-
 function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
+#* Can't overload += in Julia, this should be called by .+= 
+#* to maintain some semblence native Julia array syntax
+function add!(arr1::NDArray, arr2::NDArray)
+    return _add(arr1, arr2, arr1)
+end
+
+function multiply!(arr1::NDArray, arr2::NDArray)
+    return _multiply(arr1, arr2, arr1)
+end
 
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)

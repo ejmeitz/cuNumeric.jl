@@ -133,8 +133,9 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
   mod.method("_full", &cupynumeric::full);    // operators.cc, 162
   mod.method("_dot", &cupynumeric::dot);      // operators.cc, 263
   mod.method("_sum", &cupynumeric::sum);      // operators.cc, 303
-  mod.method("add", &cupynumeric::add);
-  mod.method("multiply", &cupynumeric::multiply);
+  mod.method("_add", &cupynumeric::add);
+  mod.method("_multiply", &cupynumeric::multiply);
+  mod.method("_random_ndarray", &cupynumeric::random);
 
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
