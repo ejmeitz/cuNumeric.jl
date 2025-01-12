@@ -1,5 +1,6 @@
 export random!, random
 
+import LinearAlgebra: mul!
 
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
@@ -191,6 +192,7 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
 end
 
 
+#* TODO ACTUALLY REIMPLEMENT Base.rand and Random.randn! to maintain interface
 """
     cuNumeric.random!(arr::NDArray)
 
@@ -246,13 +248,17 @@ end
 
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
-function add!(arr1::NDArray, arr2::NDArray)
-    return _add(arr1, arr2, arr1)
+function add!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    return _add(arr1, arr2, out)
 end
 
-function multiply!(arr1::NDArray, arr2::NDArray)
-    return _multiply(arr1, arr2, arr1)
+function multiply!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    return _multiply(arr1, arr2, out)
 end
+
+# function mul!(out::NDArray, A::NDArray, B::NDArray)
+#  #
+# end
 
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)
