@@ -36,6 +36,56 @@ using coord_t = long long;
 // template instantiation. This should overload the call, operator(), which is
 // passed as a functor to apply_combiation.....what a mess
 
+
+template <typename T, int n_dims>
+class NDArrayAccessor {
+ public:
+  NDArrayAccessor() {}
+  ~NDArrayAccessor() {}
+  // static
+  T read(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims) {
+    auto p = Realm::Point<n_dims>(0);
+    for (int i = 0; i < n_dims; ++i) {
+      p[i] = dims[i];
+    }
+    auto acc = arr.get_read_accessor<T, n_dims>();
+    return acc.read(p);
+  }
+
+  // static
+  void write(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims,
+             T val) {
+    auto p = Realm::Point<n_dims>(0);
+    for (int i = 0; i < n_dims; ++i) {
+      p[i] = dims[i];
+    }
+    auto acc = arr.get_write_accessor<T, n_dims>();
+    acc.write(p, val);  // DOES THIS HAVE A RETURN??
+  }
+};
+
+namespace jlcxx {
+template <typename T, int n_dims>
+struct BuildParameterList<NDArrayAccessor<T, n_dims>> {
+  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
+};
+}  // namespace jlcxx
+
+struct ApplyNDArrayAccessor {
+  template <typename T, typename n_dims>
+  using apply = NDArrayAccessor<T, n_dims::value>;
+};
+
+struct WrapNDArrayAccessor {
+  template <typename TypeWrapperT>
+  void operator()(TypeWrapperT&& wrapped) {
+    using WrappedT = typename TypeWrapperT::type;
+    wrapped.template constructor<WrappedT>();
+    wrapped.method("read", &WrappedT::read);
+    wrapped.method("write", &WrappedT::write);
+  }
+};
+
 // I also defined some wrapper classes to expose the template parameters
 // since they are not always public in legate or cupynumeric and this
 // is easier than making a PR there.
@@ -205,54 +255,3 @@ using coord_t = long long;
 //     n_dims>);
 //   }
 // };
-
-/////////TEST
-
-template <typename T, int n_dims>
-class NDArrayAccessor {
- public:
-  NDArrayAccessor() {}
-  ~NDArrayAccessor() {}
-  // static
-  T read(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims) {
-    auto p = Realm::Point<n_dims>(0);
-    for (int i = 0; i < n_dims; ++i) {
-      p[i] = dims[i];
-    }
-    auto acc = arr.get_read_accessor<T, n_dims>();
-    return acc.read(p);
-  }
-
-  // static
-  void write(cupynumeric::NDArray arr, const std::vector<uint64_t>& dims,
-             T val) {
-    auto p = Realm::Point<n_dims>(0);
-    for (int i = 0; i < n_dims; ++i) {
-      p[i] = dims[i];
-    }
-    auto acc = arr.get_write_accessor<T, n_dims>();
-    acc.write(p, val);  // DOES THIS HAVE A RETURN??
-  }
-};
-
-namespace jlcxx {
-template <typename T, int n_dims>
-struct BuildParameterList<NDArrayAccessor<T, n_dims>> {
-  using type = ParameterList<T, std::integral_constant<int_t, n_dims>>;
-};
-}  // namespace jlcxx
-
-struct ApplyNDArrayAccessor {
-  template <typename T, typename n_dims>
-  using apply = NDArrayAccessor<T, n_dims::value>;
-};
-
-struct WrapNDArrayAccessor {
-  template <typename TypeWrapperT>
-  void operator()(TypeWrapperT&& wrapped) {
-    using WrappedT = typename TypeWrapperT::type;
-    wrapped.template constructor<WrappedT>();
-    wrapped.method("read", &WrappedT::read);
-    wrapped.method("write", &WrappedT::write);
-  }
-};

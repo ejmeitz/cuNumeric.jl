@@ -38,12 +38,12 @@ struct WrapCppOptional {
   }
 };
 
-std::string get_machine_info() {
-  auto runtime = legate::Runtime::get_runtime();
-  return runtime->get_machine().to_string();
-}
+// std::string get_machine_info() {
+//   auto runtime = legate::Runtime::get_runtime();
+//   return runtime->get_machine().to_string();
+// }
 
-void print_machine_info() { std::cout << get_machine_info() << std::endl; }
+// void print_machine_info() { std::cout << get_machine_info() << std::endl; }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   wrap_privilege_modes(mod);
@@ -77,8 +77,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
   mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
 
-  mod.method("get_machine_info", &get_machine_info);
-  mod.method("print_machine_info", &print_machine_info);
+//   mod.method("get_machine_info", &get_machine_info);
+//   mod.method("print_machine_info", &print_machine_info);
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
       .apply<std::optional<legate::Type>>(WrapCppOptional());

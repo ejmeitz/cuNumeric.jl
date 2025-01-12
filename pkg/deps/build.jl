@@ -40,7 +40,10 @@ else
     @error "Environment file not found: $env_file"
 end
 
-@info ENV["CUNUMERIC_JL_HOME"]
+@info "CUNUMERIC_JL_HOME = $(ENV["CUNUMERIC_JL_HOME"])"
+
+@info "LEGATE_SHOW_CONFIG = $(ENV["LEGATE_SHOW_CONFIG"])"
+@info "LEGATE_CONFIG = $(ENV["LEGATE_CONFIG"])"
 
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
@@ -48,10 +51,17 @@ legion_patch = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/patch_legion.sh")
 @info "Running legion patch script: $legion_patch"
 run(`bash $legion_patch`)
 
-# build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
-build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
-@info "Running libcxxwrap build script: $build_libcxxwrap"
-run(`bash $build_libcxxwrap`)
+
+# Check if libcxxwrap is already built -- its slow
+libcxxwrap_build_path = joinpath(DEPOT_PATH[1], "dev/libcxxwrap_julia_jll/override/lib/libcxxwrap_julia.so")
+if isfile(libcxxwrap_build_path) && "REBUILD_JLCXX" ∉ keys(ENV)
+    @info "Found existing libcxxwrap, skipping build"
+else
+    # build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
+    build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
+    @info "Running libcxxwrap build script: $build_libcxxwrap"
+    run(`bash $build_libcxxwrap`)
+end
 
 # create libcupynumericwrapper.so in CUNUMERIC_JL_HOME/build
 build_cupynumeric_wrapper = joinpath(ENV["CUNUMERIC_JL_HOME"], "build.sh")

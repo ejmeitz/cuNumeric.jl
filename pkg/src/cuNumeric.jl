@@ -24,18 +24,15 @@ module cuNumeric
 # the above yields:: std::optional<cupynumeric::NDArray>
 
 using CxxWrap
+
 # abstract type AbstractFieldAccessor{PM,FT,n_dims} end
 # abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
 # abstract type AbstractAccessorWO{T,N} end
-
-
-struct CppEnum end
 
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
 include("ndarray.jl")
-
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
@@ -50,19 +47,34 @@ mutable struct ArgcArgv
   end
   
 getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
-global ARGV::ArgcArgv  
+
 
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
     @initcxx
 
-    # BREAK THE LEGATE/CUNUMERIC OPTIONS OUT INTO CLASS
-    # SO THEY CAN BE STARTED AND STOPPED MULTIPLE TIMES
-    # INSIDE OF A SINGLE JULIA CODE WITH DIFFERENT ARGS
-    global ARGV = ArgcArgv([Base.julia_cmd()[1], ARGS...])
+    # Legate ignores these arguments...
+    AA = ArgcArgv([Base.julia_cmd()[1]])
+
+    @info "Starting Legate"
     
-    res = cuNumeric.start_legate(ARGV.argc, getargv(ARGV))
+    # Capture stdout from start_legate to 
+    # see the hardware configuration
+    res = -1
+    pipe = Pipe()
+    started = Base.Event()
+    writer = @async redirect_stdout(pipe) do
+        notify(started)
+        res = cuNumeric.start_legate(AA.argc, getargv(AA))
+        close(Base.pipe_writer(pipe))
+    end
+
+    wait(started)
+    legate_config_str = Base.read(pipe, String)
+    wait(writer) 
+    print(legate_config_str)
+
     if res == 0
         @info "Started Legate successfully"
     else
@@ -71,7 +83,8 @@ function __init__()
     end
     Base.atexit(cuNumeric.legate_finish)
 
-    # void return
-    cuNumeric.initialize_cunumeric(ARGV.argc, getargv(ARGV))
+    cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
 end
+
+
 end

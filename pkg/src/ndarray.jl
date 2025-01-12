@@ -16,82 +16,46 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
-export ArrayDesc
 
 # is legion Complex128 same as ComplexF64 in julia? 
-# These are methods that return a LegateTypeAllocated
-const type_map = Dict{Type, Symbol}(
-    Bool => :bool_, 
-    Int8 => :int8,
-    Int16 => :int16,
-    Int32 => :int32,
-    Int64 => :int64,
-    UInt8 => :uint8,
-    UInt16 => :uint16,
-    UInt32 => :uint32, 
-    UInt64 => :uint64, 
-    Float16 => :float16, 
-    Float32 => :float32, 
-    Float64 => :float64,
-    # ComplexF16 => :complex32,  #COMMENTED OUT IN qWRAPPER
-    ComplexF32 => :complex64, 
-    ComplexF64 => :complex128
+# These are methods that return a Legate::Type
+global const type_map = Dict{Type, Function}(
+    Bool => cuNumeric.bool_, 
+    Int8 => cuNumeric.int8,
+    Int16 => cuNumeric.int16,
+    Int32 => cuNumeric.int32,
+    Int64 => cuNumeric.int64,
+    UInt8 => cuNumeric.uint8,
+    UInt16 => cuNumeric.uint16,
+    UInt32 => cuNumeric.uint32, 
+    UInt64 => cuNumeric.uint64, 
+    Float16 => cuNumeric.float16, 
+    Float32 => cuNumeric.float32, 
+    Float64 => cuNumeric.float64,
+    # ComplexF16 => cuNumeric.complex32,  #COMMENTED OUT IN WRAPPER
+    ComplexF32 => cuNumeric.complex64, 
+    ComplexF64 => cuNumeric.complex128
 )
 
-const legate_string_julia_type_map = Dict{String, Type}(
-    "bool_" => Bool, 
-    "int8" => Int8,
-    "int16" => Int16,
-    "int32" => Int32,
-    "int64" => Int64,
-    "uint8" => UInt8,
-    "uint16" => UInt16,
-    "uint32" => UInt32, 
-    "uint64" => UInt64, 
-    "float16" => Float16, 
-    "float32" => Float32, 
-    "float64" => Float64,
-    # "complex32" => ComplexF16,  #COMMENTED OUT IN WRAPPER
-    "complex64" => ComplexF32, 
-    "complex128" => ComplexF64
+# hate this but casting to Int gets around 
+# a bug where TypeCode can't be used at compile time 
+global const code_type_map = Dict{Int, Type}(
+    Int(cuNumeric.BOOL) => Bool,
+    Int(cuNumeric.INT8) => Int8,
+    Int(cuNumeric.INT16) => Int16,
+    Int(cuNumeric.INT32) => Int32,
+    Int(cuNumeric.INT64) => Int64,
+    Int(cuNumeric.UINT8) => UInt8,
+    Int(cuNumeric.UINT16) => UInt16,
+    Int(cuNumeric.UINT32) => UInt32,
+    Int(cuNumeric.UINT64) => UInt64,
+    Int(cuNumeric.FLOAT16) => Float16,
+    Int(cuNumeric.FLOAT32) => Float32,
+    Int(cuNumeric.FLOAT64) => Float64,
+    Int(cuNumeric.COMPLEX64) => ComplexF32,
+    Int(cuNumeric.COMPLEX128) => ComplexF64,
+    Int(cuNumeric.STRING) => String # CxxString?
 )
-
-# const code_type_map = Dict{UInt32, Type}(
-#     LEGION_TYPE_BOOL => Bool,
-#     LEGION_TYPE_INT8 => Int8,
-#     LEGION_TYPE_INT16 => Int16,
-#     LEGION_TYPE_INT32 => Int32,
-#     LEGION_TYPE_INT64 => Int64,
-#     LEGION_TYPE_UINT8 => UInt8,
-#     LEGION_TYPE_UINT16 => UInt16,
-#     LEGION_TYPE_UINT32 => UInt32,
-#     LEGION_TYPE_UINT64 => UInt64,
-#     LEGION_TYPE_FLOAT16 => Float16,
-#     LEGION_TYPE_FLOAT32 => Float32,
-#     LEGION_TYPE_FLOAT64 => Float64,
-#     LEGION_TYPE_COMPLEX64 => ComplexF32,
-#     LEGION_TYPE_COMPLEX128 => ComplexF64,
-#     # has different type than the rest cause its just an int in the enum
-#     # cuNumeric.STRING => String
-# )
-
-
-# const int_code_map  = Dict{UInt32, UInt32}(
-#     0x00000000 => LEGION_TYPE_BOOL,
-#     0x00000001 => LEGION_TYPE_INT8,
-#     0x00000002 => LEGION_TYPE_INT16,
-#     0x00000003 => LEGION_TYPE_INT32,
-#     0x00000004 => LEGION_TYPE_INT64,
-#     0x00000005 => LEGION_TYPE_UINT8,
-#     0x00000006 => LEGION_TYPE_UINT16,
-#     0x00000007 => LEGION_TYPE_UINT32,
-#     0x00000008 => LEGION_TYPE_UINT64,
-#     0x00000009 => LEGION_TYPE_FLOAT16,
-#     0x00000010 => LEGION_TYPE_FLOAT32,
-#     0x00000011 => LEGION_TYPE_FLOAT64,
-#     0x00000012 => LEGION_TYPE_COMPLEX64,
-#     0x00000013 => LEGION_TYPE_COMPLEX128,
-# )
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
@@ -102,9 +66,18 @@ to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
 to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
 
+# disgustingggggg
+get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
+to_legate_type(T::Type) = type_map[T]()
 
+
+# can use metaprogramming to generate a more generic version
+# of this that does not need a tuple passed in. Ideally both 
+# zeros([T=Float64,] dims::Int...)
+# zeros([T=Float64,] dims::Tuple)
 function zeros(dims::Dims{N}, type::Type = Float64) where N
-    opt = StdOptional{LegateType}(eval(type_map[type])())
+    LT = to_legate_type(type)
+    opt = StdOptional{LegateType}(LT)
     dims_uint64 = to_cpp_dims(dims)
     return _zeros(dims_uint64, opt)
 end
@@ -141,90 +114,39 @@ function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
 end
 
 
-# function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-#     T = legion_type_map[code(type(arr))]
-#     acc = get_read_accessor(arr, AccessorTypeContainer{T, N}())
-#     return read(acc, to_cpp_index(tuple(idxs...))) #* this probably allocates the tuple
-# end
 
-function Base.getindex(arr::NDArray, i::Dims{N}) where N
-    T = legate_string_julia_type_map[to_string(type(arr))]
+function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
+    T = get_ndarray_type(arr)
     acc = NDArrayAccessor{T,N}()
-    return read(acc, arr, to_cpp_index(i)) #* this probably allocates the tuple
+    return read(acc, arr, to_cpp_index(idxs))
 end
 
 
-function Base.getindex(arr::NDArray, i::Int64, j::Int64)
-    T = legate_string_julia_type_map[to_string(type(arr))]
-    acc = NDArrayAccessor{T,2}()
-    return read(acc, arr, to_cpp_index((i, j)))
-end
-
-
-# function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
-#     acc = get_write_accessor(arr, AccessorTypeContainer{T, N}())
-#     write(acc, to_cpp_index(tuple(idxs...)), value) #* this probably allocates the tuple
-# end
-
-function Base.setindex!(arr::NDArray, value::T, i::Dims{N}) where {T <: Number, N}
+function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
     acc = NDArrayAccessor{T,N}()
-    write(acc, arr, to_cpp_index(i), value) #* this probably allocates the tuple
+    write(acc, arr, to_cpp_index(idxs), value)
 end
 
 
-function Base.setindex!(arr::NDArray, value::T, i::Int64, j::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,2}()
-    write(acc, arr, to_cpp_index((i, j)), value)
-end
+# USED TO CONVERT NDArray to Julia Array
+# Long term probably be a named function since we allocate
+# whole new array in here. Not exactly what I expect form []
+function Base.getindex(arr::NDArray, c::Vararg{Colon, N}) where N
+    arr_dims = Int.(cuNumeric.shape(arr))
+    T = get_ndarray_type(arr)
+    julia_array = Base.zeros(T, arr_dims...)
 
-
-function Base.getindex(arr::NDArray, i::Int64) 
-    T = legate_string_julia_type_map[to_string(type(arr))]
-    acc = NDArrayAccessor{T,1}()
-    return read(acc, arr, to_cpp_index(i))
-end
-
-function Base.setindex!(arr::NDArray, value::T, i::Int64) where {T <: Number}
-    acc = NDArrayAccessor{T,1}()
-    write(acc, arr,  i - 1, value)
-end
-
-function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
-    # TODO this only works on 2D arrays
-    # Flatten array NDAray.flat() ?
-    # Maybe use Legion PointInRect iterator ?
-
-    arr_dims = cuNumeric.shape(arr)
-    nrows = Int64(arr_dims[1])
-    ncols = Int64(arr_dims[2])
-
-    julia_array = Base.zeros((nrows, ncols))
-    for i in 1:nrows
-        for j in 1:ncols
-            julia_array[i, j] = arr[i, j]
-        end
+    for CI in CartesianIndices(julia_array)
+        julia_array[CI] = arr[Tuple(CI)...]
     end
+
     return julia_array
 end
 
-function Base.getindex(arr::NDArray, e::Colon)
-    elems = Int64(cuNumeric.size(arr));
-    julia_array = Base.zeros(elems)
-    for i in 1:elems
-        julia_array[i] = arr[i]
-    end
-    return julia_array
-end
-
-
-# arr[:] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c::Colon)
-    fill(arr, LegateScalar(value))
-end
-
-# arr[:, :] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c1::Colon, c2::Colon)
-    fill(arr, LegateScalar(value))
+# This should also probably be a named function
+# We can just define a specialization for Base.fill(::NDArray)
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N}) where N
+    fill(arr, LegateScalar(val))
 end
 
 # arr1 == arr2

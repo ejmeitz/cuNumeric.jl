@@ -60,7 +60,7 @@ function daxpy_basic()
     for i in 1:N
         for j in 1:N
             # we are explicity checking the == operator and not !=
-            @test (result[(i, j)] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
+            @test (result[i, j] == (α_cpu * x_cpu[i, j] + y_cpu[i, j]))
         end
     end
 
