@@ -222,6 +222,8 @@ function reshape(arr::NDArray, i::Int64)
     return _reshape(arr, i_int64)
 end
 
+# For matricies some might expect this to be matmul
+# should probably only call this when .* is used
 function Base.:*(arr1::NDArray, arr2::NDArray)
     return multiply(arr1, arr2)
 end
