@@ -37,22 +37,23 @@ global const type_map = Dict{Type, Symbol}(
     ComplexF64 => :complex128
 )
 
-global const code_type_map = Dict{TypeCode, Type}(
-    cuNumeric.BOOL => Bool,
-    cuNumeric.INT8 => Int8,
-    cuNumeric.INT16 => Int16,
-    cuNumeric.INT32 => Int32,
-    cuNumeric.INT64 => Int64,
-    cuNumeric.UINT8 => UInt8,
-    cuNumeric.UINT16 => UInt16,
-    cuNumeric.UINT32 => UInt32,
-    cuNumeric.UINT64 => UInt64,
-    cuNumeric.FLOAT16 => Float16,
-    cuNumeric.FLOAT32 => Float32,
-    cuNumeric.FLOAT64 => Float64,
-    cuNumeric.COMPLEX64 => ComplexF32,
-    cuNumeric.COMPLEX128 => ComplexF64,
-    cuNumeric.STRING => String # CxxString?
+# hate this but its gets around a bug 
+global const code_type_map = Dict{Int, Type}(
+    Int(cuNumeric.BOOL) => Bool,
+    Int(cuNumeric.INT8) => Int8,
+    Int(cuNumeric.INT16) => Int16,
+    Int(cuNumeric.INT32) => Int32,
+    Int(cuNumeric.INT64) => Int64,
+    Int(cuNumeric.UINT8) => UInt8,
+    Int(cuNumeric.UINT16) => UInt16,
+    Int(cuNumeric.UINT32) => UInt32,
+    Int(cuNumeric.UINT64) => UInt64,
+    Int(cuNumeric.FLOAT16) => Float16,
+    Int(cuNumeric.FLOAT32) => Float32,
+    Int(cuNumeric.FLOAT64) => Float64,
+    Int(cuNumeric.COMPLEX64) => ComplexF32,
+    Int(cuNumeric.COMPLEX128) => ComplexF64,
+    Int(cuNumeric.STRING) => String # CxxString?
 )
 
 #probably some way to enforce this only gets passed int types
@@ -63,6 +64,9 @@ to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 #julia is 1 indexed vs c is 0 indexed. added the -1 
 to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
 to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
+
+# disgustingggggg
+get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 
 
 function zeros(dims::Dims{N}, type::Type = Float64) where N
@@ -105,7 +109,7 @@ end
 
 
 function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-    T = code_type_map[code(type(arr))]
+    T = get_ndarray_type(arr)
     acc = NDArrayAccessor{T,N}()
     return read(acc, arr, to_cpp_index(idxs))
 end
@@ -117,31 +121,17 @@ function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <
 end
 
 
-function Base.getindex(arr::NDArray, rows::Colon, cols::Colon)
-    # TODO this only works on 2D arrays
-    # Flatten array NDAray.flat() ?
-    # Maybe use Legion PointInRect iterator ?
+# USED TO CONVERT NDArray to Julia Array
+# Long term probably just overload Base.convert...
+function Base.getindex(arr::NDArray, i::Vararg{Colon, N}) where N
+    arr_dims = Int.(cuNumeric.shape(arr))
+    T = get_ndarray_type(arr)
+    julia_array = Base.zeros(T, arr_dims...)
 
-    arr_dims = cuNumeric.shape(arr)
-    nrows = Int64(arr_dims[1])
-    ncols = Int64(arr_dims[2])
-
-    julia_array = Base.zeros((nrows, ncols))
-    for i in 1:nrows
-        for j in 1:ncols
-            julia_array[i, j] = arr[i, j]
-        end
+    for CI in CartesianIndices(julia_array)
+        julia_array[CI] = arr[Tuple(CI)...]
     end
-    return julia_array
-end
 
-
-function Base.getindex(arr::NDArray, e::Colon)
-    elems = Int64(cuNumeric.size(arr));
-    julia_array = Base.zeros(elems)
-    for i in 1:elems
-        julia_array[i] = arr[i]
-    end
     return julia_array
 end
 
