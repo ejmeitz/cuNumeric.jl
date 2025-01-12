@@ -19,25 +19,26 @@
 
 # is legion Complex128 same as ComplexF64 in julia? 
 # These are methods that return a Legate::Type
-global const type_map = Dict{Type, Symbol}(
-    Bool => :bool_, 
-    Int8 => :int8,
-    Int16 => :int16,
-    Int32 => :int32,
-    Int64 => :int64,
-    UInt8 => :uint8,
-    UInt16 => :uint16,
-    UInt32 => :uint32, 
-    UInt64 => :uint64, 
-    Float16 => :float16, 
-    Float32 => :float32, 
-    Float64 => :float64,
-    # ComplexF16 => :complex32,  #COMMENTED OUT IN WRAPPER
-    ComplexF32 => :complex64, 
-    ComplexF64 => :complex128
+global const type_map = Dict{Type, Function}(
+    Bool => cuNumeric.bool_, 
+    Int8 => cuNumeric.int8,
+    Int16 => cuNumeric.int16,
+    Int32 => cuNumeric.int32,
+    Int64 => cuNumeric.int64,
+    UInt8 => cuNumeric.uint8,
+    UInt16 => cuNumeric.uint16,
+    UInt32 => cuNumeric.uint32, 
+    UInt64 => cuNumeric.uint64, 
+    Float16 => cuNumeric.float16, 
+    Float32 => cuNumeric.float32, 
+    Float64 => cuNumeric.float64,
+    # ComplexF16 => cuNumeric.complex32,  #COMMENTED OUT IN WRAPPER
+    ComplexF32 => cuNumeric.complex64, 
+    ComplexF64 => cuNumeric.complex128
 )
 
-# hate this but its gets around a bug 
+# hate this but casting to Int gets around 
+# a bug where TypeCode can't be used at compile time 
 global const code_type_map = Dict{Int, Type}(
     Int(cuNumeric.BOOL) => Bool,
     Int(cuNumeric.INT8) => Int8,
@@ -67,10 +68,14 @@ to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
 
 # disgustingggggg
 get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
+to_legate_type(T::Type) = type_map[T]()
 
 
+# can use metaprogramming to generate a more generic version
+# of this that does not need a tuple passed in
 function zeros(dims::Dims{N}, type::Type = Float64) where N
-    opt = StdOptional{LegateType}(eval(type_map[type])())
+    LT = to_legate_type(type)
+    opt = StdOptional{LegateType}(LT)
     dims_uint64 = to_cpp_dims(dims)
     return _zeros(dims_uint64, opt)
 end
@@ -138,7 +143,7 @@ end
 
 # This should also probably be a named function
 # We can just define a specialization for Base.fill(::NDArray)
-function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N})
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N}) where N
     fill(arr, LegateScalar(val))
 end
 
