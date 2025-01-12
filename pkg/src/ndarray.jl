@@ -122,8 +122,9 @@ end
 
 
 # USED TO CONVERT NDArray to Julia Array
-# Long term probably just overload Base.convert...
-function Base.getindex(arr::NDArray, i::Vararg{Colon, N}) where N
+# Long term probably be a named function since we allocate
+# whole new array in here. Not exactly what I expect form []
+function Base.getindex(arr::NDArray, c::Vararg{Colon, N}) where N
     arr_dims = Int.(cuNumeric.shape(arr))
     T = get_ndarray_type(arr)
     julia_array = Base.zeros(T, arr_dims...)
@@ -135,15 +136,10 @@ function Base.getindex(arr::NDArray, i::Vararg{Colon, N}) where N
     return julia_array
 end
 
-
-# arr[:] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c::Colon)
-    fill(arr, LegateScalar(value))
-end
-
-# arr[:, :] = value
-function Base.setindex!(arr::NDArray, value::Union{Float32, Float64}, c1::Colon, c2::Colon)
-    fill(arr, LegateScalar(value))
+# This should also probably be a named function
+# We can just define a specialization for Base.fill(::NDArray)
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N})
+    fill(arr, LegateScalar(val))
 end
 
 # arr1 == arr2
