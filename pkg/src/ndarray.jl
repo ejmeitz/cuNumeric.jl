@@ -216,6 +216,11 @@ function Base.:+(arr::NDArray, val::Union{Float32, Float64})
     return add_scalar(arr, LegateScalar(val))
 end
 
+#* not sure the out arr can be same as input array
+# function Base.:+=(lhs::NDArray, rhs::NDArray)
+#     return add(lhs, rhs, StdOptional{NDArray}(lhs)) 
+# end
+
 function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
@@ -270,9 +275,3 @@ function Base.:(==)(julia_array::Array, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)
 end
-
-
-#* not sure the out arr can be same as input array
-# function Base.:+=(lhs::NDArray, rhs::NDArray)
-#     return add(lhs, rhs, StdOptional{NDArray}(lhs)) 
-# end

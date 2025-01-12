@@ -19,7 +19,7 @@ CONDA_OVERRIDE_CUDA="12.2" \
   conda install -c conda-forge -c legate cupynumeric
 ```
 
-#### Install Julia and [JuliaUp](https://github.com/JuliaLang/juliaup)
+#### Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
 `curl -fsSL https://install.julialang.org | sh`
 
 #### Get latest version of [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia)
