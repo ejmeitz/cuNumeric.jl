@@ -71,6 +71,51 @@ get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
+#### ARRAY/INDEXING INTERFACE ####
+# https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
+
+function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
+    T = get_ndarray_type(arr)
+    acc = NDArrayAccessor{T,N}()
+    return read(acc, arr, to_cpp_index(idxs))
+end
+
+
+function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
+    acc = NDArrayAccessor{T,N}()
+    write(acc, arr, to_cpp_index(idxs), value)
+end
+
+
+# USED TO CONVERT NDArray to Julia Array
+# Long term probably be a named function since we allocate
+# whole new array in here. Not exactly what I expect form []
+function Base.getindex(arr::NDArray, c::Vararg{Colon, N}) where N
+    arr_dims = Int.(cuNumeric.shape(arr))
+    T = get_ndarray_type(arr)
+    julia_array = Base.zeros(T, arr_dims...)
+
+    for CI in CartesianIndices(julia_array)
+        julia_array[CI] = arr[Tuple(CI)...]
+    end
+
+    return julia_array
+end
+
+# This should also probably be a named function
+# We can just define a specialization for Base.fill(::NDArray)
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N}) where N
+    fill(arr, LegateScalar(val))
+end
+
+Base.firstindex(arr::NDArray, dim::Int) = 1
+
+function Base.lastindex(arr::NDArray, dim::Int)
+    return Base.size(arr,dim)
+end
+
+Base.IndexStyle(::NDArray) = IndexCartesian()
+
 function Base.ndims(arr::NDArray)
     return Int(cuNumeric.dim(arr))
 end
@@ -94,6 +139,9 @@ function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
     dim = Base.size(arr)
     print(io, "NDArray of $(T)s, Dim: $(dim)")
 end
+
+
+#### INITIALIZATION ####
 
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
@@ -139,6 +187,9 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
     return _full(dims_uint64, LegateScalar(val))
 end
 
+
+#### OPERATIONS ####
+
 function reshape(arr::NDArray, i::Dims{N}) where N
     i_int64 = to_cpp_dims_int(i)
     return _reshape(arr, i_int64)
@@ -161,45 +212,14 @@ function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
     return add_scalar(arr, LegateScalar(val))
 end
 
+function Base.:+(arr::NDArray, val::Union{Float32, Float64})
+    return add_scalar(arr, LegateScalar(val))
+end
+
 function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
-
-
-function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
-    T = get_ndarray_type(arr)
-    acc = NDArrayAccessor{T,N}()
-    return read(acc, arr, to_cpp_index(idxs))
-end
-
-
-function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <: Number, N}
-    acc = NDArrayAccessor{T,N}()
-    write(acc, arr, to_cpp_index(idxs), value)
-end
-
-
-# USED TO CONVERT NDArray to Julia Array
-# Long term probably be a named function since we allocate
-# whole new array in here. Not exactly what I expect form []
-function Base.getindex(arr::NDArray, c::Vararg{Colon, N}) where N
-    arr_dims = Int.(cuNumeric.shape(arr))
-    T = get_ndarray_type(arr)
-    julia_array = Base.zeros(T, arr_dims...)
-
-    for CI in CartesianIndices(julia_array)
-        julia_array[CI] = arr[Tuple(CI)...]
-    end
-
-    return julia_array
-end
-
-# This should also probably be a named function
-# We can just define a specialization for Base.fill(::NDArray)
-function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N}) where N
-    fill(arr, LegateScalar(val))
-end
 
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)

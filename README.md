@@ -10,7 +10,7 @@ This is a Julia wrapper using [libcxxwrap](https://github.com/JuliaInterop/libcx
 - Julia 1.10
 - CMake 3.26.4 
 
-#### download cupynumeric 
+#### Download cupynumeric 
 
 ```bash 
 conda create --name myenv 
@@ -19,10 +19,10 @@ CONDA_OVERRIDE_CUDA="12.2" \
   conda install -c conda-forge -c legate cupynumeric
 ```
 
-#### download Julia 
+#### Install Julia and [JuliaUp](https://github.com/JuliaLang/juliaup)
 `curl -fsSL https://install.julialang.org | sh`
 
-#### git submodules
+#### Get latest version of [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia)
 ```bash
 git submodule init
 git submodule update
@@ -38,10 +38,19 @@ julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
 ```
-alternatively enter the julia REPL, press `]` to activate the package manager and type
+
+## Examples
 ```julia
-activate ./pkg
-test
+using cuNumeric
+
+arr = cuNumeric.zeros(Float64, 5, 5)
+cuNumeric.random(arr, 0) #why does this function take an int?
+
+α = 1.32
+b = 2.0
+
+arr2 = α*arr + b
+arr2[:,:] # the current syntax for collecting all values and printing
 ```
 
 ## custom install
