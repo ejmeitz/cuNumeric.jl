@@ -39,8 +39,8 @@ function daxpy_advanced()
     α = 56.6
 
     # base Julia arrays
-    x_cpu = zeros(dims);
-    y_cpu = zeros(dims);
+    x_cpu = Base.zeros(dims);
+    y_cpu = Base.zeros(dims);
 
     # cunumeric arrays
     x = cuNumeric.zeros(dims)
@@ -98,8 +98,8 @@ function daxpy_advanced()
     # reshape a 2D array into 1D
     x_1d = cuNumeric.reshape(x, N * N)
     y_1d = cuNumeric.reshape(y, N * N)
-    @test cuNumeric.dim(x_1d) == 1
-    @test cuNumeric.dim(y_1d) == 1
+    @test ndims(x_1d) == 1
+    @test ndims(y_1d) == 1
 
     # set all the elements of each NDArray to the CPU 1D array equivalent
     x_cpu_1D = x_1d[:]

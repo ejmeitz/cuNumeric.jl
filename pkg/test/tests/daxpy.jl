@@ -30,8 +30,8 @@ function daxpy_basic()
 
 
     α_cpu = 56.6
-    x_cpu = zeros(dims);
-    y_cpu = zeros(dims);
+    x_cpu = Base.zeros(dims);
+    y_cpu = Base.zeros(dims);
 
     # cunumeric arrays
 

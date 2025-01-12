@@ -1,5 +1,3 @@
-export zeros
-
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
  *
@@ -78,7 +76,7 @@ function Base.ndims(arr::NDArray)
 end
 
 function Base.size(arr::NDArray)
-    return Int.(cuNumeric.shape(arr))
+    return Tuple(Int.(cuNumeric.shape(arr)))
 end
 
 function Base.size(arr::NDArray, dim::Int)
@@ -91,11 +89,11 @@ function Base.show(io::IO, arr::NDArray)
     print(io, "NDArray of $(T)s, Dim: $(dim)")
 end
 
-# function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
-#     T = get_ndarray_type(arr)
-#     dim = size(arr)
-#     print(io, "$(dim...) NDArray of $(T)s")
-# end
+function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
+    T = get_ndarray_type(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
 
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
@@ -209,67 +207,36 @@ function Base.:(==)(arr1::NDArray, arr2::NDArray)
     # should we use a lazy hashing approach? 
     # something like this? would this be better than looping thru the elements?
     # hash(arr1.data) == hash(arr2.data)
-    if (cuNumeric.dim(arr1) != cuNumeric.dim(arr2))
+    if (Base.size(arr1) != Base.size(arr2))
         return false
     end
 
-    if(cuNumeric.dim(arr1) >= 3)
+    if(ndims(arr1) > 3)
+        @warn "Accessors do not support dimension > 3 yet"
         return false
     end
 
-    dim_array = cuNumeric.dim(arr1) 
-    if(dim_array == 1)
-        if (cuNumeric.size(arr1) != cuNumeric.size(arr2))
-            printstyled("WARNING: left NDArray is $size(arr1) and right NDArray array is $(size(arr1))!\n", color=:yellow, bold=true)
+    dims = Base.size(arr1)
+
+    for CI in CartesianIndices(dims)
+        if arr1[Tuple(CI)...] != arr2[Tuple(CI)...]
             return false
-        end
-        
-        for i in 1:size(arr1)
-            if arr1[i] != arr2[i]
-                # not equal
-                return false
-            end
-        end
-
-
-    elseif(dim_array == 2)
-        arr1_dims = cuNumeric.shape(arr1)
-        arr2_dims = cuNumeric.shape(arr2)
-
-        if (cuNumeric.size(arr1) != cuNumeric.size(arr2))
-            printstyled("WARNING: left NDArray is $(arr1_dims[1]) by $(arr1_dims[2]) and right NDArray array is $(arr2_dims[1]) by $(arr2_dims[2])!\n", color=:yellow, bold=true)
-            return false
-        end
-        
-        nrows = Int64(arr1_dims[1])
-        ncols = Int64(arr1_dims[2])
-
-        for i in 1:nrows
-            for j in 1:ncols
-                if arr1[i, j] != arr2[i, j]
-                    # not equal
-                    return false
-                end
-            end
         end
     end
-    # successful completion
+
     return true
 end
 
 # arr == julia_array
-function Base.:(==)(arr::NDArray, julia_array::Matrix)
-    if (cuNumeric.size(arr) != prod(Base.size(julia_array)))
-        printstyled("WARNING: left NDArray is $(cuNumeric.size(arr)) and right Julia array is $(prod(Base.size(julia_array)))!\n", color=:yellow, bold=true)
+function Base.:(==)(arr::NDArray, julia_array::Array)
+    if (Base.size(arr) != Base.size(julia_array))
+        @warn "Left NDArray is $(size(arr)) and right Julia array is $(Base.size(julia_array))!\n"
         return false
     end
-    
-    for i in 1:Base.size(julia_array, 1)
-        for j in 1:Base.size(julia_array, 2)
-            if arr[i, j] != julia_array[i, j]
-                # not equal
-                return false
-            end
+
+    for CI in CartesianIndices(julia_array)
+        if julia_array[CI] != arr[Tuple(CI)...]
+            return false
         end
     end
 
@@ -278,33 +245,8 @@ function Base.:(==)(arr::NDArray, julia_array::Matrix)
 end
 
 
-
-# arr == julia_array
-function Base.:(==)(arr::NDArray, julia_array::Vector)
-    elems = Int64(cuNumeric.size(arr));
-    if (elems != prod(Base.size(julia_array)))
-        printstyled("WARNING: left NDArray is $(elems) and right Julia array is $(prod(Base.size(julia_array)))!\n", color=:yellow, bold=true)
-        return false
-    end
-    
-    for i in 1:elems
-        if arr[i] != julia_array[i]
-            # not equal
-            return false
-        end
-    end
-    return true    
-end
-
-
 # julia_array == arr
-function Base.:(==)(julia_array::Matrix, arr::NDArray)
-    # flip LHS and RHS
-    return (arr == julia_array)
-end
-
-# julia_array == arr
-function Base.:(==)(julia_array::Vector, arr::NDArray)
+function Base.:(==)(julia_array::Array, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)
 end
