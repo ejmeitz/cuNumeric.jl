@@ -1,3 +1,5 @@
+export zeros
+
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
  *
@@ -71,16 +73,68 @@ get_ndarray_type(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
-# can use metaprogramming to generate a more generic version
-# of this that does not need a tuple passed in. Ideally both 
-# zeros([T=Float64,] dims::Int...)
-# zeros([T=Float64,] dims::Tuple)
-function zeros(dims::Dims{N}, type::Type = Float64) where N
-    LT = to_legate_type(type)
+function Base.ndims(arr::NDArray)
+    return Int(cuNumeric.dim(arr))
+end
+
+function Base.size(arr::NDArray)
+    return Int.(cuNumeric.shape(arr))
+end
+
+function Base.size(arr::NDArray, dim::Int)
+    return Base.size(arr)[dim]
+end
+
+function Base.show(io::IO, arr::NDArray)
+    T = get_ndarray_type(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
+
+# function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
+#     T = get_ndarray_type(arr)
+#     dim = size(arr)
+#     print(io, "$(dim...) NDArray of $(T)s")
+# end
+
+"""
+    cuNumeric.zeros([T=Float64,] dims::Int...)
+    cuNumeric.zeros([T=Float64,] dims::Tuple)
+
+Create an NDArray with element type `T`, of all zeros with size specified by `dims`.
+This function has the same signature as `Base.zeros`, so be sure to call it as `cuNuermic.zeros`.
+
+# Examples
+```jldoctest
+julia> cuNumeric.zeros(2,2)
+NDArray of Float64s, Dim: [2, 2]
+
+julia> cuNumeric.zeros(Float32, 3)
+NDArray of Float32s, Dim: [3]
+
+julia> cuNumeric.zeros(Int32,(2,3))
+NDArray of Int32s, Dim: [2, 3]
+```
+"""
+function zeros(::Type{T}, dims::Dims{N}) where {N,T}
+    LT = to_legate_type(T)
     opt = StdOptional{LegateType}(LT)
     dims_uint64 = to_cpp_dims(dims)
     return _zeros(dims_uint64, opt)
 end
+
+function zeros(::Type{T}, dims::Int...) where T
+    return zeros(T, dims)
+end
+
+function zeros(dims::Dims{N}) where N
+    return zeros(Float64, dims)
+end
+
+function zeros(dims::Int...)
+    return zeros(Float64, dims)
+end
+
 
 function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
     dims_uint64 = to_cpp_dims(dims)

@@ -93,7 +93,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<cupynumeric::NDArray>("NDArray")
       .constructor<const cupynumeric::NDArray&>()
       .method("dim", &cupynumeric::NDArray::dim)
-      .method("size", &cupynumeric::NDArray::size)
+      .method("_size", &cupynumeric::NDArray::size) //hide with underscore cause in Julia `size` is same as shape
       .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
       .method("copy", &cupynumeric::NDArray::copy)
