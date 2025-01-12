@@ -80,20 +80,22 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
 //   mod.method("get_machine_info", &get_machine_info);
 //   mod.method("print_machine_info", &print_machine_info);
 
-  mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>>(WrapCppOptional());
+// Need to put this before the optional definition,
+// but StdOptional has to be defined by NDArray::type
+auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
+      .constructor<const cupynumeric::NDArray&>();
 
-  mod.add_type<legate::LogicalStore>(
-      "LogicalStore");  // might be useful with ndarray.get_store
+  mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
+      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(WrapCppOptional());
+
+  mod.add_type<legate::LogicalStore>("LogicalStore"); 
 
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
   // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
-  mod.add_type<cupynumeric::NDArray>("NDArray")
-      .constructor<const cupynumeric::NDArray&>()
-      .method("dim", &cupynumeric::NDArray::dim)
-      .method("size", &cupynumeric::NDArray::size)
+  ndarry_type.method("dim", &cupynumeric::NDArray::dim)
+      .method("_size", &cupynumeric::NDArray::size) //hide with underscore cause in Julia `size` is same as shape
       .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
       .method("copy", &cupynumeric::NDArray::copy)
@@ -120,6 +122,21 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*);
+
+  auto ndarray_accessor =
+      mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");
+  ndarray_accessor
+      .apply_combination<ApplyNDArrayAccessor, all_types, allowed_dims>(
+          WrapNDArrayAccessor());
+
+  mod.method("_zeros", &cupynumeric::zeros);  // operators.cc, 152
+  mod.method("_full", &cupynumeric::full);    // operators.cc, 162
+  mod.method("_dot", &cupynumeric::dot);      // operators.cc, 263
+  mod.method("_sum", &cupynumeric::sum);      // operators.cc, 303
+  mod.method("_add", &cupynumeric::add);
+  mod.method("_multiply", &cupynumeric::multiply);
+  mod.method("_random_ndarray", &cupynumeric::random);
+
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
@@ -180,17 +197,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //   TypeVar<2>>>("AccessorWO", parent_type_WO);
   //   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types,
   //   allowed_dims>(WrapAccessorWO());
-
-  auto ndarray_accessor =
-      mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");
-  ndarray_accessor
-      .apply_combination<ApplyNDArrayAccessor, all_types, allowed_dims>(
-          WrapNDArrayAccessor());
-
-  mod.method("_zeros", &cupynumeric::zeros);  // operators.cc, 152
-  mod.method("_full", &cupynumeric::full);    // operators.cc, 162
-  mod.method("_dot", &cupynumeric::dot);      // operators.cc, 263
-  mod.method("_sum", &cupynumeric::sum);      // operators.cc, 303
-  // mod.method("add", &cupynumeric::add);
-  // mod.method("multiply", &cupynumeric::multiply);
 }
