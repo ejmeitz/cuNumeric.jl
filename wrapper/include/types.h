@@ -17,6 +17,8 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
 
+#pragma once
+
 #include "jlcxx/jlcxx.hpp"
 #include "legate.h"
 #include "legion/legion_config.h"
