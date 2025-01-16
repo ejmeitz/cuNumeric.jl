@@ -1,3 +1,5 @@
+export NDArray, LegateType
+
 
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
@@ -72,6 +74,12 @@ Base.eltype(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
+# probably belongs in another file
+function LegateType(T::Type)
+    return type_map[T]()
+end
+
+
 #### ARRAY/INDEXING INTERFACE ####
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
 
@@ -144,6 +152,7 @@ end
 
 #### INITIALIZATION ####
 
+#* is this type piracy?
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
     cuNumeric.zeros([T=Float64,] dims::Tuple)
@@ -199,16 +208,15 @@ Fills `arr` with Float64s uniformly at random
 Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
 
 
-
-
+#* THIS JUST COMPLETELY OVERRIDES ALL CALLS TO RAND....
 """
     rand(NDArray, dims::Dims)
     rand(NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
-Base.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
-Base.rand(::Type{NDArray}, dims::Int...) = rand(NDArray, dims)
+Random.rand(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+Random.rand(dims::Int...) = cuNumeric.rand(dims)
 
 
 #### OPERATIONS ####

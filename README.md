@@ -43,7 +43,7 @@ julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
 ```julia
 using cuNumeric
 
-arr = cuNumeric.random(3,3)
+arr = cuNumeric.rand(3, 3)
 
 α = 1.32
 b = 2.0
@@ -65,6 +65,9 @@ Optional: You can create a file called `.localenv` in order to add anything to t
 `sh ./build.sh` will create `libcupynumericwrapper.so` in `$CUNUMERIC_JL_HOME/build`
 
 
+## Sketchy Things We Should fix
+- `cuNumeric.rand` overwrites all calls to Random.rand unless you specify the type (e.g. `rand(Float32, 2)`).  CUDA.jl has this implemented correctly.
+-
 
 ## Contact
 For technical questions, please either contact 

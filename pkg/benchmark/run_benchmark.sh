@@ -37,16 +37,14 @@ if [[ ! -f $FILENAME ]]; then
 fi
 
 # Inform user of the configuration
-if [[ $GPUS -gt 0 ]]; then
-    echo "GPUs specified: $GPUS"
-else
+if [[ $GPUS -lt 0 ]]; then
     echo "GPUs invalid, using gpus = 0"
+    exit
 fi
 
-if [[ $CPUS -gt 0 ]]; then
-    echo "CPU cores specified: $CPUS"
-else
+if [[ $CPUS -lt 0 ]]; then
     echo "CPUs ivnalid, using cpus = 1"
+    exit
 fi
 
 
@@ -55,7 +53,7 @@ export LEGATE_CONFIG="--cpus $CPUS --gpus $GPUS"
 export LEGATE_SHOW_CONFIG=1
 
 echo "Running $FILENAME with $CPUS CPUs and $GPUS GPUs"
-CMD = 'julia --project="../" $FILENAME ${EXTRA_ARGS[*]}'
+CMD='julia --project="." $FILENAME ${EXTRA_ARGS[*]}'
 
 echo "Running: $CMD"
 eval $CMD

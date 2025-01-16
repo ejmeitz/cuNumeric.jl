@@ -29,9 +29,7 @@ using LinearAlgebra
 import LinearAlgebra: mul!
 
 using Random
-import Random: rand!
-
-import Base: rand
+import Random: rand, rand!
 
 
 # abstract type AbstractFieldAccessor{PM,FT,n_dims} end
@@ -41,6 +39,7 @@ import Base: rand
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
+include("util.jl")
 include("ndarray.jl")
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
