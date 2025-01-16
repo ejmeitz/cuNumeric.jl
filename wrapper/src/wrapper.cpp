@@ -111,6 +111,7 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
+      .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)

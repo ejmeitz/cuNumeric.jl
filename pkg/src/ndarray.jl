@@ -1,6 +1,3 @@
-export random!, random
-
-import LinearAlgebra: mul!
 
 #= Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
@@ -192,24 +189,26 @@ function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
 end
 
 
-#* TODO ACTUALLY REIMPLEMENT Base.rand and Random.randn! to maintain interface
 """
-    cuNumeric.random!(arr::NDArray)
+    rand!(arr::NDArray)
 
 Fills `arr` with Float64s uniformly at random
 """
 
-#* WHAT DOES THIS INTEGER DO???
-random!(arr::NDArray) = cuNumeric.random(arr, 0)
+# This integer is unused but should represent, uniform, normal etc
+Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
+
+
+
 
 """
-    cuNumeric.random(dims::Dims)
-    cuNumeric.random(dims::Int...)
+    rand(NDArray, dims::Dims)
+    rand(NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
-random(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
-random(dims::Int...) = random(dims)
+Base.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+Base.rand(::Type{NDArray}, dims::Int...) = rand(NDArray, dims)
 
 
 #### OPERATIONS ####
@@ -248,6 +247,7 @@ end
 
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
+# See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2
 function add!(out::NDArray, arr1::NDArray, arr2::NDArray)
     return _add(arr1, arr2, out)
 end
@@ -256,9 +256,9 @@ function multiply!(out::NDArray, arr1::NDArray, arr2::NDArray)
     return _multiply(arr1, arr2, out)
 end
 
-# function mul!(out::NDArray, A::NDArray, B::NDArray)
-#  #
-# end
+function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
+    return _dot_three_arg(out, A, B)
+end
 
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)
