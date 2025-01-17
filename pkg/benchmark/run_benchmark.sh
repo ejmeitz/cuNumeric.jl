@@ -48,8 +48,8 @@ if [[ $CPUS -lt 0 ]]; then
 fi
 
 
-export LEGATE_AUTO_CONFIG=0
-export LEGATE_CONFIG="--cpus $CPUS --gpus $GPUS"
+#export LEGATE_AUTO_CONFIG=0
+#export LEGATE_CONFIG="--cpus $CPUS --gpus $GPUS --fbmem 10000"
 export LEGATE_SHOW_CONFIG=1
 
 echo "Running $FILENAME with $CPUS CPUs and $GPUS GPUs"

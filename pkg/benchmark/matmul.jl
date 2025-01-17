@@ -1,7 +1,7 @@
 using cuNumeric
 using BenchmarkTools
 using LinearAlgebra
-using CUDA
+#using CUDA
 
 const FT = Float32
 
@@ -19,14 +19,14 @@ function initialize_julia(N)
   C = zeros(FT, N, N)
   return A, B, C
 end
-
+#=
 function initialize_cuda_jl(N)
   A = CUDA.rand(FT, N, N)
   B = CUDA.rand(FT, N, N)
   C = CUDA.zeros(FT, N, N)
   return A, B, C
 end
-
+=#
 function total_flops(N)
     return N * N * (2 * N - 1)
 end
@@ -52,7 +52,7 @@ function gemm_cunumeric(N, I, warmup = 5)
   start_time = nothing
   # times = []
   for idx in range(1, I + warmup)
-    if idx == warmup
+    if idx == warmup + 1
         start_time = get_time_microseconds()
     end
     mul!(C, A, B)
@@ -67,8 +67,8 @@ function gemm_cunumeric(N, I, warmup = 5)
   end
   end_time = get_time_microseconds()
 
-  mean_time = (end_time-start_time) / I
-  flops = total_flops(N) / (mean_time * 1e6)
+  mean_time = (end_time-start_time) / (I * 1000)
+  flops = total_flops(N) / (mean_time * 1e6) 
 
   return mean_time, flops
 end
