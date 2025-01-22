@@ -90,6 +90,17 @@ function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <
 end
 
 
+#### ARRAY INDEXING WITH SLICES ####
+to_cpp_init_slice(slices::Dims{N}) where N = LegateSlices(LegateSlice.([s for s in slices]))
+
+function slice(start::Int, stop::Int)
+    return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
+end
+
+function Base.getindex(arr::NDArray, idxs::Vararg{LegateSlice, N}) where N
+    return get_slice(arr, to_cpp_init_slice(idxs))
+end
+
 # USED TO CONVERT NDArray to Julia Array
 # Long term probably be a named function since we allocate
 # whole new array in here. Not exactly what I expect form []

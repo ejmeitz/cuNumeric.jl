@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string>  //needed for return type of toString methods
 #include <type_traits>
+#include <initializer_list>
 
 #include "accessors.h"
 #include "cupynumeric.h"
@@ -89,6 +90,8 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(WrapCppOptional());
 
   mod.add_type<legate::LogicalStore>("LogicalStore"); 
+  mod.add_type<legate::Slice>("LegateSlice"); 
+  mod.add_type<std::initializer_list<legate::Slice>>("LegateSlices");
 
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
@@ -121,7 +124,10 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
                                 cupynumeric::NDArray::operator+)
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
-                                     cupynumeric::NDArray::operator*);
+                                     cupynumeric::NDArray::operator*)
+      .method("get_slice", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                              std::initializer_list<cupynumeric::slice>) const) &
+                                    cupynumeric::NDArray::operator[]);
 
   auto ndarray_accessor =
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");
