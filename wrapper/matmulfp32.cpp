@@ -22,20 +22,21 @@
 #include <vector>
 #include <iostream>
 
-// This is the workflow I would like to 
-// re-create in Julia
 
-cupynumeric::NDArray test_workflow(){
-    size_t N = 25;
+// using cupynumeric::slice;
 
-    legate::LogicalStore store1;
-    legate::LogicalStore store2; 
-    
-    auto arr1 = cupynumeric::NDArray(store1::fill(2));
-    auto arr2 = cupynumeric::NDArray(store2::fill(2));
+void matmul_fp32(size_t N){
 
-    return cupynumeric::dot(arr1, arr2);
+    std::vector<uint64_t> dims = {N,N};
+    auto A = cupynumeric::random(dims).as_type(legate::float32());
+    auto B = cupynumeric::random(dims).as_type(legate::float32());
+    auto C = cupynumeric::zeros(dims, std::optional<legate::Type>(legate::float32()));
+
+    C.dot(A,B);
+
+    // std::cout << C[{slice(0,0), slice(0,0)}] << std::endl;
 }
+
 
 int main(int argc, char** argv){
     auto result = legate::start(argc, argv);
@@ -43,9 +44,8 @@ int main(int argc, char** argv){
 
     cupynumeric::initialize(argc, argv);
 
-    auto res = test_workflow();
-
-    std::cout << res << std::endl;
+    const size_t N = 10000;
+    matmul_fp32(N);
 
     return legate::finish();
 }
