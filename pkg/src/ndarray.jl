@@ -1,4 +1,4 @@
-export random!, random
+export NDArray, LegateType
 
 
 #= Copyright 2025 Northwestern University, 
@@ -74,6 +74,12 @@ Base.eltype(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
+# probably belongs in another file
+function LegateType(T::Type)
+    return type_map[T]()
+end
+
+
 #### ARRAY/INDEXING INTERFACE ####
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
 
@@ -146,6 +152,7 @@ end
 
 #### INITIALIZATION ####
 
+#* is this type piracy?
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
     cuNumeric.zeros([T=Float64,] dims::Tuple)
@@ -192,22 +199,24 @@ end
 
 
 """
-    cuNumeric.random!(arr::NDArray)
+    rand!(arr::NDArray)
 
 Fills `arr` with Float64s uniformly at random
 """
 
-#* WHAT DOES THIS INTEGER DO???
-random!(arr::NDArray) = cuNumeric.random(arr, 0)
+# This integer is unused but should represent, uniform, normal etc
+Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
 
+
+#* THIS JUST COMPLETELY OVERRIDES ALL CALLS TO RAND....
 """
-    cuNumeric.random(dims::Dims)
-    cuNumeric.random(dims::Int...)
+    rand(NDArray, dims::Dims)
+    rand(NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
-random(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
-random(dims::Int...) = random(dims)
+Random.rand(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+Random.rand(dims::Int...) = cuNumeric.rand(dims)
 
 
 #### OPERATIONS ####
@@ -246,12 +255,17 @@ end
 
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
-function add!(arr1::NDArray, arr2::NDArray)
-    return _add(arr1, arr2, arr1)
+# See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2
+function add!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    return _add(arr1, arr2, out)
 end
 
-function multiply!(arr1::NDArray, arr2::NDArray)
-    return _multiply(arr1, arr2, arr1)
+function multiply!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    return _multiply(arr1, arr2, out)
+end
+
+function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
+    return _dot_three_arg(out, A, B)
 end
 
 # arr1 == arr2
