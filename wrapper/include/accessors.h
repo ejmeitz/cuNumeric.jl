@@ -16,6 +16,8 @@
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
+ 
+#pragma once
 
 #include <iostream>
 #include <type_traits>

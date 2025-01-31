@@ -1,4 +1,4 @@
-/* Copyright 2025 Northwestern University,
+/* Copyright 2025 Northwestern University, 
  *                   Carnegie Mellon University University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,23 +15,37 @@
  *
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
- */
+*/
 
-#pragma once
-
-#include "jlcxx/jlcxx.hpp"
 #include "legate.h"
-#include "legion/legion_config.h"
+#include "cupynumeric.h"
+#include <vector>
+#include <iostream>
 
 
-//Wraps the enums which define how legate
-// and cupynumeric types map to legion types
-void wrap_type_enums(jlcxx::Module&);
+// using cupynumeric::slice;
 
-// Wraps the legate functions which return the
-// specified legate::Type. (e.g. legate::int8())
-void wrap_type_getters(jlcxx::Module&);
+void matmul_fp32(size_t N){
 
-// Wraps the privilege modes used in
-// FieldAccessor (AcessorRO, AccessorWO)
-void wrap_privilege_modes(jlcxx::Module&);
+    std::vector<uint64_t> dims = {N,N};
+    auto A = cupynumeric::random(dims).as_type(legate::float32());
+    auto B = cupynumeric::random(dims).as_type(legate::float32());
+    auto C = cupynumeric::zeros(dims, std::optional<legate::Type>(legate::float32()));
+
+    C.dot(A,B);
+
+    // std::cout << C[{slice(0,0), slice(0,0)}] << std::endl;
+}
+
+
+int main(int argc, char** argv){
+    auto result = legate::start(argc, argv);
+    assert(result == 0);
+
+    cupynumeric::initialize(argc, argv);
+
+    const size_t N = 10000;
+    matmul_fp32(N);
+
+    return legate::finish();
+}
