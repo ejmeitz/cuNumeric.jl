@@ -33,7 +33,7 @@ include("tests/sgemm.jl")
     @testset daxpy_advanced()
 end
 
-@testset verbose = true "Slcing Tests" begin
+@testset verbose = true "Slicing Tests" begin
     @testset slicing()
 end
 

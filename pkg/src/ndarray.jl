@@ -97,15 +97,20 @@ end
 
 
 #### ARRAY INDEXING WITH SLICES ####
-to_cpp_init_slice(slices::Dims{N}) where N = LegateSlices(LegateSlice.([s for s in slices]))
+to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(LegateSlice.([s for s in slices]))
 
 function slice(start::Int, stop::Int)
     return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
 end
 
-function Base.getindex(arr::NDArray, idxs::Vararg{LegateSlice, N}) where N
-    return get_slice(arr, to_cpp_init_slice(idxs))
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
+    return get_slice(arr, to_cpp_init_slice(slice(first(i), last(i)), slice(first(j), last(j))))
 end
+
+# function Base.getindex(ranges::Vararg{UnitRange{Int}, N}) where N
+#     return Tuple(slice(first(r), last(r)) for r in ranges)
+# end
 
 # USED TO CONVERT NDArray to Julia Array
 # Long term probably be a named function since we allocate
