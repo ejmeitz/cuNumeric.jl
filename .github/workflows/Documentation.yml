@@ -17,9 +17,9 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: '1.11'
-      - name: Install dependencies
-        run: julia --project=pkg/docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=joinpath(pwd(),"pkg"))); Pkg.instantiate()'
-      - name: Build and deploy
+      # - name: Install dependencies
+      #   run: julia --project=pkg/docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=joinpath(pwd(),"pkg"))); Pkg.instantiate()'
+      - name: Build and deploy docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
