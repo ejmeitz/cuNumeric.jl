@@ -37,3 +37,4 @@ end
     @warn "SGEMM has some precision issues, using tol $(max_diff) 🥲"
     @testset sgemm(max_diff)
 end
+
