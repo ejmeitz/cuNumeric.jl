@@ -24,6 +24,14 @@ module cuNumeric
 # the above yields:: std::optional<cupynumeric::NDArray>
 
 using CxxWrap
+using Pkg
+
+using LinearAlgebra
+import LinearAlgebra: mul!
+
+using Random
+import Random: rand, rand!
+
 
 # abstract type AbstractFieldAccessor{PM,FT,n_dims} end
 # abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
@@ -32,6 +40,7 @@ using CxxWrap
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
 
+include("util.jl")
 include("ndarray.jl")
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147

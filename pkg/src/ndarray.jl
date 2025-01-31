@@ -1,4 +1,4 @@
-export random!, random
+export NDArray, LegateType
 
 
 #= Copyright 2025 Northwestern University, 
@@ -74,6 +74,12 @@ Base.eltype(arr::NDArray) = code_type_map[Int(code(type(arr)))]
 to_legate_type(T::Type) = type_map[T]()
 
 
+# probably belongs in another file
+function LegateType(T::Type)
+    return type_map[T]()
+end
+
+
 #### ARRAY/INDEXING INTERFACE ####
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
 
@@ -88,7 +94,6 @@ function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <
     acc = NDArrayAccessor{T,N}()
     write(acc, arr, to_cpp_index(idxs), value)
 end
-
 
 # USED TO CONVERT NDArray to Julia Array
 # Long term probably be a named function since we allocate
@@ -146,6 +151,7 @@ end
 
 #### INITIALIZATION ####
 
+#* is this type piracy?
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
     cuNumeric.zeros([T=Float64,] dims::Tuple)
@@ -192,22 +198,23 @@ end
 
 
 """
-    cuNumeric.random!(arr::NDArray)
+    rand!(arr::NDArray)
 
 Fills `arr` with Float64s uniformly at random
 """
 
-#* WHAT DOES THIS INTEGER DO???
-random!(arr::NDArray) = cuNumeric.random(arr, 0)
+# This integer is unused but should represent, uniform, normal etc
+Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
+
 
 """
-    cuNumeric.random(dims::Dims)
-    cuNumeric.random(dims::Int...)
+    rand(::NDArray, dims::Dims)
+    rand(::NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
-random(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
-random(dims::Int...) = random(dims)
+Random.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+Random.rand(::Type{NDArray}, dims::Int...) = cuNumeric.rand(NDArray, dims)
 
 
 #### OPERATIONS ####
@@ -246,12 +253,20 @@ end
 
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
-function add!(arr1::NDArray, arr2::NDArray)
-    return _add(arr1, arr2, arr1)
+# See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2
+function add!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    _add(arr1, arr2, out)
+    return out
 end
 
-function multiply!(arr1::NDArray, arr2::NDArray)
-    return _multiply(arr1, arr2, arr1)
+function multiply!(out::NDArray, arr1::NDArray, arr2::NDArray)
+    _multiply(arr1, arr2, out)
+    return out
+end
+
+function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
+    _dot_three_arg(out, A, B)
+    return out
 end
 
 # arr1 == arr2
@@ -282,8 +297,8 @@ end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
-    if (Base.size(arr) != Base.size(julia_array))
-        @warn "Left NDArray is $(size(arr)) and right Julia array is $(Base.size(julia_array))!\n"
+    if (size(arr) != size(julia_array))
+        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
         return false
     end
 
@@ -302,4 +317,31 @@ end
 function Base.:(==)(julia_array::Array, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)
+end
+
+
+function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
+    if (size(arr) != size(julia_array))
+        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+        return false
+    end
+
+    if (eltype(arr) != eltype(julia_array))
+        @warn "NDArray has eltype $(eltype(arr)) and Julia array has eltype $(eltype(julia_array))!\n"
+        return false
+    end
+
+    for CI in CartesianIndices(julia_array)
+        if abs(julia_array[CI] - arr[Tuple(CI)...]) > max_diff
+            print(CI)
+            return false
+        end
+    end
+
+    # successful completion
+    return true
+end
+
+function compare(arr::NDArray, julia_array::Array{T}, max_diff::T) where T
+    return compare(julia_array, arr, max_diff)
 end

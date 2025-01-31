@@ -31,8 +31,8 @@ function daxpy_basic()
     dims = (N, N)
 
     # Base julia arrays
-    x_cpu = Base.zeros(dims);
-    y_cpu = Base.zeros(dims);
+    x_cpu = rand(Float64, dims);
+    y_cpu = rand(Float64, dims);
 
     # cunumeric arrays
     x = cuNumeric.zeros(dims)
@@ -41,23 +41,15 @@ function daxpy_basic()
     # Initialize NDArrays with random values
     for i in 1:N
         for j in 1:N
-            x_cpu[i, j] = rand()
-            y_cpu[i, j] = rand()
             # set cunumeric.jl arrays
             x[i, j] = x_cpu[i, j]
             y[i, j] = y_cpu[i, j]
         end
     end
 
-
     result = α * x + y
-
-    # check results 
-    for i in 1:N
-        for j in 1:N
-            # we are explicity checking the == operator and not !=
-            @test (result[i, j] == (α * x_cpu[i, j] + y_cpu[i, j]))
-        end
-    end
+    result_cpu = α.*x_cpu .+ y_cpu
+    @test result == result_cpu
+    @test result_cpu == result
 
 end
