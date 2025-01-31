@@ -297,8 +297,8 @@ end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
-    if (Base.size(arr) != Base.size(julia_array))
-        @warn "Left NDArray is $(size(arr)) and right Julia array is $(Base.size(julia_array))!\n"
+    if (size(arr) != size(julia_array))
+        @warn "Left NDArray is $(size(arr)) and right Julia array is $(size(julia_array))!\n"
         return false
     end
 
