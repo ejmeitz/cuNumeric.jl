@@ -18,38 +18,44 @@
 =#
 
 #= Purpose of test: daxpy
-    -- Focused on double 2 dimenional. Does not test other types or dims. 
-    -- NDArray intialization 
-    -- NDArray writing and reading scalar indexing
-    --          shows both [i, j] and [(i, j)] working
-    -- NDArray addition and multiplication
+    - Test a matrix matrix multiply
 =#
-function daxpy_basic()
-    
+function sgemm(max_diff)
+
     N = 100
-    α = 56.6
-    dims = (N, N)
+    FT = Float32
+
+    dims = (N,N)
 
     # Base julia arrays
-    x_cpu = rand(Float64, dims);
-    y_cpu = rand(Float64, dims);
+    A_cpu = rand(FT, dims);
+    B_cpu = rand(FT, dims);
 
     # cunumeric arrays
-    x = cuNumeric.zeros(dims)
-    y = cuNumeric.zeros(dims)
+    A = cuNumeric.zeros(dims)
+    B = cuNumeric.zeros(dims)
 
     # Initialize NDArrays with random values
+    # used in Julia arrays
     for i in 1:N
         for j in 1:N
-            # set cunumeric.jl arrays
-            x[i, j] = x_cpu[i, j]
-            y[i, j] = y_cpu[i, j]
+            A[i, j] = Float64(A_cpu[i, j])
+            B[i, j] = Float64(B_cpu[i, j])
         end
     end
 
-    result = α * x + y
-    result_cpu = α.*x_cpu .+ y_cpu
-    @test result == result_cpu
-    @test result_cpu == result
+    # Needed to start as Float64 to 
+    # initialize the NDArray
+    C_cpu = A_cpu * B_cpu
+
+    A = cuNumeric.as_type(A, LegateType(FT))
+    B = cuNumeric.as_type(B, LegateType(FT))
+    C = cuNumeric.zeros(FT, N, N)
+
+    mul!(C, A, B)
+
+    @test cuNumeric.compare(C, C_cpu, max_diff)
+
+    C = A * B
 
 end

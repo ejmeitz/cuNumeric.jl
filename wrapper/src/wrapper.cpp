@@ -27,6 +27,7 @@
 #include "jlcxx/jlcxx.hpp"
 #include "legate.h"
 #include "legate/mapping/machine.h"
+#include "legate/timing/timing.h"
 #include "legion.h"
 #include "legion/legion_config.h"
 #include "types.h"
@@ -113,6 +114,7 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
+      .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)
@@ -143,6 +145,12 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
   mod.method("_multiply", &cupynumeric::multiply);
   mod.method("_random_ndarray", &cupynumeric::random);
 
+
+
+  mod.add_type<legate::timing::Time>("Time")
+    .method("value", &legate::timing::Time::value);
+  mod.method("time_microseconds", &legate::timing::measure_microseconds);
+  mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
