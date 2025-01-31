@@ -298,7 +298,7 @@ end
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
     if (size(arr) != size(julia_array))
-        @warn "Left NDArray is $(size(arr)) and right Julia array is $(size(julia_array))!\n"
+        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
         return false
     end
 
@@ -317,4 +317,31 @@ end
 function Base.:(==)(julia_array::Array, arr::NDArray)
     # flip LHS and RHS
     return (arr == julia_array)
+end
+
+
+function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
+    if (size(arr) != size(julia_array))
+        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+        return false
+    end
+
+    if (eltype(arr) != eltype(julia_array))
+        @warn "NDArray has eltype $(eltype(arr)) and Julia array has eltype $(eltype(julia_array))!\n"
+        return false
+    end
+
+    for CI in CartesianIndices(julia_array)
+        if abs(julia_array[CI] - arr[Tuple(CI)...]) > max_diff
+            print(CI)
+            return false
+        end
+    end
+
+    # successful completion
+    return true
+end
+
+function compare(arr::NDArray, julia_array::Array{T}, max_diff::T) where T
+    return compare(julia_array, arr, max_diff)
 end

@@ -1,6 +1,6 @@
 
 
-function sgemm()
+function sgemm(max_diff)
 
     N = 100
     FT = Float32
@@ -34,8 +34,7 @@ function sgemm()
 
     mul!(C, A, B)
 
-    @warn "SGEMM Probably failed cause of precision 🥲"
-    @test C == C_cpu
+    @test cuNumeric.compare(C, C_cpu, max_diff)
 
     C = A * B
 
