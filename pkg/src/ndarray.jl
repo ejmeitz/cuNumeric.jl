@@ -207,10 +207,9 @@ Fills `arr` with Float64s uniformly at random
 Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
 
 
-#* THIS JUST COMPLETELY OVERRIDES ALL CALLS TO RAND....
 """
-    rand(NDArray, dims::Dims)
-    rand(NDArray, dims::Int...)
+    rand(::NDArray, dims::Dims)
+    rand(::NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
