@@ -97,10 +97,10 @@ end
 
 
 #### ARRAY INDEXING WITH SLICES ####
-to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(LegateSlice.([s for s in slices]))
+to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(s for s in slices)
 
 function slice(start::Int, stop::Int)
-    return LegateSlice(StdOptionalInt64{Int64}(start), StdOptionalInt64{Int64}(stop))
+    return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
 end
 
 

@@ -88,15 +88,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                          .constructor<const cupynumeric::NDArray&>();
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(
+      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>, std::optional<int64_t>>(
           WrapCppOptional());
 
-  mod.add_type<Parametric<TypeVar<1>>>("StdOptionalInt64")
-        .apply<std::optional<int64_t>>(
-            WrapCppOptional());
-
   mod.add_type<legate::LogicalStore>("LogicalStore");
-  mod.add_type<legate::Slice>("LegateSlice");
+  mod.add_type<legate::Slice>("LegateSlice")
+                .constructor<std::optional<int64_t>, std::optional<int64_t>>();
+                
   mod.add_type<std::initializer_list<legate::Slice>>("LegateSlices");
 
   mod.add_type<legate::Scalar>("LegateScalar")
