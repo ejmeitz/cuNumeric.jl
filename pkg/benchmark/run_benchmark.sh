@@ -47,9 +47,8 @@ if [[ $CPUS -lt 0 ]]; then
     exit
 fi
 
-
-#export LEGATE_AUTO_CONFIG=0
-#export LEGATE_CONFIG="--cpus $CPUS --gpus $GPUS --fbmem 10000"
+export LEGATE_AUTO_CONFIG=0
+export LEGATE_CONFIG="--cpus=1 --gpus=$GPUS --omps=$CPUS --ompthreads=3 --utility=2 --sysmem=256 --numamem=19029 --fbmem=7569 --zcmem=128 --regmem=0"
 export LEGATE_SHOW_CONFIG=1
 
 echo "Running $FILENAME with $CPUS CPUs and $GPUS GPUs"

@@ -24,6 +24,7 @@ module cuNumeric
 # the above yields:: std::optional<cupynumeric::NDArray>
 
 using CxxWrap
+using Pkg
 
 using LinearAlgebra
 import LinearAlgebra: mul!

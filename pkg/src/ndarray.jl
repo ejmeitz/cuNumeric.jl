@@ -95,7 +95,6 @@ function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <
     write(acc, arr, to_cpp_index(idxs), value)
 end
 
-
 # USED TO CONVERT NDArray to Julia Array
 # Long term probably be a named function since we allocate
 # whole new array in here. Not exactly what I expect form []
@@ -215,8 +214,8 @@ Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
-Random.rand(dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
-Random.rand(dims::Int...) = cuNumeric.rand(dims)
+Random.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
+Random.rand(::Type{NDArray}, dims::Int...) = cuNumeric.rand(NDArray, dims)
 
 
 #### OPERATIONS ####
@@ -257,15 +256,18 @@ end
 #* to maintain some semblence native Julia array syntax
 # See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2
 function add!(out::NDArray, arr1::NDArray, arr2::NDArray)
-    return _add(arr1, arr2, out)
+    _add(arr1, arr2, out)
+    return out
 end
 
 function multiply!(out::NDArray, arr1::NDArray, arr2::NDArray)
-    return _multiply(arr1, arr2, out)
+    _multiply(arr1, arr2, out)
+    return out
 end
 
 function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
-    return _dot_three_arg(out, A, B)
+    _dot_three_arg(out, A, B)
+    return out
 end
 
 # arr1 == arr2
