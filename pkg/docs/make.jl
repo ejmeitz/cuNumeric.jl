@@ -17,5 +17,5 @@ makedocs(
 deploydocs(
     repo="github.com/ejmeitz/cuNumeric.jl.git",
     push_preview = true,
-    devbranch = "main"
+    devbranch = nothing,
 )
