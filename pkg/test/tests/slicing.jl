@@ -1,4 +1,4 @@
-#= Copyright 2025 Northwestern University, 
+#= Copyright 2025 Northwestern University,
  *                   Carnegie Mellon University University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,25 +17,11 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-using Test
-using cuNumeric
+#= Purpose of test: slicing
+    -- Perform NDArray operations using slices for more efficient memory access
+=#
 
 
-include("tests/daxpy.jl")
-include("tests/daxpy_advanced.jl")
-include("tests/slicing.jl")
+function slicing()
 
-@testset "This is checking 1 == 1" begin
-    @test 1 == 1
-end
-
-@testset verbose = true "daxpy Tests" begin
-    @testset daxpy_basic()
-    @testset daxpy_advanced()
-end
-
-@testset verbose = true "Slcing Tests" begin
-    @testset slicing()
-end
-
-
+end   
