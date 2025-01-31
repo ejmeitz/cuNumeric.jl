@@ -97,16 +97,28 @@ end
 
 
 #### ARRAY INDEXING WITH SLICES ####
-to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(s for s in slices)
+to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = StdVector([s for s in slices])
 
 function slice(start::Int, stop::Int)
     return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
 end
 
 
-function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
-    return get_slice(arr, to_cpp_init_slice(slice(first(i), last(i)), slice(first(j), last(j))))
+function Base.getindex(arr::NDArray, i::Colon, j::Int64)
+    return get_slice(arr, slice(0, size(arr, 1)), slice(j-1, j-1))
 end
+
+function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
+    return get_slice(arr, slice(i-1, i-1), slice(0, size(arr, 2)))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
+    # slices = to_cpp_init_slice(slice(first(i), last(i)), slice(first(j), last(j)))
+    return get_slice(arr, slice(first(i) - 1, last(i) - 1), slice(first(j) - 1, last(j) - 1))
+end
+
+
+
 
 # function Base.getindex(ranges::Vararg{UnitRange{Int}, N}) where N
 #     return Tuple(slice(first(r), last(r)) for r in ranges)
@@ -246,6 +258,16 @@ function reshape(arr::NDArray, i::Int64)
     return _reshape(arr, i_int64)
 end
 
+# TODO this is a binary operation. This implementation will just multiply a scaclar -1 with NDArray
+function Base.:-(arr::NDArray)
+    return multiply_scalar(arr, LegateScalar(-1))
+end
+
+function Base.:-(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
+    return multiply_scalar(arr, LegateScalar(-val))
+end
+
+
 # For matricies some might expect this to be matmul
 # should probably only call this when .* is used
 function Base.:*(arr1::NDArray, arr2::NDArray)
@@ -256,15 +278,19 @@ function Base.:+(arr1::NDArray, arr2::NDArray)
     return add(arr1, arr2)
 end
 
-function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
+function Base.:-(arr1::NDArray, arr2::NDArray)
+    return add(arr1, -arr2) # RHS is negated since arr1 - arr2
+end
+
+function Base.:+(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
     return add_scalar(arr, LegateScalar(val))
 end
 
-function Base.:+(arr::NDArray, val::Union{Float32, Float64})
+function Base.:+(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
     return add_scalar(arr, LegateScalar(val))
 end
 
-function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
+function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
