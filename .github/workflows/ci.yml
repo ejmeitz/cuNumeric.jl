@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name : JUlia ${{ matrix.version }} - ${{ matrix.os }}
+    name : Julia ${{ matrix.version }} - ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,7 +21,7 @@ jobs:
           - x64
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create Conda environment
         run: |
@@ -41,6 +41,7 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - uses: julia-actions/cache@v2
           
       - name: Install Dependencies
         run: |
@@ -56,6 +57,27 @@ jobs:
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+docs:
+  name : Documentation
+  permissions:
+    actions: write
+    contents: write
+    pull-requests: read
+    statuses: write
+  runs-on: ubuntu-latest
+  steps:
+    - uses: actions/checkout@v4
+    - uses: julia-actions/setup-julia@v2
+      with:
+        version: '1'
+    - uses: julia-actions/cache@v2
+    - name: Install docs dependencies
+      run: julia --project=pkg/docs/ -e 'using Pkg; Pkg.instantiate()'
+    - name: Build and deploy docs
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
+        DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
+      run: julia --project=pkg/docs/ pkg/docs/make.jl
 
 
 
