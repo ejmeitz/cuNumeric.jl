@@ -52,7 +52,8 @@ export LEGATE_CONFIG="--cpus=1 --gpus=$GPUS --omps=$CPUS --ompthreads=3 --utilit
 export LEGATE_SHOW_CONFIG=1
 
 echo "Running $FILENAME with $CPUS CPUs and $GPUS GPUs"
-CMD='julia --project="." $FILENAME ${EXTRA_ARGS[*]}'
 
-echo "Running: $CMD"
-eval $CMD
+CMD="julia --project='.' $FILENAME ${EXTRA_ARGS[@]}"
+
+printf "Running: %s\n" "$CMD"
+eval "$CMD"

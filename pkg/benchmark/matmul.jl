@@ -7,8 +7,8 @@ using LinearAlgebra
 const FT = Float32
 
 function initialize_cunumeric(N)
-    A = cuNumeric.as_type(cuNumeric.rand(N,N), LegateType(FT))
-    B = cuNumeric.as_type(cuNumeric.rand(N,N), LegateType(FT))
+    A = cuNumeric.as_type(cuNumeric.rand(NDArray, N,N), LegateType(FT))
+    B = cuNumeric.as_type(cuNumeric.rand(NDArray, N,N), LegateType(FT))
     C = cuNumeric.zeros(FT, N, N)
     return A, B, C
 end
@@ -47,7 +47,7 @@ N = parse(Int, ARGS[1])
 I = parse(Int, ARGS[2])
 W = parse(Int, ARGS[3])
 
-@info "Running MATMUL benchmark with $(calc) on $(N)x$N matricies for $I iterations, $W warmups"
+@info "Running MATMUL benchmark on $(N)x$N matricies for $I iterations, $W warmups"
 
 μ, flops = gemm_cunumeric(N,I,W)
 println("cuNumeric Mean Run Time: $(μ) μs")
