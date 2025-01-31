@@ -17,10 +17,10 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
 
+#include <initializer_list>
 #include <iostream>
 #include <string>  //needed for return type of toString methods
 #include <type_traits>
-#include <initializer_list>
 
 #include "accessors.h"
 #include "cupynumeric.h"
@@ -79,19 +79,20 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
   mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
 
-//   mod.method("get_machine_info", &get_machine_info);
-//   mod.method("print_machine_info", &print_machine_info);
+  //   mod.method("get_machine_info", &get_machine_info);
+  //   mod.method("print_machine_info", &print_machine_info);
 
-// Need to put this before the optional definition,
-// but StdOptional has to be defined by NDArray::type
-auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
-      .constructor<const cupynumeric::NDArray&>();
+  // Need to put this before the optional definition,
+  // but StdOptional has to be defined by NDArray::type
+  auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
+                         .constructor<const cupynumeric::NDArray&>();
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(WrapCppOptional());
+      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(
+          WrapCppOptional());
 
-  mod.add_type<legate::LogicalStore>("LogicalStore"); 
-  mod.add_type<legate::Slice>("LegateSlice"); 
+  mod.add_type<legate::LogicalStore>("LogicalStore");
+  mod.add_type<legate::Slice>("LegateSlice");
   mod.add_type<std::initializer_list<legate::Slice>>("LegateSlices");
 
   mod.add_type<legate::Scalar>("LegateScalar")
@@ -99,7 +100,9 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .constructor<double>();  // julia lets me make with ints???
   // https://github.com/nv-legate/cupynumeric/blob/5371ab3ead17c295ef05b51e2c424f62213ffd52/src/cupynumeric/ndarray.h
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
-      .method("_size", &cupynumeric::NDArray::size) //hide with underscore cause in Julia `size` is same as shape
+      .method("_size",
+              &cupynumeric::NDArray::size)  // hide with underscore cause in
+                                            // Julia `size` is same as shape
       .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
       .method("copy", &cupynumeric::NDArray::copy)
@@ -127,9 +130,10 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*)
-      .method("get_slice", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
-                              std::initializer_list<cupynumeric::slice>) const) &
-                                    cupynumeric::NDArray::operator[]);
+      .method("get_slice",
+              (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+                  std::initializer_list<cupynumeric::slice>) const) &
+                  cupynumeric::NDArray::operator[]);
 
   auto ndarray_accessor =
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");
@@ -145,10 +149,8 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
   mod.method("_multiply", &cupynumeric::multiply);
   mod.method("_random_ndarray", &cupynumeric::random);
 
-
-
-  mod.add_type<legate::timing::Time>("Time")
-    .method("value", &legate::timing::Time::value);
+  mod.add_type<legate::timing::Time>("Time").method(
+      "value", &legate::timing::Time::value);
   mod.method("time_microseconds", &legate::timing::measure_microseconds);
   mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
 
