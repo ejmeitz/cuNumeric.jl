@@ -33,7 +33,7 @@ include("tests/sgemm.jl")
 end
 
 @testset verbose = true "MatMulTests" begin
-    @warn "SGEMM has some precision issue 🥲"
     max_diff = Float32(1e-4)
+    @warn "SGEMM has some precision issues, using tol $(max_diff) 🥲"
     @testset sgemm(max_diff)
 end
