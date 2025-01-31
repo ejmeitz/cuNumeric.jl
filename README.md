@@ -1,6 +1,12 @@
 # cuNumeric.jl
- 
-This is a Julia wrapper using [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia) for [cupynumeric](https://github.com/nv-legate/cupynumeric).
+
+[![Documentation dev](https://img.shields.io/badge/docs-stable-blue.svg)](https://ejmeitz.github.io/cuNumeric.jl/dev)
+[![Build status](https://ci.appveyor.com/api/projects/status/973jtue9itgvvlc7?svg=true)](https://ci.appveyor.com/project/ejmeitz/cunumeric-jl)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+The cuNumeric.jl package wraps the [CuPyNumeric](https://github.com/nv-legate/cupynumeric) C++ API from NVIDIA to bring simple distributed computing on GPUs and CPUs to Julia! We provide a simple array abstraction, the `NDArray`, which supports most of the operations you would expect from a normal Julia array.
+
+This project is in alpha and we do not commit to anything necessarily working as you would expect. The current build process requires several external dependencies which are not registered on BinaryBuilder.jl yet. The build instructions and minimum pre-requesites are as follows:
 
 ## Minimum prereqs
 - g++ capable of C++20
@@ -63,11 +69,6 @@ Optional: You can create a file called `.localenv` in order to add anything to t
 `sh scripts/legion_redop_patch.inl` patches Legion https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 
 `sh ./build.sh` will create `libcupynumericwrapper.so` in `$CUNUMERIC_JL_HOME/build`
-
-
-## Sketchy Things We Should fix
-- `cuNumeric.rand` overwrites all calls to Random.rand unless you specify the type (e.g. `rand(Float32, 2)`).  CUDA.jl has this implemented correctly.
--
 
 ## Contact
 For technical questions, please either contact 
