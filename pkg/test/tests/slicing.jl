@@ -51,12 +51,12 @@ function slicing()
     # v_new[1:end,1:end] = ((c_v * v_lap) + F_v)*dt + v[1:end,1:end]
 
     # Apply periodic boundary conditions
-    # u_new[:,1] = u[:,end-2]
-    # u_new[:,end] = u[:,2]
-    # u_new[1,:] = u[end-2,:]
-    # u_new[end,:] = u[2,:]
-    # v_new[:,1] = v[:,end-2]
-    # v_new[:,end] = v[:,2]
-    # v_new[1,:] = v[end-2,:]
-    # v_new[end,:] = v[2,:]
+    u_new[:,1] = u[:,end-2]
+    u_new[:,end] = u[:,2]
+    u_new[1,:] = u[end-2,:]
+    u_new[end,:] = u[2,:]
+    v_new[:,1] = v[:,end-2]
+    v_new[:,end] = v[:,2]
+    v_new[1,:] = v[end-2,:]
+    v_new[end,:] = v[2,:]
 end   

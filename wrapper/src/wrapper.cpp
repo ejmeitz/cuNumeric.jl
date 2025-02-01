@@ -40,8 +40,8 @@ struct WrapCppOptional {
   }
 };
 
-
-cupynumeric::NDArray get_slice(cupynumeric::NDArray arr, legate::Slice a, legate::Slice b) {
+cupynumeric::NDArray get_slice(cupynumeric::NDArray arr, legate::Slice a,
+                               legate::Slice b) {
   return arr[{a, b}];
 }
 
@@ -137,11 +137,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*);
-      // replacing this with get_slice custom method
-      // .method("get_slice",
-      //         (cupynumeric::NDArray(cupynumeric::NDArray::*)(
-      //             std::initializer_list<cupynumeric::slice>) const) &
-      //             cupynumeric::NDArray::operator[]);
+  // replacing this with get_slice custom method
+  // .method("get_slice",
+  //         (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+  //             std::initializer_list<cupynumeric::slice>) const) &
+  //             cupynumeric::NDArray::operator[]);
 
   mod.method("get_slice", &get_slice);
 

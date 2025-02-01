@@ -104,6 +104,16 @@ function slice(start::Int, stop::Int)
 end
 
 
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
+    s = get_slice(lhs, slice(0, size(lhs, 1)), slice(j-1, j-1))
+    assign(s, rhs);
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
+    s = get_slice(lhs, slice(i-1, i-1), slice(0, size(lhs, 2)))
+    assign(s, rhs);
+end
+
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
     return get_slice(arr, slice(0, size(arr, 1)), slice(j-1, j-1))
 end
@@ -116,7 +126,6 @@ function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
     # slices = to_cpp_init_slice(slice(first(i), last(i)), slice(first(j), last(j)))
     return get_slice(arr, slice(first(i) - 1, last(i) - 1), slice(first(j) - 1, last(j) - 1))
 end
-
 
 
 
