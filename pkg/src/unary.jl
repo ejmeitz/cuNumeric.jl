@@ -45,9 +45,6 @@ global const unary_op_map_no_args = Dict{Function, Int}(
 # Generate code for all unary operators
 for (base_func, op_code) in unary_op_map_no_args
     @eval begin
-        @doc """
-            $($(Symbol(base_func))) : A unary operation acting on an NDArray
-        """
         function $(Symbol(base_func))(input::NDArray)
             out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
             empty = cuNumeric.StdVector{cuNumeric.LegateScalar}([]) # not sure this is ok for performanc

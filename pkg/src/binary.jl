@@ -42,9 +42,6 @@ global const binary_op_map = Dict{Function, Int}(
 # Generate code for all binary operations.
 for (base_func, op_code) in binary_op_map
     @eval begin
-        @doc """
-            $($(Symbol(base_func))) A binary operator acting on NDArrays
-        """
         function $(Symbol(base_func))(rhs1::NDArray, rhs2::NDArray)
             out = cuNumeric.zeros(eltype(rhs1), size(rhs1)) # not sure this is ok for performance
             binary_op(out, $(op_code), rhs1, rhs2)
