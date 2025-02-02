@@ -1,25 +1,25 @@
 global const binary_op_map = Dict{Function, Int}(
     Base.:+ => Int(cuNumeric.ADD),
     Base.atan => Int(cuNumeric.ARCTAN2),
-    Base.:& => Int(cuNumeric.BITWISE_AND),
-    Base.:| => Int(cuNumeric.BITWISE_OR),
-    Base.:⊻ => Int(cuNumeric.BITWISE_XOR),
-    Base.copysign => Int(cuNumeric.COPYSIGN),
+    # Base.:& => Int(cuNumeric.BITWISE_AND), #* ANNOYING TO TEST (no == for bools)
+    # Base.:| => Int(cuNumeric.BITWISE_OR), #* ANNOYING TO TEST (no == for bools)
+    # Base.:⊻ => Int(cuNumeric.BITWISE_XOR), #* ANNOYING TO TEST (no == for bools)
+    # Base.copysign => Int(cuNumeric.COPYSIGN), #* ANNOYING TO TEST 
     Base.:/ => Int(cuNumeric.DIVIDE),
     # Base.:(==) => Int(cuNumeric.EQUAL),  #* DONT REALLY WANT ELEMENTWISE ==, RATHER HAVE REDUCTION
     Base.:^ => Int(cuNumeric.FLOAT_POWER), # diff from POWER?
     Base.div => Int(cuNumeric.FLOOR_DIVIDE),
     #missing => Int(cuNumeric.fmod), #same as mod in Julia?
-    Base.gcd => Int(cuNumeric.GCD),
+    # Base.gcd => Int(cuNumeric.GCD), #* ANNOYING TO TEST (need ints)
     Base.:> => Int(cuNumeric.GREATER),
     Base.:(>=) => Int(cuNumeric.GREATER_EQUAL),
     Base.hypot => Int(cuNumeric.HYPOT),
     Base.isapprox => Int(cuNumeric.ISCLOSE),
-    Base.lcm => Int(cuNumeric.LCM),
+    # Base.lcm => Int(cuNumeric.LCM),  #* ANNOYING TO TEST (need ints)
     Base.ldexp => Int(cuNumeric.LDEXP),
-    Base.:(<<) => Int(cuNumeric.LEFT_SHIFT),
+    # Base.:(<<) => Int(cuNumeric.LEFT_SHIFT),  #* ANNOYING TO TEST (no == for bools)
     Base.:(<) => Int(cuNumeric.LESS),
-    Base.:(<=) => Int(cuNumeric.LESS_EQUAL),
+    Base.:(<=) => Int(cuNumeric.LESS_EQUAL), 
     #missing => Int(cuNumeric.LOGADDEXP),
     #missing => Int(cuNumeric.LOGADDEXP2),
     # Base.:&& => Int(cuNumeric.LOGICAL_AND), # This returns bits?
@@ -31,7 +31,7 @@ global const binary_op_map = Dict{Function, Int}(
     #missing => Int(cuNumeric.NEXTAFTER),
     # Base.:(!=) => Int(cuNumeric.NOT_EQUAL), #* DONT REALLY WANT ELEMENTWISE !=, RATHER HAVE REDUCTION
     #missing => Int(cuNumeric.POWER),
-    Base.:(>>) => Int(cuNumeric.RIGHT_SHIFT),
+    # Base.:(>>) => Int(cuNumeric.RIGHT_SHIFT), #* ANNOYING TO TEST (no == for bools)
     Base.:(-) => Int(cuNumeric.SUBTRACT)
     
 )

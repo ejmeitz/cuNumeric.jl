@@ -40,48 +40,34 @@ end
 end
 
 @testset verbose = true "Unary Ops w/o Args" begin
+
     N = 100
-    max_diff = 1e-12
+    max_diff = 1e-13
 
     # Make input arrays we can re-use
     julia_arr = rand(Float64, N)
-    # julia_res = zeros(Float64, size(julia_arr))
+    julia_res = zeros(Float64, size(julia_arr))
     cunumeric_arr = cuNumeric.zeros(Float64, N)
     for i in 1:N
         cunumeric_arr[i] = julia_arr[i]
     end
+    
+    ## GENERATE TEST ON RANDOM FLOAT64s FOR EACH UNARY OP
+    @testset for func in keys(cuNumeric.unary_op_map_no_args)
 
-    # julia_res = sqrt.(julia_arr)
-    # cunumeric_res = sqrt(cunumeric_arr)
-    # @test julia_res == cunumeric_res
-
-    for base_func in keys(cuNumeric.unary_op_map_no_args)
-        # julia_res .= base_func.(julia_arr)
-        # cunumeric_res = base_func(cunumeric_arr)
-        # @test cuNumeric.compare(julia_res, cunumeric_res, max_diff)
-
-        # cunumeric_res2 = map(base_func, cunumeric_arr)
-        # @test cuNumeric.compare(julia_res, cunumeric_res2, max_diff)
-
-        # Generate a function just so the test is named
-        fname = Symbol(String(Symbol(base_func))*"test")
-        f = @eval begin 
-            function $(fname)(jl_arr::Vector, cunum_arr::NDArray)
-                cunumeric_res = $(base_func)(cunum_arr)
-                julia_res = $(base_func).(jl_arr)
-                return cuNumeric.compare(julia_res, cunumeric_res, $(max_diff))
-            end
-        end
-        println(fname)
-        @test f(julia_arr, cunumeric_arr)
+        cunumeric_res = func(cunumeric_arr)
+        cunumeric_res2 = map(func, cunumeric_arr)
+        julia_res .= func.(julia_arr)
+        @test cuNumeric.compare(julia_res, cunumeric_res, max_diff)
+        @test cuNumeric.compare(julia_res, cunumeric_res2, max_diff)
 
     end
 end
 
-@testset verbose = true "Unary Ops w/ Args" begin
+# @testset verbose = true "Unary Ops w/ Args" begin
 
-end
+# end
 
-@testset verbose = true "Unary Reductions" begin
+# @testset verbose = true "Unary Reductions" begin
     
-end
+# end
