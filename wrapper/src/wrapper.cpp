@@ -24,6 +24,7 @@
 #include "accessors.h"
 #include "cupynumeric.h"
 #include "jlcxx/jlcxx.hpp"
+#include "jlcxx/stl.hpp"
 #include "legate.h"
 #include "legate/mapping/machine.h"
 #include "legate/timing/timing.h"
@@ -98,6 +99,8 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
+  jlcxx::stl::apply_stl<legate::Scalar>(mod); // enable std::vector<legate::Scalar>
+
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
       .method("_size", &cupynumeric::NDArray::size) //hide with underscore cause in Julia `size` is same as shape
       .method("shape", &cupynumeric::NDArray::shape)
@@ -111,7 +114,7 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
                               cupynumeric::NDArray::reshape)
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("unary_op", &cupynumeric::NDArray::unary_op)
-      // .method("unary_reduction", &cupynumeric::NDArray::unary_reduction)
+      // .method("unary_reduction", &cupynumeric::NDArray::unary_reduction) //DOESNT KNOW WHICH OVERLOAD TO PICK
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)

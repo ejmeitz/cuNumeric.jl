@@ -4,7 +4,7 @@ global const unary_op_map = Dict{Function, Int}(
     Base.acos => Int(cuNumeric.ARCCOS),
     Base.acosh => Int(cuNumeric.ARCCOSH),
     Base.asin => Int(cuNumeric.ARCSIN),
-    Base.asinh => Int(cuNumeric.ARCHSINH),
+    Base.asinh => Int(cuNumeric.ARCSINH),
     Base.atan => Int(cuNumeric.ARCTAN),
     Base.atanh => Int(cuNumeric.ARCTANH),
     Base.cbrt => Int(cuNumeric.CBRT),
@@ -12,7 +12,7 @@ global const unary_op_map = Dict{Function, Int}(
     Base.clamp => Int(cuNumeric.CLIP),
     Base.conj => Int(cuNumeric.CONJ),
     # missing => Int(cuNumeric.COPY), # CHECK WHAT THIS DOES
-    Base.cos => Int(cuNUMERIC.COS),
+    Base.cos => Int(cuNumeric.COS),
     Base.cosh => Int(cuNumeric.COSH),
     Base.deg2rad => Int(cuNumeric.DEG2RAD),
     Base.exp => Int(cuNumeric.EXP),
@@ -74,11 +74,13 @@ global const unary_op_map = Dict{Function, Int}(
 for (base_func, op_code) in unary_op_map
     @eval begin
         @doc """
-            $($base_func) : A unary operation acting on an NDArray
+            $($(Symbol(base_func))) : A unary operation acting on an NDArray
         """
-        function $(base_func)(input::NDArray)
+        function $(Symbol(base_func))(input::NDArray)
             out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
-            return unary_op(out, op_code, input)
+            empty = cuNumeric.StdVector{cuNumeric.LegateScalar}([]) #* DEFINITELY REMOVE IF POSSIBLE
+            unary_op(out, $(op_code), input, empty)
+            return out
         end
     end
 end
@@ -92,8 +94,10 @@ end
 #             $($base_func) : A unary reduction acting on NDArrays
 #         """
 #         function $(base_func)(input::NDArray)
+                #* reduces to single number doesnt need same size?
 #             out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
-#             return unary_reduction(out, op_code, input)
+#             #* look at src wheres output stored??
+#               return unary_reduction(out, op_code, input)
 #         end
 #     end
 # end

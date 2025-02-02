@@ -117,24 +117,13 @@ function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Co
 end
 
 Base.firstindex(arr::NDArray, dim::Int) = 1
-
-function Base.lastindex(arr::NDArray, dim::Int)
-    return Base.size(arr,dim)
-end
+Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
 
 Base.IndexStyle(::NDArray) = IndexCartesian()
 
-function Base.ndims(arr::NDArray)
-    return Int(cuNumeric.dim(arr))
-end
-
-function Base.size(arr::NDArray)
-    return Tuple(Int.(cuNumeric.shape(arr)))
-end
-
-function Base.size(arr::NDArray, dim::Int)
-    return Base.size(arr)[dim]
-end
+Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
+Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
+Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
 
 function Base.show(io::IO, arr::NDArray)
     T = eltype(arr)
@@ -231,13 +220,13 @@ end
 
 # For matricies some might expect this to be matmul
 # should probably only call this when .* is used
-function Base.:*(arr1::NDArray, arr2::NDArray)
-    return multiply(arr1, arr2)
-end
+# function Base.:*(arr1::NDArray, arr2::NDArray)
+#     return multiply(arr1, arr2)
+# end
 
-function Base.:+(arr1::NDArray, arr2::NDArray)
-    return add(arr1, arr2)
-end
+# function Base.:+(arr1::NDArray, arr2::NDArray)
+#     return add(arr1, arr2)
+# end
 
 function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
     return add_scalar(arr, LegateScalar(val))
@@ -271,30 +260,30 @@ end
 
 # arr1 == arr2
 #* THIS CAN BE REMOVED AFTER BINARY OPS WORK
-function Base.:(==)(arr1::NDArray, arr2::NDArray)
-    # TODO this only works on 2D arrays
-    # should we use a lazy hashing approach? 
-    # something like this? would this be better than looping thru the elements?
-    # hash(arr1.data) == hash(arr2.data)
-    if (Base.size(arr1) != Base.size(arr2))
-        return false
-    end
+# function Base.:(==)(arr1::NDArray, arr2::NDArray)
+#     # TODO this only works on 2D arrays
+#     # should we use a lazy hashing approach? 
+#     # something like this? would this be better than looping thru the elements?
+#     # hash(arr1.data) == hash(arr2.data)
+#     if (Base.size(arr1) != Base.size(arr2))
+#         return false
+#     end
 
-    if(ndims(arr1) > 3)
-        @warn "Accessors do not support dimension > 3 yet"
-        return false
-    end
+#     if(ndims(arr1) > 3)
+#         @warn "Accessors do not support dimension > 3 yet"
+#         return false
+#     end
 
-    dims = Base.size(arr1)
+#     dims = Base.size(arr1)
 
-    for CI in CartesianIndices(dims)
-        if arr1[Tuple(CI)...] != arr2[Tuple(CI)...]
-            return false
-        end
-    end
+#     for CI in CartesianIndices(dims)
+#         if arr1[Tuple(CI)...] != arr2[Tuple(CI)...]
+#             return false
+#         end
+#     end
 
-    return true
-end
+#     return true
+# end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)

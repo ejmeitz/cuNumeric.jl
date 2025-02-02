@@ -3,13 +3,13 @@ global const binary_op_map = Dict{Function, Int}(
     Base.atan => Int(cuNumeric.ARCTAN2),
     Base.:& => Int(cuNumeric.BITWISE_AND),
     Base.:| => Int(cuNumeric.BITWISE_OR),
-    Base.:⊻ => Int(cuNumeric.XOR),
-    Base.copysign => Int(cuNumeric.copysign),
+    Base.:⊻ => Int(cuNumeric.BITWISE_XOR),
+    Base.copysign => Int(cuNumeric.COPYSIGN),
     Base.:/ => Int(cuNumeric.DIVIDE),
     Base.:(==) => Int(cuNumeric.EQUAL), 
-    Base.:^ => Int(cuNumeric.FLOAT_POWER),
+    Base.:^ => Int(cuNumeric.FLOAT_POWER), # diff from POWER?
     Base.div => Int(cuNumeric.FLOOR_DIVIDE),
-    #missing => Int(cuNumeric.fmod),
+    #missing => Int(cuNumeric.fmod), #same as mod in Julia?
     Base.gcd => Int(cuNumeric.GCD),
     Base.:> => Int(cuNumeric.GREATER),
     Base.:(>=) => Int(cuNumeric.GREATER_EQUAL),
@@ -22,21 +22,33 @@ global const binary_op_map = Dict{Function, Int}(
     Base.:(<=) => Int(cuNumeric.LESS_EQUAL),
     #missing => Int(cuNumeric.LOGADDEXP),
     #missing => Int(cuNumeric.LOGADDEXP2),
-    (:&&) => Int(cuNumeric.LOGICAL_AND),
+    # Base.:&& => Int(cuNumeric.LOGICAL_AND), # This returns bits?
+    # Base.:|| => Int(cuNumeric.LOGICAL_OR), #This returns bits?
+    #missing  => Int(cuNumeric.LOGICAL_XOR),
+    #missing => Int(cuNumeric.MAXIMUM), #elementwise max?
+    #missing => Int(cuNumeric.MINIMUM), #elementwise min?
+    Base.:* => Int(cuNumeric.MULTIPLY), #elementwise product? == .* in Julia
+    #missing => Int(cuNumeric.NEXTAFTER),
+    Base.:(!=) => Int(cuNumeric.NOT_EQUAL),
+    #missing => Int(cuNumeric.POWER),
+    Base.:(>>) => Int(cuNumeric.RIGHT_SHIFT),
+    Base.:(-) => Int(cuNumeric.SUBTRACT)
+    
 )
 
-#* THIS SORT OF BREAKS WHAT A JULIA USER WOULD EXPECT
+#* THIS SORT OF BREAKS WHAT A JULIA USER MIGHT EXPECT
 #* WILL AUTOMATICALLY BROADCAST OVER ARRAY INSTEAD OF REQUIRING `.()` call sytax
 #* NEED TO IMPLEMENT BROADCASTING INTERFACE
 # Generate code for all binary operations.
 for (base_func, op_code) in binary_op_map
     @eval begin
         @doc """
-            $($base_func) A binary operator acting on NDArrays
+            $($(Symbol(base_func))) A binary operator acting on NDArrays
         """
-        function $(base_func)(rhs1::NDArray, rhs2::NDArray)
+        function $(Symbol(base_func))(rhs1::NDArray, rhs2::NDArray)
             out = cuNumeric.zeros(eltype(rhs1), size(rhs1)) # not sure this is ok for performance
-            return binary_op(out, op_code, rhs1, rhs2)
+            binary_op(out, $(op_code), rhs1, rhs2)
+            return out
         end
     end
 end
