@@ -10,7 +10,7 @@ makedocs(
     ), 
     pages = [
         "Home" => "index.md",
-        "Benchmarking" => "benchmark.md"
+        "Benchmarking" => "benchmark.md",
         "API" => "api.md"
     ]
 )
