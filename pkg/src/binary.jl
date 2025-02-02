@@ -6,7 +6,7 @@ global const binary_op_map = Dict{Function, Int}(
     Base.:⊻ => Int(cuNumeric.BITWISE_XOR),
     Base.copysign => Int(cuNumeric.COPYSIGN),
     Base.:/ => Int(cuNumeric.DIVIDE),
-    Base.:(==) => Int(cuNumeric.EQUAL), 
+    # Base.:(==) => Int(cuNumeric.EQUAL),  #* DONT REALLY WANT ELEMENTWISE ==, RATHER HAVE REDUCTION
     Base.:^ => Int(cuNumeric.FLOAT_POWER), # diff from POWER?
     Base.div => Int(cuNumeric.FLOOR_DIVIDE),
     #missing => Int(cuNumeric.fmod), #same as mod in Julia?
@@ -29,7 +29,7 @@ global const binary_op_map = Dict{Function, Int}(
     #missing => Int(cuNumeric.MINIMUM), #elementwise min?
     Base.:* => Int(cuNumeric.MULTIPLY), #elementwise product? == .* in Julia
     #missing => Int(cuNumeric.NEXTAFTER),
-    Base.:(!=) => Int(cuNumeric.NOT_EQUAL),
+    # Base.:(!=) => Int(cuNumeric.NOT_EQUAL), #* DONT REALLY WANT ELEMENTWISE !=, RATHER HAVE REDUCTION
     #missing => Int(cuNumeric.POWER),
     Base.:(>>) => Int(cuNumeric.RIGHT_SHIFT),
     Base.:(-) => Int(cuNumeric.SUBTRACT)

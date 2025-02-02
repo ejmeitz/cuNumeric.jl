@@ -33,7 +33,7 @@ using Random
 import Random: rand, rand!
 
 import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
-             ceil, clamp, conj, cosh, cosh, deg2rad, exp, exp2, expm1,
+             ceil, clamp, conj, cos, cosh, cosh, deg2rad, exp, exp2, expm1,
              floor, frexp, imag, isfinite, isinf, isnan, log, log10, 
              log1p, log2, !, modf, -, rad2deg, sign, signbit, sin,
              sinh, sqrt, tan, tanh, trunc, +, *, atan, &, |, ⊻, copysign,

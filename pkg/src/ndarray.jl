@@ -259,31 +259,30 @@ function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
 end
 
 # arr1 == arr2
-#* THIS CAN BE REMOVED AFTER BINARY OPS WORK
-# function Base.:(==)(arr1::NDArray, arr2::NDArray)
-#     # TODO this only works on 2D arrays
-#     # should we use a lazy hashing approach? 
-#     # something like this? would this be better than looping thru the elements?
-#     # hash(arr1.data) == hash(arr2.data)
-#     if (Base.size(arr1) != Base.size(arr2))
-#         return false
-#     end
+function Base.:(==)(arr1::NDArray, arr2::NDArray)
+    # TODO this only works on 2D arrays
+    # should we use a lazy hashing approach? 
+    # something like this? would this be better than looping thru the elements?
+    # hash(arr1.data) == hash(arr2.data)
+    if (Base.size(arr1) != Base.size(arr2))
+        return false
+    end
 
-#     if(ndims(arr1) > 3)
-#         @warn "Accessors do not support dimension > 3 yet"
-#         return false
-#     end
+    if(ndims(arr1) > 3)
+        @warn "Accessors do not support dimension > 3 yet"
+        return false
+    end
 
-#     dims = Base.size(arr1)
+    dims = Base.size(arr1)
 
-#     for CI in CartesianIndices(dims)
-#         if arr1[Tuple(CI)...] != arr2[Tuple(CI)...]
-#             return false
-#         end
-#     end
+    for CI in CartesianIndices(dims)
+        if arr1[Tuple(CI)...] != arr2[Tuple(CI)...]
+            return false
+        end
+    end
 
-#     return true
-# end
+    return true
+end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
@@ -310,8 +309,8 @@ function Base.:(==)(julia_array::Array, arr::NDArray)
 end
 
 
-#* REPLACE WITH ISAPPROX AFTER BINARY OPS DONE
-function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
+#* ADD ISAPPROX FOR TWO NDARRAYS AFTER BINARY OPS DONE
+function compare(julia_array::AbstractArray, arr::NDArray, max_diff)
     if (size(arr) != size(julia_array))
         @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
         return false
@@ -324,7 +323,6 @@ function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
 
     for CI in CartesianIndices(julia_array)
         if abs(julia_array[CI] - arr[Tuple(CI)...]) > max_diff
-            print(CI)
             return false
         end
     end
@@ -333,6 +331,6 @@ function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
     return true
 end
 
-function compare(arr::NDArray, julia_array::Array{T}, max_diff::T) where T
+function compare(arr::NDArray, julia_array::AbstractArray, max_diff)
     return compare(julia_array, arr, max_diff)
 end

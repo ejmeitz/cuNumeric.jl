@@ -1,17 +1,14 @@
-global const unary_op_map = Dict{Function, Int}(
+global const unary_op_map_no_args = Dict{Function, Int}(
     Base.abs => Int(cuNumeric.ABSOLUTE),
-    Base.angle => Int(cuNumeric.ANGLE),
-    Base.acos => Int(cuNumeric.ARCCOS),
-    Base.acosh => Int(cuNumeric.ARCCOSH),
+    Base.acos => Int(cuNumeric.ARCCOS), 
+    # Base.acosh => Int(cuNumeric.ARCCOSH), #* makes testing annoying
     Base.asin => Int(cuNumeric.ARCSIN),
     Base.asinh => Int(cuNumeric.ARCSINH),
     Base.atan => Int(cuNumeric.ARCTAN),
     Base.atanh => Int(cuNumeric.ARCTANH),
     Base.cbrt => Int(cuNumeric.CBRT),
-    Base.ceil => Int(cuNumeric.CEIL),
-    Base.clamp => Int(cuNumeric.CLIP),
     Base.conj => Int(cuNumeric.CONJ),
-    # missing => Int(cuNumeric.COPY), # CHECK WHAT THIS DOES
+    # missing => Int(cuNumeric.COPY), # SAME AS ASSIGN DONT NEED
     Base.cos => Int(cuNumeric.COS),
     Base.cosh => Int(cuNumeric.COSH),
     Base.deg2rad => Int(cuNumeric.DEG2RAD),
@@ -19,34 +16,69 @@ global const unary_op_map = Dict{Function, Int}(
     Base.exp2 => Int(cuNumeric.EXP2),
     Base.expm1 => Int(cuNumeric.EXPM1),
     Base.floor => Int(cuNumeric.FLOOR),
-    Base.frexp => Int(cuNumeric.FREXP),
+    # Base.frexp => Int(cuNumeric.FREXP), #* makes testing annoying
     #missing => Int(cuNumeric.GETARG), #not in numpy?
-    Base.imag => Int(cuNumeric.IMAG),
+    # Base.imag => Int(cuNumeric.IMAG), #* makes testing annoying
     #missing => Int(cuNumerit.INVERT), # 1/x or inv(A)?
-    Base.isfinite => Int(cuNumeric.ISFINITE),
-    Base.isinf => Int(cuNumeric.ISINF),
-    Base.isnan => Int(cuNumeric.ISNAN),
+    # Base.isfinite => Int(cuNumeric.ISFINITE), #* makes testing annoying
+    # Base.isinf => Int(cuNumeric.ISINF), #* makes testing annoying
+    # Base.isnan => Int(cuNumeric.ISNAN), #* makes testing annoying
     Base.log => Int(cuNumeric.LOG),
     Base.log10 => Int(cuNumeric.LOG10),
     Base.log1p => Int(cuNumeric.LOG1P),
     Base.log2 => Int(cuNumeric.LOG2),
-    Base.:! => Int(cuNumeric.LOGICAL_NOT),
-    Base.modf => Int(cuNumeric.MODF),
+    # Base.:! => Int(cuNumeric.LOGICAL_NOT), #* makes testing annoying
+    # Base.modf => Int(cuNumeric.MODF), #* makes testing annoying
     Base.:- => Int(cuNumeric.NEGATIVE), 
     #missing => Int(cuNumeric.POSITIVE), #What is this even for
     Base.rad2deg => Int(cuNumeric.RAD2DEG),
-    #missing => Int(cuNumeric.RINT), #figure out which version of round 
-    #missing => Int(cuNumeric.ROUND), #figure out which version of round
-    Base.sign => Int(cuNumeric.SIGN),
-    Base.signbit => Int(cuNumeric.SIGNBIT),
+    # Base.sign => Int(cuNumeric.SIGN), #* makes testing annoying
+    # Base.signbit => Int(cuNumeric.SIGNBIT), #* makes testing annoying
     Base.sin => Int(cuNumeric.SIN),  
     Base.sinh => Int(cuNumeric.SINH),  
     Base.sqrt => Int(cuNumeric.SQRT),  # HAS SPECIAL MEANING FOR MATRIX
     #missing => Int(cuNumeric.SQUARE), # just define as ^2?
     Base.tan => Int(cuNumeric.TAN),  
     Base.tanh => Int(cuNumeric.TANH),  
-    Base.trunc => Int(cuNumeric.TRUNC)  
 )
+
+# Generate code for all unary operators
+for (base_func, op_code) in unary_op_map_no_args
+    @eval begin
+        @doc """
+            $($(Symbol(base_func))) : A unary operation acting on an NDArray
+        """
+        function $(Symbol(base_func))(input::NDArray)
+            out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
+            empty = cuNumeric.StdVector{cuNumeric.LegateScalar}([]) # not sure this is ok for performanc
+            unary_op(out, $(op_code), input, empty)
+            return out
+        end
+    end
+end
+
+# global const unary_op_map_with_args = Dict{Function, Int}(
+#     Base.angle => Int(cuNumeric.ANGLE),
+#     Base.ceil => Int(cuNumeric.CEIL), #* HAS EXTRA ARGS
+#     Base.clamp => Int(cuNumeric.CLIP), #* HAS EXTRA ARGS
+#     Base.trunc => Int(cuNumeric.TRUNC)  #* HAS EXTRA ARGS
+#     missing => Int(cuNumeric.RINT), #figure out which version of round 
+#     missing => Int(cuNumeric.ROUND), #figure out which version of round
+# )
+
+# for (base_func, op_code) in unary_op_map_with_args
+#     @eval begin
+#         @doc """
+#             $($(Symbol(base_func))) : A unary operation acting on an NDArray
+#         """
+#         function $(Symbol(base_func))(input::NDArray, args...)
+#             out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
+#             extra_args = cuNumeric.StdVector{cuNumeric.LegateScalar}([LegateScalar(a) for a in args])
+#             unary_op(out, $(op_code), input, extra_args)
+#             return out
+#         end
+#     end
+# end
 
 # Could implement most of the missing functions here
 # global const unary_reduction_map = Dict{Function, Int}(
@@ -69,21 +101,6 @@ global const unary_op_map = Dict{Function, Int}(
 #     #missing => Int(cuNumeric.VARIANCE)
 # )
 
-
-# Generate code for all unary operators
-for (base_func, op_code) in unary_op_map
-    @eval begin
-        @doc """
-            $($(Symbol(base_func))) : A unary operation acting on an NDArray
-        """
-        function $(Symbol(base_func))(input::NDArray)
-            out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
-            empty = cuNumeric.StdVector{cuNumeric.LegateScalar}([]) #* DEFINITELY REMOVE IF POSSIBLE
-            unary_op(out, $(op_code), input, empty)
-            return out
-        end
-    end
-end
 
 
 # #*TODO HOW TO GET THESE ACTING ON CERTAIN DIMS
