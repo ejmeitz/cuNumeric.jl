@@ -54,9 +54,9 @@ install(TARGETS cupynumericwrapper
 ######### C++ API TEST FILE ONLY ######################################
 # Create executable which tests the cpp interface 		      #
 # that the shared library is wrapping/exposing to Julia		      #
-add_executable(matmulfp32 wrapper/matmulfp32.cpp) 
-target_link_libraries(matmulfp32 PRIVATE cupynumeric::cupynumeric)
-install(TARGETS matmulfp32 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
+# add_executable(matmulfp32 wrapper/matmulfp32.cpp) 
+# target_link_libraries(matmulfp32 PRIVATE cupynumeric::cupynumeric)
+# install(TARGETS matmulfp32 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
 
 
 

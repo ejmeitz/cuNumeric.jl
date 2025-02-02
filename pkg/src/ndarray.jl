@@ -270,6 +270,7 @@ function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
 end
 
 # arr1 == arr2
+#* THIS CAN BE REMOVED AFTER BINARY OPS WORK
 function Base.:(==)(arr1::NDArray, arr2::NDArray)
     # TODO this only works on 2D arrays
     # should we use a lazy hashing approach? 
@@ -320,6 +321,7 @@ function Base.:(==)(julia_array::Array, arr::NDArray)
 end
 
 
+#* REPLACE WITH ISAPPROX AFTER BINARY OPS DONE
 function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
     if (size(arr) != size(julia_array))
         @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
