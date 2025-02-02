@@ -37,5 +37,5 @@ export LEGATE_AUTO_CONFIG=1
 # 1 : Print reserverd resources on startup
 export LEGATE_SHOW_CONFIG=1
 
-export LEGATE_CONFIG="--cpus 10 --gpus 1"
+export LEGATE_CONFIG="--cpus 10 --gpus 1 --ompthreads 10"
 

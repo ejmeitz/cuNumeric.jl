@@ -32,6 +32,14 @@ import LinearAlgebra: mul!
 using Random
 import Random: rand, rand!
 
+import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
+             ceil, clamp, conj, cos, cosh, cosh, deg2rad, exp, exp2, expm1,
+             floor, frexp, imag, isfinite, isinf, isnan, log, log10, 
+             log1p, log2, !, modf, -, rad2deg, sign, signbit, sin,
+             sinh, sqrt, tan, tanh, trunc, +, *, atan, &, |, ⊻, copysign,
+             /, ==, ^, div, gcd, > , >=, hypot, isapprox, lcm, ldexp, <<,
+             < , <=, !=, >>, all, any, argmax, argmin, maximum, minimum,
+             prod, sum
 
 # abstract type AbstractFieldAccessor{PM,FT,n_dims} end
 # abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
@@ -42,6 +50,8 @@ lib = "libcupynumericwrapper.so"
 
 include("util.jl")
 include("ndarray.jl")
+include("unary.jl")
+include("binary.jl")
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
@@ -56,6 +66,12 @@ mutable struct ArgcArgv
   end
   
 getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
+
+
+function my_on_exit()
+    @info "Cleaning Up Legate"
+    cuNumeric.legate_finish()
+end
 
 
 # Runtime initilization
@@ -90,7 +106,7 @@ function __init__()
         @error "Failed to start Legate, got exit code $(res), exiting"
         Base.exit(res)
     end
-    Base.atexit(cuNumeric.legate_finish)
+    Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
 end

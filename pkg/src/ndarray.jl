@@ -117,24 +117,13 @@ function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Co
 end
 
 Base.firstindex(arr::NDArray, dim::Int) = 1
-
-function Base.lastindex(arr::NDArray, dim::Int)
-    return Base.size(arr,dim)
-end
+Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
 
 Base.IndexStyle(::NDArray) = IndexCartesian()
 
-function Base.ndims(arr::NDArray)
-    return Int(cuNumeric.dim(arr))
-end
-
-function Base.size(arr::NDArray)
-    return Tuple(Int.(cuNumeric.shape(arr)))
-end
-
-function Base.size(arr::NDArray, dim::Int)
-    return Base.size(arr)[dim]
-end
+Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
+Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
+Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
 
 function Base.show(io::IO, arr::NDArray)
     T = eltype(arr)
@@ -231,13 +220,13 @@ end
 
 # For matricies some might expect this to be matmul
 # should probably only call this when .* is used
-function Base.:*(arr1::NDArray, arr2::NDArray)
-    return multiply(arr1, arr2)
-end
+# function Base.:*(arr1::NDArray, arr2::NDArray)
+#     return multiply(arr1, arr2)
+# end
 
-function Base.:+(arr1::NDArray, arr2::NDArray)
-    return add(arr1, arr2)
-end
+# function Base.:+(arr1::NDArray, arr2::NDArray)
+#     return add(arr1, arr2)
+# end
 
 function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
     return add_scalar(arr, LegateScalar(val))
@@ -320,7 +309,8 @@ function Base.:(==)(julia_array::Array, arr::NDArray)
 end
 
 
-function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
+#* ADD ISAPPROX FOR TWO NDARRAYS AFTER BINARY OPS DONE
+function compare(julia_array::AbstractArray, arr::NDArray, max_diff)
     if (size(arr) != size(julia_array))
         @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
         return false
@@ -333,7 +323,6 @@ function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
 
     for CI in CartesianIndices(julia_array)
         if abs(julia_array[CI] - arr[Tuple(CI)...]) > max_diff
-            print(CI)
             return false
         end
     end
@@ -342,6 +331,6 @@ function compare(julia_array::Array{T}, arr::NDArray, max_diff::T) where T
     return true
 end
 
-function compare(arr::NDArray, julia_array::Array{T}, max_diff::T) where T
+function compare(arr::NDArray, julia_array::AbstractArray, max_diff)
     return compare(julia_array, arr, max_diff)
 end

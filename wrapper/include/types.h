@@ -20,8 +20,6 @@
 #pragma once
 
 #include "jlcxx/jlcxx.hpp"
-#include "legate.h"
-#include "legion/legion_config.h"
 
 
 //Wraps the enums which define how legate
@@ -35,3 +33,12 @@ void wrap_type_getters(jlcxx::Module&);
 // Wraps the privilege modes used in
 // FieldAccessor (AcessorRO, AccessorWO)
 void wrap_privilege_modes(jlcxx::Module&);
+
+// Unary op codes
+void wrap_unary_ops(jlcxx::Module&);
+
+//Unary reduction op codes
+void wrap_unary_reds(jlcxx::Module&);
+
+//Binary op codes
+void wrap_binary_ops(jlcxx::Module&);
