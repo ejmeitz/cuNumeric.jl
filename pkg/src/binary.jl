@@ -11,15 +11,15 @@ global const binary_op_map = Dict{Function, Int}(
     Base.div => Int(cuNumeric.FLOOR_DIVIDE),
     #missing => Int(cuNumeric.fmod), #same as mod in Julia?
     # Base.gcd => Int(cuNumeric.GCD), #* ANNOYING TO TEST (need ints)
-    Base.:> => Int(cuNumeric.GREATER),
-    Base.:(>=) => Int(cuNumeric.GREATER_EQUAL),
+    # Base.:> => Int(cuNumeric.GREATER), #* ANNOYING TO TEST (no == for bools
+    # Base.:(>=) => Int(cuNumeric.GREATER_EQUAL), #* ANNOYING TO TEST (no == for bools
     Base.hypot => Int(cuNumeric.HYPOT),
-    Base.isapprox => Int(cuNumeric.ISCLOSE),
+    # Base.isapprox => Int(cuNumeric.ISCLOSE), #* ANNOYING TO TEST (no == for bools
     # Base.lcm => Int(cuNumeric.LCM),  #* ANNOYING TO TEST (need ints)
-    Base.ldexp => Int(cuNumeric.LDEXP),
+    # Base.ldexp => Int(cuNumeric.LDEXP), #* ANNOYING TO TEST (need ints)
     # Base.:(<<) => Int(cuNumeric.LEFT_SHIFT),  #* ANNOYING TO TEST (no == for bools)
-    Base.:(<) => Int(cuNumeric.LESS),
-    Base.:(<=) => Int(cuNumeric.LESS_EQUAL), 
+    # Base.:(<) => Int(cuNumeric.LESS), #* ANNOYING TO TEST (no == for bools
+    # Base.:(<=) => Int(cuNumeric.LESS_EQUAL),  #* ANNOYING TO TEST (no == for bools
     #missing => Int(cuNumeric.LOGADDEXP),
     #missing => Int(cuNumeric.LOGADDEXP2),
     # Base.:&& => Int(cuNumeric.LOGICAL_AND), # This returns bits?
@@ -50,6 +50,7 @@ for (base_func, op_code) in binary_op_map
             binary_op(out, $(op_code), rhs1, rhs2)
             return out
         end
+
     end
 end
 
@@ -60,3 +61,7 @@ end
 function Base.map(f::Function, arr1::NDArray, arr2::NDArray)
     return f(arr1, arr2) # Will try to call one of the functions generated above
 end
+
+# function Base.map!(f::Function, dest::NDArray, arr1::NDArray, arr2::NDArray)
+#     return f
+# end

@@ -25,7 +25,6 @@ using LinearAlgebra
 include("tests/daxpy.jl")
 include("tests/daxpy_advanced.jl")
 include("tests/sgemm.jl")
-include("tests/unary_tests.jl")
 
 
 @testset verbose = true "DAXPY" begin
@@ -39,6 +38,8 @@ end
     @testset sgemm(max_diff)
 end
 
+#*TODO ADD IN PLACE VARIANTS
+#*TODO TEST VARIANT OVER DIMS
 @testset verbose = true "Unary Ops w/o Args" begin
 
     N = 100
@@ -58,6 +59,35 @@ end
         cunumeric_res = func(cunumeric_arr)
         cunumeric_res2 = map(func, cunumeric_arr)
         julia_res .= func.(julia_arr)
+        @test cuNumeric.compare(julia_res, cunumeric_res, max_diff)
+        @test cuNumeric.compare(julia_res, cunumeric_res2, max_diff)
+
+    end
+end
+
+#*TODO ADD IN PLACE VARIANTS
+@testset verbose = true "Binary Ops" begin
+    N = 100
+    max_diff = 1e-13
+
+    # Make input arrays we can re-use
+    julia_arr1 = rand(Float64, N)
+    julia_arr2 = rand(Float64, N)
+    julia_res = zeros(Float64, N)
+
+    cunumeric_arr1 = cuNumeric.zeros(Float64, N)
+    cunumeric_arr2 = cuNumeric.zeros(Float64, N)
+    for i in 1:N
+        cunumeric_arr1[i] = julia_arr1[i]
+        cunumeric_arr2[i] = julia_arr2[i]
+    end
+    
+    ## GENERATE TEST ON RANDOM FLOAT64s FOR EACH UNARY OP
+    @testset for func in keys(cuNumeric.binary_op_map)
+
+        cunumeric_res = func(cunumeric_arr1, cunumeric_arr2)
+        cunumeric_res2 = map(func, cunumeric_arr1, cunumeric_arr2)
+        julia_res .= func.(julia_arr1, julia_arr2)
         @test cuNumeric.compare(julia_res, cunumeric_res, max_diff)
         @test cuNumeric.compare(julia_res, cunumeric_res2, max_diff)
 
