@@ -261,6 +261,7 @@ function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
     return out
 end
 
+#* replace with array_equal?
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)
     # TODO this only works on 2D arrays
