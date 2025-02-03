@@ -41,18 +41,23 @@ struct WrapCppOptional {
 };
 
 
-// TODO: support arbitrary dimensions 
-// a is dim 1
-// b is dim 2
-cupynumeric::NDArray get_slice_2d(cupynumeric::NDArray arr, legate::Slice a,
-                               legate::Slice b) {
-  return arr[{a, b}];
+cupynumeric::NDArray get_slice(cupynumeric::NDArray arr,
+                                  std::vector<legate::Slice> slices) {
+  switch (slices.size()) {
+    case 1: {
+        std::initializer_list<legate::Slice> slice_list = {slices[0]};
+        return arr[slice_list];
+    }
+    case 2: {
+        std::initializer_list<legate::Slice> slice_list = {slices[0], slices[1]};
+        return arr[slice_list];
+    }
+    default: {
+        assert(0 && "dim gteq 3 not supported yet\b");
+    }
+  };
+  assert(0 && "you should not enter here\n");
 }
-
-cupynumeric::NDArray get_slice_1d(cupynumeric::NDArray arr, legate::Slice a) {
-  return arr[{a}];
-}
-
 
 // std::string get_machine_info() {
 //   auto runtime = legate::Runtime::get_runtime();
@@ -109,7 +114,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.add_type<legate::Slice>("LegateSlice")
       .constructor<std::optional<int64_t>, std::optional<int64_t>>();
 
-  mod.add_type<std::vector<legate::Slice>>("LegateSlices");
+  mod.add_type<std::vector<legate::Slice>>("LegateSlices")
+    .method("push", [](std::vector<legate::Slice>& v, legate::Slice s) { v.push_back(s); });
 
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
@@ -152,8 +158,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //             std::initializer_list<cupynumeric::slice>) const) &
   //             cupynumeric::NDArray::operator[]);
 
-  mod.method("get_slice_2d", &get_slice_2d);
-  mod.method("get_slice_1d", &get_slice_1d);
+  mod.method("get_slice", &get_slice);
 
 
   auto ndarray_accessor =

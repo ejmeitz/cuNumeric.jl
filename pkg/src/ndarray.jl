@@ -112,7 +112,14 @@ end
 =#
 
 
-to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = StdVector([s for s in slices])
+# to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(collect(slices))
+function to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N 
+    v = LegateSlices()
+    for s in slices 
+        push(v, s)
+    end
+    return v
+end
 
 function slice(start::Int, stop::Int)
     return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
@@ -120,41 +127,41 @@ end
 
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
-    s = get_slice_2d(lhs, slice(0, size(lhs, 1)), slice(j-1, j))
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(j-1, j)))
     assign(s, rhs);
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
-    s = get_slice_1d(lhs, slice(i-1, i))
+    s = get_slice(lhs, to_cpp_init_slice(slice(i-1, i)))
     assign(s, rhs);
 end
 
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
-    return get_slice_2d(arr, slice(0, size(arr, 1)), slice(j-1, j))
+    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
 end
 
 function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
-    return get_slice_1d(arr, slice(i-1, i))
+    return get_slice(arr, to_cpp_init_slice(slice(i-1, i)))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Colon)
-    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(0, size(arr, 2)))
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(arr, 2))))
 end
 
 function Base.getindex(arr::NDArray,  i::Colon, j::UnitRange)
-    return get_slice_2d(arr, slice(0, size(arr, 1)), slice(first(j) - 1, last(j)))
+    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(first(j) - 1, last(j))))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Int64)
-    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(j-1, j))
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(j-1, j)))
 end
 
 function Base.getindex(arr::NDArray,  i::Int64, j::UnitRange)
-    return get_slice_2d(arr, slice(i-1, i), slice(first(j) - 1, last(j)))
+    return get_slice(arr, to_cpp_init_slice(slice(i-1, i), slice(first(j) - 1, last(j))))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
-    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j)))
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j))))
 end
 
 

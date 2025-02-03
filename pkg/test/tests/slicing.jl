@@ -21,6 +21,7 @@
     -- Perform NDArray operations using slices for more efficient memory access
 =#
 
+# gray scott
 function slicing()
      #create new u array
 
