@@ -1,4 +1,6 @@
-global const unary_op_map_no_args = Dict{Function, Int}(
+export square
+
+global const unary_op_map_no_args = Dict{Union{Function, Symbol}, Int}(
     Base.abs => Int(cuNumeric.ABSOLUTE),
     Base.acos => Int(cuNumeric.ARCCOS), 
     # Base.acosh => Int(cuNumeric.ARCCOSH), #* makes testing annoying
@@ -37,10 +39,18 @@ global const unary_op_map_no_args = Dict{Function, Int}(
     Base.sin => Int(cuNumeric.SIN),  
     Base.sinh => Int(cuNumeric.SINH),  
     Base.sqrt => Int(cuNumeric.SQRT),  # HAS SPECIAL MEANING FOR MATRIX
-    #missing => Int(cuNumeric.SQUARE), # just define as ^2?
+    :square => Int(cuNumeric.SQUARE),
     Base.tan => Int(cuNumeric.TAN),  
     Base.tanh => Int(cuNumeric.TANH),  
 )
+
+"""
+square(arr::NDArray)
+
+Elementwise square of each element in `arr`. 
+"""
+function square end
+
 
 # Generate code for all unary operators
 for (base_func, op_code) in unary_op_map_no_args
@@ -78,42 +88,43 @@ end
 # end
 
 # Could implement most of the missing functions here
-# global const unary_reduction_map = Dict{Function, Int}(
-#     Base.all => Int(cuNumeric.ALL),
-#     Base.any => Int(cuNumeric.ANY),
-#     Base.argmax => Int(cuNumeric.ARGMAX), # WILL BE OFF BY 1
-#     Base.argmin => Int(cuNumeric.ARGMIN), # WILL BE OFF BY 1
-#     #missing => Int(cuNumeric.CONTAINS), # strings or also integral types
-#     #missing => Int(cuNumeric.COUNT_NONZERO),
-#     Base.maximum => Int(cuNumeric.MAX),
-#     Base.minimum => Int(cuNumeric.MIN),
-#     #missing => Int(cuNumeric.NANARGMAX),
-#     #missing => Int(cuNumeric.NANARGMIN),
-#     #missing => Int(cuNumeric.NANMAX),
-#     #missing => Int(cuNumeric.NANMIN),
-#     #missing => Int(cuNumeric.NANPROD),
-#     Base.prod => Int(cuNumeric.PROD),
-#     Base.sum => Int(cuNumeric.SUM),
-#     #missing => Int(cuNumeric.SUM_SQUARES),
-#     #missing => Int(cuNumeric.VARIANCE)
-# )
+global const unary_reduction_map = Dict{Function, Int}(
+    # Base.all => Int(cuNumeric.ALL), #* ANNOYING TO TEST
+    # Base.any => Int(cuNumeric.ANY), #* ANNOYING TO TEST
+    # Base.argmax => Int(cuNumeric.ARGMAX), #* WILL BE OFF BY 1
+    # Base.argmin => Int(cuNumeric.ARGMIN), #* WILL BE OFF BY 1
+    #missing => Int(cuNumeric.CONTAINS), # strings or also integral types
+    #missing => Int(cuNumeric.COUNT_NONZERO),
+    Base.maximum => Int(cuNumeric.MAX),
+    Base.minimum => Int(cuNumeric.MIN),
+    #missing => Int(cuNumeric.NANARGMAX),
+    #missing => Int(cuNumeric.NANARGMIN),
+    #missing => Int(cuNumeric.NANMAX),
+    #missing => Int(cuNumeric.NANMIN),
+    #missing => Int(cuNumeric.NANPROD),
+    Base.prod => Int(cuNumeric.PROD),
+    Base.sum => Int(cuNumeric.SUM),
+    #missing => Int(cuNumeric.SUM_SQUARES),
+    #missing => Int(cuNumeric.VARIANCE)
+)
 
 
 
 # #*TODO HOW TO GET THESE ACTING ON CERTAIN DIMS
-# # Generate code for all unary reductions.
-# for (base_func, op_code) in unary_reduction_map
-#     @eval begin
-#         @doc """
-#             $($base_func) : A unary reduction acting on NDArrays
-#         """
-#         function $(base_func)(input::NDArray)
-                #* reduces to single number doesnt need same size?
-#             out = cuNumeric.zeros(eltype(input), size(input)) # not sure this is ok for performance
-#             #* look at src wheres output stored??
-#               return unary_reduction(out, op_code, input)
-#         end
-#     end
+# Generate code for all unary reductions.
+for (base_func, op_code) in unary_reduction_map
+    @eval begin
+        function $(Symbol(base_func))(input::NDArray)
+            #* WILL BREAK NOT ALL REDUCTIONS HAVE SAME TYPE AS INPUT
+            out = cuNumeric.zeros(eltype(input), 1) # not sure this is ok for performance
+            unary_reduction(out, $(op_code), input)
+            return out
+        end
+    end
+end
+
+# function Base.reduce(f::Function, arr::NDArray)
+#     return f(arr)
 # end
 
 

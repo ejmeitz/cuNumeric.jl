@@ -114,7 +114,8 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
                               cupynumeric::NDArray::reshape)
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("unary_op", &cupynumeric::NDArray::unary_op)
-      // .method("unary_reduction", &cupynumeric::NDArray::unary_reduction) //DOESNT KNOW WHICH OVERLOAD TO PICK
+      // ew but necessary cause theres an overload in operators.cc
+      .method("unary_reduction", static_cast<void (cupynumeric::NDArray::*)(int32_t, cupynumeric::NDArray)>(&cupynumeric::NDArray::unary_reduction))
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)

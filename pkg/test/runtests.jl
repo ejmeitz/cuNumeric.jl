@@ -56,12 +56,37 @@ end
     ## GENERATE TEST ON RANDOM FLOAT64s FOR EACH UNARY OP
     @testset for func in keys(cuNumeric.unary_op_map_no_args)
 
+        # TODO Custom functions don't have a Julia equivalent
+        # so we cannot test them.
+        if func isa Symbol
+            continue 
+        end
+
         cunumeric_res = func(cunumeric_arr)
         cunumeric_res2 = map(func, cunumeric_arr)
         julia_res .= func.(julia_arr)
         @test cuNumeric.compare(julia_res, cunumeric_res, max_diff)
         @test cuNumeric.compare(julia_res, cunumeric_res2, max_diff)
 
+    end
+end
+
+@testset verbose = true "Unary Reductions" begin
+    N = 100
+    max_diff = 1e-13
+
+    # Make input arrays we can re-use
+    julia_arr = rand(Float64, N)
+    cunumeric_arr = cuNumeric.zeros(Float64, N)
+    for i in 1:N
+        cunumeric_arr[i] = julia_arr[i]
+    end
+    
+    ## GENERATE TEST ON RANDOM FLOAT64s FOR EACH UNARY OP
+    @testset for reduction in keys(cuNumeric.unary_reduction_map)
+        cunumeric_res = reduction(cunumeric_arr)
+        julia_res = reduction(julia_arr)
+        @test cuNumeric.compare([julia_res], cunumeric_res, max_diff)
     end
 end
 
@@ -96,8 +121,4 @@ end
 
 # @testset verbose = true "Unary Ops w/ Args" begin
 
-# end
-
-# @testset verbose = true "Unary Reductions" begin
-    
 # end

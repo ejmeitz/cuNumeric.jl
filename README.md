@@ -17,7 +17,7 @@ This project is in alpha and we do not commit to anything necessarily working as
 - Julia 1.10
 - CMake 3.26.4 
 
-#### Download cupynumeric 
+### 1. Download [cuPyNumeric](https://github.com/nv-legate/cupynumeric/tree/branch-24.11)
 
 ```bash 
 conda create --name myenv 
@@ -26,40 +26,59 @@ CONDA_OVERRIDE_CUDA="12.2" \
   conda install -c conda-forge -c legate cupynumeric
 ```
 
-#### Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
-`curl -fsSL https://install.julialang.org | sh`
+### 2. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
+```
+curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.10
+```
 
-#### Get latest version of [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia)
+This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (your may need to source bashrc):
+```bash
+juliaup status
+julia --version
+```
+
+If 1.10 is not your default, please set it to be the default. Newer versions of Julia are untested.
+```bash
+juliaup default 1.10
+```
+
+### 3. Get latest version of [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia)
+These commands simply download an external dependency used to wrap the CuPyNumeric C++ API.
 ```bash
 git submodule init
 git submodule update
 ```
 
-#### Run the build script from the root of the repository
+### 4. Build Julia Package
+This command must be run form the root of the repository. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
 ```julia
-# Progress is piped into pkg/deps/build.log
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```
 
-#### test the Julia package
+### 5. Test the Julia Package
+This command must be run form the root of the repository.
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
 ```
 
-## Examples
-```julia
-using cuNumeric
+With everything working, its the perfect time to checkout some of our [examples](https://ejmeitz.github.io/cuNumeric.jl/dev/examples/)!
 
-arr = cuNumeric.rand(3, 3)
+## TO-DO List of Missing Important Features
+- Full slicing support
+- Implement `unary_reduction` over arbitrary dims
+- Out-parameter `binary_op`
+- Replace `as_type` with `Base.convert`
+- Integer powers (e.g x^3)
+- Support Ints on methods that takes floats
+- Programatic manipulation of Legate hardware config (not currently possible)
+- Float32 random number generation (not possible in current C++ API)
+- Normal random numbers (not possible in current C++ API)
+- Add Aqua.jl to CI to ensure we didn't pirate any types
+- Fix CodeCov reports
+- Fix cuNumeric.jl error in CI (requires unreleased CuPyNumeric)
+- Move external packages to [BinaryBuilder.jl](https://docs.binarybuilder.org/stable/) (requires Legate open source)
 
-α = 1.32
-b = 2.0
-
-arr2 = α*arr + b # does this allocate 1 or 2 new NDArrays
-arr2[:,:] # the current syntax for collecting all values and printing
-```
-
-## custom install
+## Custom install
 
 Optional: You can create a file called `.localenv` in order to add anything to the path. 
 

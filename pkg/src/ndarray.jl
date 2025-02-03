@@ -150,13 +150,13 @@ This function has the same signature as `Base.zeros`, so be sure to call it as `
 
 # Examples
 ```jldoctest
-julia> cuNumeric.zeros(2,2)
+julia> cuNumeric.zeros(2, 2)
 NDArray of Float64s, Dim: [2, 2]
 
 julia> cuNumeric.zeros(Float32, 3)
 NDArray of Float32s, Dim: [3]
 
-julia> cuNumeric.zeros(Int32,(2,3))
+julia> cuNumeric.zeros(Int32, (2,3))
 NDArray of Int32s, Dim: [2, 3]
 ```
 """
@@ -191,14 +191,13 @@ end
 
 Fills `arr` with Float64s uniformly at random
 """
-
 # This integer is unused but should represent, uniform, normal etc
 Random.rand!(arr::NDArray) = cuNumeric.random(arr, 0)
 
 
 """
-    rand(::NDArray, dims::Dims)
-    rand(::NDArray, dims::Int...)
+    rand(NDArray, dims::Dims)
+    rand(NDArray, dims::Int...)
 
 Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 """
@@ -240,6 +239,10 @@ function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
+function Base.:-(arr::NDArray, val::Union{Float32, Float64})
+    return arr + (-1*val)
+end
+
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
 # See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2
@@ -258,6 +261,7 @@ function LinearAlgebra.mul!(out::NDArray, A::NDArray, B::NDArray)
     return out
 end
 
+#* replace with array_equal?
 # arr1 == arr2
 function Base.:(==)(arr1::NDArray, arr2::NDArray)
     # TODO this only works on 2D arrays
