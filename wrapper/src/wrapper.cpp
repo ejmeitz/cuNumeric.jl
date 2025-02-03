@@ -40,10 +40,19 @@ struct WrapCppOptional {
   }
 };
 
-cupynumeric::NDArray get_slice(cupynumeric::NDArray arr, legate::Slice a,
+
+// TODO: support arbitrary dimensions 
+// a is dim 1
+// b is dim 2
+cupynumeric::NDArray get_slice_2d(cupynumeric::NDArray arr, legate::Slice a,
                                legate::Slice b) {
   return arr[{a, b}];
 }
+
+cupynumeric::NDArray get_slice_1d(cupynumeric::NDArray arr, legate::Slice a) {
+  return arr[{a}];
+}
+
 
 // std::string get_machine_info() {
 //   auto runtime = legate::Runtime::get_runtime();
@@ -143,7 +152,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   //             std::initializer_list<cupynumeric::slice>) const) &
   //             cupynumeric::NDArray::operator[]);
 
-  mod.method("get_slice", &get_slice);
+  mod.method("get_slice_2d", &get_slice_2d);
+  mod.method("get_slice_1d", &get_slice_1d);
+
 
   auto ndarray_accessor =
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");

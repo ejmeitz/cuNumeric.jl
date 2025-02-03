@@ -97,6 +97,21 @@ end
 
 
 #### ARRAY INDEXING WITH SLICES ####
+#=
+* @brief Describes C++ concept of Legate Slice
+*
+* @param _start The optional begin index of the slice, or `Slice::OPEN` if the start of the
+* slice is unbounded.
+* @param _stop The optional stop index of the slice, or `Slice::OPEN` if the end of the
+* slice if unbounded.
+*
+* If provided (and not `Slice::OPEN`), `_start` must compare less than or equal to
+* `_stop`. Similarly, if provided (and not `Slice::OPEN`), `_stop` must compare greater than
+* or equal to`_start`. Put simply, unless one or both of the ends are unbounded, `[_start,
+* _stop]` must form a valid (possibly empty) interval.
+=#
+
+
 to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = StdVector([s for s in slices])
 
 function slice(start::Int, stop::Int)
@@ -105,28 +120,42 @@ end
 
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
-    s = get_slice(lhs, slice(0, size(lhs, 1)), slice(j-1, j-1))
+    s = get_slice_2d(lhs, slice(0, size(lhs, 1)), slice(j-1, j))
     assign(s, rhs);
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
-    s = get_slice(lhs, slice(i-1, i-1), slice(0, size(lhs, 2)))
+    s = get_slice_1d(lhs, slice(i-1, i))
     assign(s, rhs);
 end
 
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
-    return get_slice(arr, slice(0, size(arr, 1)), slice(j-1, j-1))
+    return get_slice_2d(arr, slice(0, size(arr, 1)), slice(j-1, j))
 end
 
 function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
-    return get_slice(arr, slice(i-1, i-1), slice(0, size(arr, 2)))
+    return get_slice_1d(arr, slice(i-1, i))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::Colon)
+    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(0, size(arr, 2)))
+end
+
+function Base.getindex(arr::NDArray,  i::Colon, j::UnitRange)
+    return get_slice_2d(arr, slice(0, size(arr, 1)), slice(first(j) - 1, last(j)))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::Int64)
+    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(j-1, j))
+end
+
+function Base.getindex(arr::NDArray,  i::Int64, j::UnitRange)
+    return get_slice_2d(arr, slice(i-1, i), slice(first(j) - 1, last(j)))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
-    # slices = to_cpp_init_slice(slice(first(i), last(i)), slice(first(j), last(j)))
-    return get_slice(arr, slice(first(i) - 1, last(i) - 1), slice(first(j) - 1, last(j) - 1))
+    return get_slice_2d(arr, slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j)))
 end
-
 
 
 # function Base.getindex(ranges::Vararg{UnitRange{Int}, N}) where N
@@ -267,7 +296,7 @@ function reshape(arr::NDArray, i::Int64)
     return _reshape(arr, i_int64)
 end
 
-# TODO this is a binary operation. This implementation will just multiply a scaclar -1 with NDArray
+# TODO this is a unary operation. This implementation will just multiply a scaclar -1 with NDArray
 function Base.:-(arr::NDArray)
     return multiply_scalar(arr, LegateScalar(-1))
 end
