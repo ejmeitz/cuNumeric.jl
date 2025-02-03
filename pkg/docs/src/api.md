@@ -72,6 +72,19 @@ res2 = map(sqrt, arr)
 - `Base.tan`
 - `Base.tanh`
 
+## Unary Reductions
+
+#### Implemented Unary Reductions
+
+Unary reductions convert an NDArray to a single number. Unary reductions cannot be called with `Base.reduce` at this time.
+
+- `Base.all`
+- `Base.any`
+- `Base.maximum`
+- `Base.minimum`
+- `Base.prod`
+- `Base.sum`
+
 
 ## Binary Operations
 
