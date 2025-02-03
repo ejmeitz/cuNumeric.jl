@@ -17,15 +17,16 @@ arr_fp64 = rand(NDArray, 100)
 arr_fp32 = cuNumeric.as_type(arr_fp64, LegateType(Float32))
 ```
 
-```@doc
-cuNumeric.zeros
-cuNumeric.full
-Random.rand!
-Random.rand
-```
+#### Methods to intiailize NDArrays
+
+- `cuNumeric.zeros`
+- `cuNumeric.full`
+- `Random.rand!`
+- `Random.rand`
+
 
 ## Slicing NDArrays
-
+TODO
 
 ## Linear Algebra Operations
 
@@ -73,10 +74,9 @@ res2 = map(sqrt, arr)
 - `Base.tanh`
 
 ## Unary Reductions
+Unary reductions convert an NDArray to a single number. Unary reductions cannot be called with `Base.reduce` at this time.
 
 #### Implemented Unary Reductions
-
-Unary reductions convert an NDArray to a single number. Unary reductions cannot be called with `Base.reduce` at this time.
 
 - `Base.all`
 - `Base.any`
@@ -84,7 +84,6 @@ Unary reductions convert an NDArray to a single number. Unary reductions cannot 
 - `Base.minimum`
 - `Base.prod`
 - `Base.sum`
-
 
 ## Binary Operations
 
@@ -112,8 +111,7 @@ res2 = map(*, arr1, arr2)
 
 ## Timing cuNumeric.jl Code
 
+These timers will block until all prior Legate operations are complete.
 
-```@doc
-get_time_microseconds
-get_time_nanoseconds
-```
+- `get_time_microseconds`
+- `get_time_nanoseconds`
