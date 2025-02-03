@@ -8,6 +8,32 @@ Pages = ["api.md"]
 Depth = 2:2
 ```
 
+## Initializing NDArrays
+
+The CuPyNumeric C++ API only supports generating Float64 random numbers. The example below shows how you can get Float32 random numbers by casting. We plan to make this easier through `Base.convert` or by getting Float32 generating added to CuPyNumeric.
+
+```julia
+arr_fp64 = rand(NDArray, 100)
+arr_fp32 = cuNumeric.as_type(arr_fp64, LegateType(Float32))
+```
+
+```@doc
+cuNumeric.zeros
+cuNumeric.full
+Random.rand!
+Random.rand
+```
+
+## Slicing NDArrays
+
+
+## Linear Algebra Operations
+
+Matrix multiplicaiton is only implemented through `mul!`. Calling the `*` operator on a pair of 2D NDArrays will perform elementwise multiplication.
+
+#### Implemented Linear Algebra Operations
+- `LinearAlgebra.mul!`
+
 ## Unary Operations
 
 All unary operations will return a new NDArray and are broadcast over an NDarray even without the `.` broadcasting syntax. In the current state, `.` broadcasting syntax will not work (e.g. `sin.(arr)`).
@@ -69,3 +95,12 @@ res2 = map(*, arr1, arr2)
 - `Base.hypot`
 - `Base.:(*)`
 - `Base.(-)`
+
+
+## Timing cuNumeric.jl Code
+
+
+```@doc
+get_time_microseconds
+get_time_nanoseconds
+```

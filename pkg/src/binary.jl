@@ -30,7 +30,7 @@ global const binary_op_map = Dict{Function, Int}(
     Base.:* => Int(cuNumeric.MULTIPLY), #elementwise product? == .* in Julia
     #missing => Int(cuNumeric.NEXTAFTER),
     # Base.:(!=) => Int(cuNumeric.NOT_EQUAL), #* DONT REALLY WANT ELEMENTWISE !=, RATHER HAVE REDUCTION
-    #missing => Int(cuNumeric.POWER),
+    #Base.:^ => Int(cuNumeric.POWER),
     # Base.:(>>) => Int(cuNumeric.RIGHT_SHIFT), #* ANNOYING TO TEST (no == for bools)
     Base.:(-) => Int(cuNumeric.SUBTRACT)
     

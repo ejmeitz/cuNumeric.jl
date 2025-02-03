@@ -1,1 +1,1 @@
-You've found the home page!
+../../../README.md

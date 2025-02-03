@@ -1,4 +1,6 @@
-global const unary_op_map_no_args = Dict{Function, Int}(
+export square
+
+global const unary_op_map_no_args = Dict{Union{Function, Symbol}, Int}(
     Base.abs => Int(cuNumeric.ABSOLUTE),
     Base.acos => Int(cuNumeric.ARCCOS), 
     # Base.acosh => Int(cuNumeric.ARCCOSH), #* makes testing annoying
@@ -37,10 +39,11 @@ global const unary_op_map_no_args = Dict{Function, Int}(
     Base.sin => Int(cuNumeric.SIN),  
     Base.sinh => Int(cuNumeric.SINH),  
     Base.sqrt => Int(cuNumeric.SQRT),  # HAS SPECIAL MEANING FOR MATRIX
-    #missing => Int(cuNumeric.SQUARE), # just define as ^2?
+    :square => Int(cuNumeric.SQUARE),
     Base.tan => Int(cuNumeric.TAN),  
     Base.tanh => Int(cuNumeric.TANH),  
 )
+
 
 # Generate code for all unary operators
 for (base_func, op_code) in unary_op_map_no_args
