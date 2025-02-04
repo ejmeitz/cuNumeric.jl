@@ -225,6 +225,13 @@ end
 
 #### INITIALIZATION ####
 
+
+function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
+    dims_uint64 = to_cpp_dims(dims)
+    return _full(dims_uint64, LegateScalar(val))
+end
+
+
 #* is this type piracy?
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
@@ -265,9 +272,40 @@ function zeros(dims::Int...)
 end
 
 
-function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
-    dims_uint64 = to_cpp_dims(dims)
-    return _full(dims_uint64, LegateScalar(val))
+
+"""
+    cuNumeric.ones([T=Float64,] dims::Int...)
+    cuNumeric.ones([T=Float64,] dims::Tuple)
+
+Create an NDArray with element type `T`, of all zeros with size specified by `dims`.
+This function has the same signature as `Base.ones`, so be sure to call it as `cuNuermic.ones`.
+
+# Examples
+```jldoctest
+julia> cuNumeric.ones(2,2)
+NDArray of Float64s, Dim: [2, 2]
+
+julia> cuNumeric.ones(Float32, 3)
+NDArray of Float32s, Dim: [3]
+
+julia> cuNumeric.ones(Int32,(2,3))
+NDArray of Int32s, Dim: [2, 3]
+```
+"""
+function ones(::Type{T}, dims::Dims) where T
+    return full(dims, T(1))
+end
+
+function ones(::Type{T}, dims::Int...) where T
+    return ones(T, dims)
+end
+
+function ones(dims::Dims{N}) where N
+    return ones(Float64, dims)
+end
+
+function ones(dims::Int...)
+    return ones(Float64, dims)
 end
 
 
