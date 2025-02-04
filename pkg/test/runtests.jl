@@ -34,7 +34,8 @@ include("tests/sgemm.jl")
 end
 
 @testset verbose = true "Slicing Tests" begin
-    @testset slicing()
+    max_diff = Float64(1e-4)
+    @testset slicing(max_diff)
 end
 
 
