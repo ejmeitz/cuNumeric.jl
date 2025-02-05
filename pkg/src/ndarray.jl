@@ -20,6 +20,8 @@ export NDArray, LegateType
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
+Base.Broadcast.broadcastable(v::NDArray) = v
+
 # is legion Complex128 same as ComplexF64 in julia? 
 # These are methods that return a Legate::Type
 global const type_map = Dict{Type, Function}(
@@ -378,9 +380,14 @@ function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
 end
 
 
-function Base.:\(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
+# function Base.:/(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
+#     return multiply_scalar(arr, LegateScalar(1 / val))
+# end
+
+function Base.:/(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
     return multiply_scalar(arr, LegateScalar(1 / val))
 end
+
 #* Can't overload += in Julia, this should be called by .+= 
 #* to maintain some semblence native Julia array syntax
 # See https://docs.julialang.org/en/v1/manual/interfaces/#extending-in-place-broadcast-2

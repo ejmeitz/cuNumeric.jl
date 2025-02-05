@@ -63,6 +63,10 @@ function daxpy_advanced()
     ones_array_cpu = ones(dims)
     @test ones_array == ones_array_cpu
 
+    ones_array = ones_array ./ 1.3
+    ones_array_cpu = ones_array_cpu ./ 1.3
+    @test ones_array == ones_array_cpu
+
     # create two random arrays
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
