@@ -217,7 +217,7 @@ end
 #### INITIALIZATION ####
 
 
-function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
+function full(dims::Dims{N}, val::Union{Float32, Float64, Int64, Int32}) where N
     dims_uint64 = to_cpp_dims(dims)
     return _full(dims_uint64, LegateScalar(val))
 end
@@ -361,8 +361,10 @@ end
 function Base.Broadcast.broadcasted(::typeof(-), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
     return -(arr, val)
 end
-function Base.Broadcast.broadcasted(::typeof(-), val::Union{Float32, Float64, Int64, Int32}, arr::NDArray) 
-    throw(ErrorException("element wise [val - NDArray] is not supported yet"))
+function Base.Broadcast.broadcasted(::typeof(-), val::Union{Float32, Float64, Int64, Int32}, rhs::NDArray) 
+    # throw(ErrorException("element wise [val - NDArray] is not supported yet"))
+    lhs = full(size(rhs), val)
+    return -(lhs, rhs)
 end
 
 function Base.Broadcast.broadcasted(::typeof(-), lhs::NDArray, rhs::NDArray) 
@@ -374,7 +376,8 @@ function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
 end
 
 function Base.:*( arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
-    return throw(ErrorException("[NDArray * val] is not supported. Please use [NDArray .* val]"))
+    # return throw(ErrorException("[NDArray * val] is not supported. Please use [NDArray .* val]"))
+    return *(val, arr)
 end
 
 
