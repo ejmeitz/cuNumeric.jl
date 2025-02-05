@@ -1,5 +1,5 @@
 # found in examples/gray-scott.jl
-# using cuNumeric
+using cuNumeric
 using Plots
 
 struct Params
@@ -56,18 +56,10 @@ function gray_scott()
     n_steps = 20000 # number of steps to take
     frame_interval = 200 # steps to take between making plots
 
-
-    # u = cuNumeric.zeros(dims)
-    # v = cuNumeric.zeros(dims)
-
-    # u_new = cuNumeric.zeros(dims)
-    # v_new = cuNumeric.zeros(dims)
-
-    u = ones(FT, dims)
-    v = zeros(FT, dims)
-
-    u_new = zeros(FT, dims)
-    v_new = zeros(FT, dims)
+    u = cuNumeric.ones(dims)
+    v = cuNumeric.zeros(dims)
+    u_new = cuNumeric.zeros(dims)
+    v_new = cuNumeric.zeros(dims)
 
     u[1:15,1:15] = rand(FT, (15,15))
     v[1:15,1:15] = rand(FT, (15,15))
@@ -80,8 +72,7 @@ function gray_scott()
         v, v_new = v_new, v
 
         if n%frame_interval == 0
-            # plot
-            # u_cpu = u[:, :]
+            u_cpu = u[:, :]
             heatmap(u, clims=(0, 1))
             frame(anim)
         end
