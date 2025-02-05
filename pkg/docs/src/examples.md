@@ -2,7 +2,16 @@
 
 
 ## DAXPY
-include("../../../../examples/daxpy.jl")
+```julia
+using cuNumeric
+
+arr = cuNumeric.rand(NDArray, 20)
+
+α = 1.32
+b = 2.0
+
+arr2 = α*arr + b
+```
 
 ## Monte-Carlo Integration
 
@@ -20,10 +29,20 @@ I = \int_{-\infty}^{\infty}e^{-x^2}.
 
 Since we cannot uniformly sample form negative to positive infinity, we truncate the domain between -5 and 5. This is ok since the integrand exponentially decays and we won't be off by much in the end.
 
-include("../../../../examples/integration.jl")
+```julia
+using cuNumeric
 
-## Gray Scott Reaction Diffusion
+integrand = (x) -> exp(-square(x))
 
-include("../../../../examples/gray-scott.jl")
+N = 1_000_000
 
-![Simulation Output](./gray-scott.gif)
+x_max = 5.0
+domain = [-x_max, x_max]
+Ω = domain[2] - domain[1]
+
+samples = Ω*cuNumeric.rand(NDArray, N) - x_max 
+estimate = (Ω/N) * sum(integrand(samples))
+
+println("Monte-Carlo Estimate: $(estimate[1])")
+println("Analytical: $(sqrt(pi))")
+```
