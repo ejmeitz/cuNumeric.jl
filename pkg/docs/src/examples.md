@@ -108,7 +108,7 @@ function gray_scott()
     n_steps = 20000 # number of steps to take
     frame_interval = 200 # steps to take between making plots
 
-    u = cuNumeric.zeros(dims)
+    u = cuNumeric.ones(dims)
     v = cuNumeric.zeros(dims)
     u_new = cuNumeric.zeros(dims)
     v_new = cuNumeric.zeros(dims)
