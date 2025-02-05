@@ -49,11 +49,9 @@ result_cpu = zeros(dims)
 
 
 # where the real testing starts
-
-# not supported yet
-# arrA =  13.74 .- arrA
-# arrA_cpu = 13.74 .- arrA_cpu
-# @test arrA == arrA_cpu
+arrA =  13.74 .- arrA
+arrA_cpu = 13.74 .- arrA_cpu
+@test arrA == arrA_cpu
 
 arrA = arrA .- 13.74
 arrA_cpu = arrA_cpu .- 13.74
