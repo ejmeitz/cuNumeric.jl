@@ -37,7 +37,7 @@ end
     @testset elementwise()
 end
 
-@testset verbose = true "MatMulTests" begin
+@testset verbose = true "SGEMM" begin 
     max_diff = Float32(1e-4)
     @warn "SGEMM has some precision issues, using tol $(max_diff) 🥲"
     @testset sgemm(max_diff)

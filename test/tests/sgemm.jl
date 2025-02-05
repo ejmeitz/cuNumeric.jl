@@ -46,16 +46,15 @@ function sgemm(max_diff)
 
     # Needed to start as Float64 to 
     # initialize the NDArray
-    C_cpu = A_cpu * B_cpu
+    C_cpu = A_cpu .* B_cpu
 
     A = cuNumeric.as_type(A, LegateType(FT))
     B = cuNumeric.as_type(B, LegateType(FT))
     C = cuNumeric.zeros(FT, N, N)
 
-    mul!(C, A, B)
-
-    @test cuNumeric.compare(C, C_cpu, max_diff)
-
     C = A * B
 
+    @test cuNumeric.compare(C, C_cpu, max_diff)
+    # same comparison as above using approx
+    @test C ≈ C_cpu atol=max_diff
 end

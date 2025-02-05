@@ -24,6 +24,8 @@
 
 #include "accessors.h"
 #include "cupynumeric.h"
+#include "cupynumeric/operators.h"
+
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
 #include "legate.h"
@@ -121,12 +123,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("push", [](std::vector<legate::Slice>& v, legate::Slice s) {
         v.push_back(s);
       });
-
+    
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
-  jlcxx::stl::apply_stl<legate::Scalar>(mod); // enable std::vector<legate::Scalar>
+  jlcxx::stl::apply_stl<legate::Scalar>(
+      mod);  // enable std::vector<legate::Scalar>
 
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
       .method("_size",
@@ -144,12 +147,14 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("unary_op", &cupynumeric::NDArray::unary_op)
       // ew but necessary cause theres an overload in operators.cc
-      .method("unary_reduction", static_cast<void (cupynumeric::NDArray::*)(int32_t, cupynumeric::NDArray)>(&cupynumeric::NDArray::unary_reduction))
+      .method("unary_reduction", static_cast<void (cupynumeric::NDArray::*)(
+                                     int32_t, cupynumeric::NDArray)>(
+                                     &cupynumeric::NDArray::unary_reduction))
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
-      .method("_dot_three_arg", &cupynumeric::NDArray::dot)
+    //   .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)

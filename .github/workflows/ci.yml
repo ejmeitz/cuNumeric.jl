@@ -45,13 +45,13 @@ jobs:
           
       - name: Install Dependencies
         run: |
-          git submodule init
-          git submodule update
+          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
           export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
-          julia --project=./pkg -e 'using Pkg; Pkg.build(); Pkg.instantiate()'
+          julia --project=. -e 'using Pkg; Pkg.build(); Pkg.instantiate()'
 
       - name: Run Tests
-        run: julia --project=./pkg -e 'using Pkg; Pkg.test()'
+        run: julia --project=. -e 'using Pkg; Pkg.test()'
 
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
@@ -73,12 +73,12 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v2
       - name: Install docs dependencies
-        run: julia --project=pkg/docs/ -e 'using Pkg; Pkg.instantiate()'
+        run: julia --project=docs/ -e 'using Pkg; Pkg.instantiate()'
       - name: Build and deploy docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
-        run: julia --project=pkg/docs/ pkg/docs/make.jl
+        run: julia --project=docs/ docs/make.jl
 
 
 
