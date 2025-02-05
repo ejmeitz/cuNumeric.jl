@@ -63,16 +63,17 @@ struct Params
     k::Float64
 
     function Params(dx=1, c_u=1.0, c_v=0.3, f=0.03, k=0.06)
-        new(dx, 1e-4, c_u, c_v, f, k)
+        new(dx, dx/5, c_u, c_v, f, k)
     end
 end
 
 function step(u, v, u_new, v_new, args::Params)
     # calculate F_u and F_v functions
     # currently we don't have NDArray^x working yet. 
-    F_u = (-u[2:end-1, 2:end-1]*(v[2:end-1, 2:end-1] * v[2:end-1, 2:end-1])) + args.f*(1 .- u[2:end-1, 2:end-1])
-    F_v = (u[2:end-1, 2:end-1]*(v[2:end-1, 2:end-1] * v[2:end-1, 2:end-1])) - (args.f+args.k)*v[2:end-1, 2:end-1]
-    
+    F_u = ((-u[2:end-1, 2:end-1].*(v[2:end-1, 2:end-1] .* v[2:end-1, 2:end-1])) +
+            args.f*(1 .- u[2:end-1, 2:end-1]))
+    F_v = ((u[2:end-1, 2:end-1].*(v[2:end-1, 2:end-1] .* v[2:end-1, 2:end-1])) -
+            (args.f+args.k)*v[2:end-1, 2:end-1])
     # 2-D Laplacian of f using array slicing, excluding boundaries
     # For an N x N array f, f_lap is the Nend x Nend array in the "middle"
     u_lap = ((u[3:end, 2:end-1] - 2*u[2:end-1, 2:end-1] + u[1:end-2, 2:end-1]) ./ args.dx^2 
@@ -109,7 +110,6 @@ function gray_scott()
 
     u = cuNumeric.zeros(dims)
     v = cuNumeric.zeros(dims)
-
     u_new = cuNumeric.zeros(dims)
     v_new = cuNumeric.zeros(dims)
 
@@ -124,7 +124,9 @@ function gray_scott()
         v, v_new = v_new, v
 
         if n%frame_interval == 0
-            heatmap(u, clims=(minimum(u), maximum(u)))
+            # plot
+            u_cpu = u[:, :]
+            heatmap(u_cpu, clims=(0, 1))
             frame(anim)
         end
     end
