@@ -1,5 +1,6 @@
 # found in examples/gray-scott.jl
-using cuNumeric
+# using cuNumeric
+using Plots
 
 struct Params
     dx::Float64
@@ -9,8 +10,8 @@ struct Params
     f::Float64
     k::Float64
 
-    function Params(dx=0.1, c_u=1.0, c_v=0.3, f=0.03, k=0.06)
-        new(dx, dx/5, c_u, c_v, f, k)
+    function Params(dx=1, c_u=1.0, c_v=0.3, f=0.03, k=0.06)
+        new(dx, 1e-4, c_u, c_v, f, k)
     end
 end
 
@@ -22,10 +23,10 @@ function step(u, v, u_new, v_new, args::Params)
     
     # 2-D Laplacian of f using array slicing, excluding boundaries
     # For an N x N array f, f_lap is the Nend x Nend array in the "middle"
-    u_lap = (u[3:end, 2:end-1] - 2*u[2:end-1, 2:end-1] + u[1:end-2, 2:end-1]) ./ args.dx^2 + (u[2:end-1, 3:end] \
-                               - 2*u[2:end-1, 2:end-1] + u[2:end-1, 1:end-2]) ./ args.dx^2
-    v_lap = (v[3:end, 2:end-1] - 2*v[2:end-1, 2:end-1] + v[1:end-2, 2:end-1]) ./ args.dx^2 + (v[2:end-1, 3:end] \
-                               - 2*v[2:end-1, 2:end-1] + v[2:end-1, 1:end-2]) ./ args.dx^2
+    u_lap = ((u[3:end, 2:end-1] - 2*u[2:end-1, 2:end-1] + u[1:end-2, 2:end-1]) ./ args.dx^2 
+           + (u[2:end-1, 3:end] - 2*u[2:end-1, 2:end-1] + u[2:end-1, 1:end-2]) ./ args.dx^2)
+    v_lap = ((v[3:end, 2:end-1] - 2*v[2:end-1, 2:end-1] + v[1:end-2, 2:end-1]) ./ args.dx^2 
+           + (v[2:end-1, 3:end] - 2*v[2:end-1, 2:end-1] + v[2:end-1, 1:end-2]) ./ args.dx^2)
 
     # Forward-Euler time step for all points except the boundaries
     u_new[2:end-1, 2:end-1] = ((args.c_u * u_lap) + F_u) * args.dt + u[2:end-1, 2:end-1]
@@ -43,6 +44,8 @@ function step(u, v, u_new, v_new, args::Params)
 end
 
 function gray_scott()
+    anim = Animation()
+
     N = 100
     dims = (N, N)
 
@@ -65,23 +68,24 @@ function gray_scott()
     u_new = zeros(FT, dims)
     v_new = zeros(FT, dims)
 
-    # u[1:15,1:15] = rand(FT, (15,15))
-    # v[1:15,1:15] = rand(FT, (15,15))
+    u[1:15,1:15] = rand(FT, (15,15))
+    v[1:15,1:15] = rand(FT, (15,15))
 
-    step(u, v, u_new, v_new, args)
+    for n in 1:n_steps
+        step(u, v, u_new, v_new, args)
+        # update u and v 
+        # this doesn't copy, this switching references 
+        u, u_new = u_new, u
+        v, v_new = v_new, v
 
-    # for n in 1:n_steps
-    #     step(u, v, u_new, v_new, args)
-    #     # update u and v 
-    #     # this doesn't copy, this switching references 
-    #     u = u_new
-    #     v = v_new
+        if n%frame_interval == 0
+            # plot
+            heatmap(u, clims=(minimum(u), maximum(u)))
+            frame(anim)
+        end
+    end
+    gif(anim, "gray-scott.gif", fps=10)
 
-    #     if n%frame_interval == 0
-    #         # plot
-            
-    #     end
-    # end
 end
 
 gray_scott()
