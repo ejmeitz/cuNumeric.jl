@@ -2,8 +2,9 @@
 
 
 ## DAXPY
+```@example
 include("./examples/daxpy.jl")
-
+```
 ## Monte-Carlo Integration
 
 Most integrals can be estimated with a basic Monte-Carlo estimator:
@@ -19,11 +20,11 @@ I = \int_{-\infty}^{\infty}e^{-x^2}.
 ```
 
 Since we cannot uniformly sample form negative to positive infinity, we truncate the domain between -5 and 5. This is ok since the integrand exponentially decays and we won't be off by much in the end.
-
+```@example
 include("./examples/integration.jl")
-
+```
 ## Gray Scott Reaction Diffusion
-
+```@example
 include("./examples/gray-scott.jl")
-
+```
 ![Simulation Output](./gray-scott.gif)
