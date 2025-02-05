@@ -379,13 +379,12 @@ function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
-
-# function Base.:/(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
-#     return multiply_scalar(arr, LegateScalar(1 / val))
-# end
-
 function Base.:/(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
     return multiply_scalar(arr, LegateScalar(1 / val))
+end
+
+function Base.Broadcast.broadcasted(::typeof(/), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
+    return /(arr, val)
 end
 
 #* Can't overload += in Julia, this should be called by .+= 
