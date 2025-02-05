@@ -1,4 +1,4 @@
-/* Copyright 2025 Northwestern University, 
+/* Copyright 2025 Northwestern University,
  *                   Carnegie Mellon University University
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,39 +15,36 @@
  *
  * Author(s): David Krasowska <krasow@u.northwestern.edu>
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
-*/
-
-#include "legate.h"
-#include "cupynumeric.h"
+ */
 
 #include <vector>
-// #include <iostream>
 
+#include "cupynumeric.h"
+#include "legate.h"
+// #include <iostream>
 
 // using cupynumeric::slice;
 
-void matmul_fp32(size_t N){
+void matmul_fp32(size_t N) {
+  std::vector<uint64_t> dims = {N, N};
+  auto A = cupynumeric::random(dims).as_type(legate::float32());
+  auto B = cupynumeric::random(dims).as_type(legate::float32());
+  std::optional<legate::Type> T = legate::float32();
+  auto C = cupynumeric::zeros(dims, T);
 
-    std::vector<uint64_t> dims = {N,N};
-    auto A = cupynumeric::random(dims).as_type(legate::float32());
-    auto B = cupynumeric::random(dims).as_type(legate::float32());
-    std::optional<legate::Type> T = legate::float32();
-    auto C = cupynumeric::zeros(dims, T);
-
-    C.dot(A,B);
-    return;
-    // std::cout << C[{slice(0,0), slice(0,0)}] << std::endl;
+  C.dot(A, B);
+  return;
+  // std::cout << C[{slice(0,0), slice(0,0)}] << std::endl;
 }
 
+int main(int argc, char** argv) {
+  auto result = legate::start(argc, argv);
+  // assert(result == 0);
 
-int main(int argc, char** argv){
-    auto result = legate::start(argc, argv);
-    // assert(result == 0);
+  cupynumeric::initialize(argc, argv);
 
-    cupynumeric::initialize(argc, argv);
+  const size_t N = 10000;
+  matmul_fp32(N);
 
-    const size_t N = 10000;
-    matmul_fp32(N);
-
-    return legate::finish();
+  return legate::finish();
 }

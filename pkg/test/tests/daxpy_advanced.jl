@@ -58,7 +58,11 @@ function daxpy_advanced()
     x[:, :] = 4.23
     
     @test x == fill(4.23, dims)
-     
+
+    ones_array = cuNumeric.ones(dims)
+    ones_array_cpu = ones(dims)
+    @test ones_array == ones_array_cpu
+
     # create two random arrays
     cuNumeric.random(x, seed)
     cuNumeric.random(y, seed)
