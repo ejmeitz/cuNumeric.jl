@@ -86,12 +86,12 @@ function __init__()
     
     # Capture stdout from start_legate to 
     # see the hardware configuration
-    res = -1
+    res = 0
     pipe = Pipe()
     started = Base.Event()
     writer = @async redirect_stdout(pipe) do
         notify(started)
-        res = cuNumeric.start_legate(AA.argc, getargv(AA))
+        cuNumeric.start_legate()
         close(Base.pipe_writer(pipe))
     end
 

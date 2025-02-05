@@ -4,7 +4,7 @@
 
 set -e 
 
-exists=$CONDA_PREFIX/include/legion/legion_redop.inl 
+exists=$CONDA_PREFIX/include/legate/deps/legion/legion_redop.inl 
 new=$CUNUMERIC_JL_HOME/scripts/legion_redop_patch.inl
 
 if [ -z "$CONDA_PREFIX" ]; then
