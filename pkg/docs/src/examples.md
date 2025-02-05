@@ -26,4 +26,4 @@ include("../../../../examples/integration.jl")
 
 include("../../../../examples/gray-scott.jl")
 
-![Simulation Output](../../../../examples/gray-scott.gif)
+![Simulation Output](./gray-scott.gif)
