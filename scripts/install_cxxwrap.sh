@@ -19,24 +19,31 @@
 
 set -e
 
-JULIA='julia'
-
-if [ -z "$CUNUMERIC_JL_HOME" ]; then
-  echo "Error: CUNUMERIC_JL_HOME is not set."
-  exit 1
+# Check if exactly one argument is provided
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <directory>"
+    exit 1
 fi
 
+CUNUMERIC_ROOT_DIR=$1  # First argument
+
+# Check if the provided argument is a valid directory
+if [[ ! -d "$CUNUMERIC_ROOT_DIR" ]]; then
+    echo "Error: '$CUNUMERIC_ROOT_DIR' is not a valid directory."
+    exit 1
+fi
+
+JULIA='julia'
+JULIA_PATH=$(which $JULIA)
 
 if [ -z "$JULIA_PATH" ]; then
   echo "Error: $JULIA is not installed or not in PATH."
   exit 1
 fi
 
-
 echo "Using $JULIA at: $JULIA_PATH"
 
-
-JULIA_CXXWRAP_SRC=$CUNUMERIC_JL_HOME/libcxxwrap-julia
+JULIA_CXXWRAP_SRC=$CUNUMERIC_ROOT_DIR/libcxxwrap-julia
 
 cd $JULIA_CXXWRAP_SRC
 
@@ -56,7 +63,7 @@ JULIA_CXXWRAP=$JULIA_CXXWRAP_DEV/override
 # Clean up whatever env is there right now and
 # build default version of CxxWrap / libcxxwrap_julia
 #* THIS COULD BREAK SOME USERS CODE IF THEY ALREADY OVERRIDE THIS PKG
-cd $CUNUMERIC_JL_HOME/pkg
+cd $CUNUMERIC_ROOT_DIR/pkg
 rm -rf "Manifest.toml"
 rm -rf $JULIA_CXXWRAP_DEV
 julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.precompile(["CxxWrap"])'

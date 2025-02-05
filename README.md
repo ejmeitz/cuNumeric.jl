@@ -18,12 +18,18 @@ This project is in alpha and we do not commit to anything necessarily working as
 - CMake 3.26.4 
 
 ### 1. Download [cuPyNumeric](https://github.com/nv-legate/cupynumeric/tree/branch-24.11)
-
+The command below will attempt to use the CUDA 12.2 installed on your system instead of re-installing the entire CUDA toolkit. Change this to match your version or remove it.
 ```bash 
 conda create --name myenv 
 conda activate myenv
 CONDA_OVERRIDE_CUDA="12.2" \
   conda install -c conda-forge -c legate cupynumeric
+```
+
+ Be sure that cupynumeric installed with gpu support. Check the build string, it should have "gpu" in it.
+```
+conda list | grep cupynumeric
+conda list | grep legate
 ```
 
 ### 2. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
@@ -42,20 +48,13 @@ If 1.10 is not your default, please set it to be the default. Newer versions of 
 juliaup default 1.10
 ```
 
-### 3. Get latest version of [libcxxwrap](https://github.com/JuliaInterop/libcxxwrap-julia)
-These commands simply download an external dependency used to wrap the CuPyNumeric C++ API.
-```bash
-git submodule init
-git submodule update
-```
-
-### 4. Build Julia Package
-This command must be run form the root of the repository. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
+### 3. Build Julia Package
+This command must be run form the root of the repository with the cupynumeric conda environment active. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```
 
-### 5. Test the Julia Package
+### 4. Test the Julia Package
 This command must be run form the root of the repository.
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
@@ -78,21 +77,10 @@ With everything working, its the perfect time to checkout some of our [examples]
 - Fix cuNumeric.jl error in CI (requires unreleased CuPyNumeric)
 - Move external packages to [BinaryBuilder.jl](https://docs.binarybuilder.org/stable/) (requires Legate open source)
 
-## Custom install
-
-Optional: You can create a file called `.localenv` in order to add anything to the path. 
-
-`source ENV` will setup the enviroment variables and source optional `.localenv`
-
-`sh scripts/install_cxxwrap.sh`  builds the Julia CXX wrapper https://github.com/JuliaInterop/libcxxwrap-julia
-
-`sh scripts/legion_redop_patch.inl` patches Legion https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
-
-`sh ./build.sh` will create `libcupynumericwrapper.so` in `$CUNUMERIC_JL_HOME/build`
-
 ## Contact
 For technical questions, please either contact 
 `krasow(at)u.northwestern.edu` OR
 `emeitz(at)andrew.cmu.edu`
 
 If the issue is building the package, please include the `build.log` and `env.log` found in `cuNumeric.jl/pkg/deps/` 
+

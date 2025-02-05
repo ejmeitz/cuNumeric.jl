@@ -21,49 +21,60 @@
 using Pkg
 using Libdl
 
-env_file = abspath(joinpath(@__DIR__, "../../ENV"))
-@info "Sourcing environment file: $env_file"
+repo_root = abspath(joinpath(@__DIR__, "../../"))
+@info "Parsed Repo Root as: $(repo_root)"
 
-# env script
-if isfile(env_file)
-    @info "Setting environment variables from $env_file"
-    run(`bash -c "source $env_file && env > env.log"`)
-    for line in readlines("env.log")
-        try
-            key, value = split(line, "=", limit=2)
-            ENV[key] = value
-        catch 
-            @error "Error parsing env.log line: $(line)"
-        end
-    end
-else
-    @error "Environment file not found: $env_file"
+
+if !haskey(ENV, "CONDA_PREFIX")
+    @error "CONDA_PREFIX environment variable is not set. Build process assumes cupynumeric is installed in the active conda environment."
 end
 
-@info "CUNUMERIC_JL_HOME = $(ENV["CUNUMERIC_JL_HOME"])"
+# Quick sanity check to ensure this conda environment
+# probably has the right files installed before
+# we get too far.
+conda_env_dir = ENV["CONDA_PREFIX"]
+conda_include = joinpath(conda_env_dir, "include")
 
-@info "LEGATE_SHOW_CONFIG = $(ENV["LEGATE_SHOW_CONFIG"])"
-@info "LEGATE_CONFIG = $(ENV["LEGATE_CONFIG"])"
+if !isdir(joinpath(conda_include, "legate"))
+    @error "Cannot find include/legate in $(conda_env_dir), is the right conda environment active?"
+elseif !isdir(joinpath(conda_include, "cupynumeric"))
+    @error "Cannot find include/cupynumeric in $(conda_env_dir), is the right conda environment active?"
+elseif !isdir(joinpath(conda_include, "legion"))
+    @error "Cannot find include/legion in $(conda_env_dir), is the right conda environment active?"
+end
+
+
 
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
-legion_patch = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/patch_legion.sh")
+legion_patch = joinpath(repo_root, "scripts/patch_legion.sh")
 @info "Running legion patch script: $legion_patch"
-run(`bash $legion_patch`)
+run(`bash $legion_patch $repo_root`)
 
 
-# Check if libcxxwrap is already built -- its slow
-libcxxwrap_build_path = joinpath(DEPOT_PATH[1], "dev/libcxxwrap_julia_jll/override/lib/libcxxwrap_julia.so")
-if isfile(libcxxwrap_build_path) && "REBUILD_JLCXX" ∉ keys(ENV)
-    @info "Found existing libcxxwrap, skipping build"
-else
-    # build the julia cxx wrapper https://github.com/JuliaInterop/libcxxwrap-julia
-    build_libcxxwrap = joinpath(ENV["CUNUMERIC_JL_HOME"], "scripts/install_cxxwrap.sh")
-    @info "Running libcxxwrap build script: $build_libcxxwrap"
-    run(`bash $build_libcxxwrap`)
+# We still need to build libcxxwrap from source until 
+# everything is on BinaryBuilder to ensure compiler compatability
+
+@info "Downloading libcxxwrap"
+cd(repo_root) do
+    run(`git submodule init`)
+    run(`git submodule update`)
 end
 
+build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
+@info "Running libcxxwrap build script: $build_libcxxwrap"
+run(`bash $build_libcxxwrap $repo_root`)
+
 # create libcupynumericwrapper.so in CUNUMERIC_JL_HOME/build
-build_cupynumeric_wrapper = joinpath(ENV["CUNUMERIC_JL_HOME"], "build.sh")
-@info "Running cuNumeric.jl build script: $build_cupynumeric_wrapper"
-run(`bash $build_cupynumeric_wrapper`)
+build_dir = joinpath(repo_root, "wrapper", "build")
+if !isdir(build_dir)
+    mkdir(build_dir)
+else
+    @warn "Build dir exists. Deleting prior build."
+    rm(build_dir, recursive = true)
+    mkdir(build_dir)
+end
+
+build_cmd = Cmd(`cmake -S $repo_root -B $build_dir`; env = Dict("CMAKE_PREFIX_PATH" => conda_env_dir))
+run(build_cmd)
+run(`cmake --build $repo_root/build --parallel $(Threads.nthreads()) --verbose`)
