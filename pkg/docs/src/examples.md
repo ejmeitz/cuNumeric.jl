@@ -2,7 +2,7 @@
 
 
 ## DAXPY
-include("../../../../examples/daxpy.jl")
+include("./examples/daxpy.jl")
 
 ## Monte-Carlo Integration
 
@@ -20,10 +20,10 @@ I = \int_{-\infty}^{\infty}e^{-x^2}.
 
 Since we cannot uniformly sample form negative to positive infinity, we truncate the domain between -5 and 5. This is ok since the integrand exponentially decays and we won't be off by much in the end.
 
-include("../../../../examples/integration.jl")
+include("./examples/integration.jl")
 
 ## Gray Scott Reaction Diffusion
 
-include("../../../../examples/gray-scott.jl")
+include("./examples/gray-scott.jl")
 
 ![Simulation Output](./gray-scott.gif)
