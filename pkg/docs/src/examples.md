@@ -25,3 +25,5 @@ include("../../../../examples/integration.jl")
 ## Gray Scott Reaction Diffusion
 
 include("../../../../examples/gray-scott.jl")
+
+![Simulation Output](../../../../examples/gray-scott.gif)
