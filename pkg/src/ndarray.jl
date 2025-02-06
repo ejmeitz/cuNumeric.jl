@@ -138,6 +138,31 @@ function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
     assign(s, rhs);
 end
 
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Colon)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(lhs, 2))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Int64)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(j-1, j)))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(i-1, i), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
     return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
 end
