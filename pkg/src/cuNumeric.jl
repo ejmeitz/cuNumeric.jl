@@ -46,7 +46,7 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
 # abstract type AbstractAccessorWO{T,N} end
 
 lib = "libcupynumericwrapper.so"
-@wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
+@wrapmodule(() -> joinpath(@__DIR__, "../", "../", "wrapper", "build", lib))
 
 include("util.jl")
 include("ndarray.jl")
