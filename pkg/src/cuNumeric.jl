@@ -73,17 +73,8 @@ function my_on_exit()
     cuNumeric.legate_finish()
 end
 
-
-# Runtime initilization
-# Called once in lifetime of code
-function __init__()
-    @initcxx
-
-    # Legate ignores these arguments...
-    AA = ArgcArgv([Base.julia_cmd()[1]])
-
-    @info "Starting Legate"
-    
+function cupynumeric_setup(AA::ArgcArgv)
+   
     # Capture stdout from start_legate to 
     # see the hardware configuration
     res = -1
@@ -109,6 +100,34 @@ function __init__()
     Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
+
+    return legate_config_str
+end
+
+
+global legate_config::String = ""
+
+function versioninfo()
+    msg = """
+        Legate Configuration: $(legate_config)
+    """
+    println(msg)
+end
+
+# Runtime initilization
+# Called once in lifetime of code
+function __init__()
+    cuNumPreferences.check_unchanged()
+
+    @initcxx
+
+    # Legate ignores these arguments...
+    AA = ArgcArgv([Base.julia_cmd()[1]])
+
+    @info "Starting Legate"
+    global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
+    
+
 end
 
 
