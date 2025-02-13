@@ -25,16 +25,25 @@ using Preferences
 
 import Base: notnothing
 
-function is_cupynumeric_installed(conda_env_dir::String)
+# Automatically pipes errors to build.log
+function run_sh(cmd::Cmd)
+    build_log = joinpath(@__DIR__, "build.log")
+    run(pipeline(cmd, stdout = build_log, stderr = build_log, append = true))
+end
+
+function is_cupynumeric_installed(conda_env_dir::String; throw_errors::Bool = false)
 
     include_dir = joinpath(conda_env_dir, "include")
 
     if !isdir(joinpath(include_dir, "legate"))
-        @error "Cannot find include/legate in $(conda_env_dir), is the right conda environment active?"
+        throw_errors && @error "Cannot find include/legate in $(conda_env_dir)"
+        return false
     elseif !isdir(joinpath(include_dir, "cupynumeric"))
-        @error "Cannot find include/cupynumeric in $(conda_env_dir), is the right conda environment active?"
+        throw_errors && @error "Cannot find include/cupynumeric in $(conda_env_dir)"
+        return false
     elseif !isdir(joinpath(include_dir, "legion"))
-        @error "Cannot find include/legion in $(conda_env_dir), is the right conda environment active?"
+        throw_errors && @error "Cannot find include/legion in $(conda_env_dir)"
+        return false
     end
 
     return true
@@ -49,7 +58,7 @@ function patch_legion(repo_root::String, conda_env_dir::String)
 
     legion_patch = joinpath(repo_root, "scripts/patch_legion.sh")
     @info "Running legion patch script: $legion_patch"
-    run(`bash $legion_patch $repo_root $conda_env_dir`)
+    run_sh(`bash $legion_patch $repo_root $conda_env_dir`)
 end
 
 function build_jlcxxwrap(repo_root)
@@ -63,7 +72,7 @@ function build_jlcxxwrap(repo_root)
 
     build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
     @info "Running libcxxwrap build script: $build_libcxxwrap"
-    run(`bash $build_libcxxwrap $repo_root`)
+    run_sh(`bash $build_libcxxwrap $repo_root`)
 end
 
 
@@ -82,7 +91,7 @@ function build_cpp_wrapper(repo_root, conda_env_dir)
     
     build_cpp_wrapper = joinpath(repo_root, "scripts/build_cpp_wrapper.sh")
     nthreads = Threads.nthreads()
-    run(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`)
+    run_sh(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`)
 end
 
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
@@ -103,7 +112,7 @@ function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
 end
 
 function build_from_user_conda(conda_env_dir)
-    is_cupynumeric_installed(conda_env_dir)
+    is_cupynumeric_installed(conda_env_dir; throw_errors = true)
     core_build_process(conda_env_dir)
 end
 
@@ -136,19 +145,18 @@ const user_env = load_preference("cuNumeric", "user_env", nothing)
 
 #* TODO PARSE CUPYNUMERIC VERSION TO DECIDE IF WE NEED TO PATCH LEGION??
 #* PARSE GCC/CMAKE VERSION TO MAKE SURE ITS RECENT ENOUGH
-#* MAKE SHELL SCRIPT TO RUN CMAKE COMMANDS SINCE JULIA SEEMS INCAPABLE
 #* FIGURE OUT HOW TO AVOID REBUILDING JLCXXWRAPP ?
 
 if isnothing(user_env)
     @info "User did not specify existing conda install in LocalPreferences.toml. Will use Conda.jl."
     build_from_julia_conda(conda_jl_env)
-elseif notnothing(conda_jl_env) && notnothing(user_env)
+elseif conda_jl_env != DEFAULT_ENV_NAME && notnothing(user_env)
     @info "User specified both a local environment and a Conda.jl environment. Will use local environment."
     build_from_user_conda(user_env)
-elseif notnothing(conda_jl_env)
-    @info "Using Conda.jl to install cupynumeric"
-    build_from_julia_conda(conda_jl_env)
 elseif notnothing(user_env)
     @info "Using local conda environment with cupynumeric."
     build_from_user_conda(user_env)
+else # conda_jl_env is never nothing cause I set a default value
+    @info "Using Conda.jl to install cupynumeric"
+    build_from_julia_conda(conda_jl_env)
 end

@@ -14,7 +14,7 @@ This project is in alpha and we do not commit to anything necessarily working as
 - CUDA 12.2
 - Python 3.10
 - Ubuntu 20.04 or RHEL 8
-- Julia 1.10
+- Julia 1.11
 - CMake 3.26.4 
 
 ### 1. Download [cuPyNumeric](https://github.com/nv-legate/cupynumeric/tree/branch-24.11)
@@ -34,18 +34,18 @@ conda list | grep legate
 
 ### 2. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
 ```
-curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.10
+curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11
 ```
 
-This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (your may need to source bashrc):
+This will install version 1.11 by default since that is what we have tested against. To verify 1.11 is the default run either of the following (your may need to source bashrc):
 ```bash
 juliaup status
 julia --version
 ```
 
-If 1.10 is not your default, please set it to be the default. Newer versions of Julia are untested.
+If 1.11 is not your default, please set it to be the default. Other versions of Julia are untested.
 ```bash
-juliaup default 1.10
+juliaup default 1.11
 ```
 
 ### 3. Build Julia Package
