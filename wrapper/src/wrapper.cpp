@@ -76,7 +76,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       std::integral_constant<legion_privilege_mode_t, LEGION_READ_ONLY>>;
 
   // These are used in stencil.cc, seem important
-  mod.method("start_legate", &legate::start);  // in legate/runtime.h
+  mod.method("start_legate", [] { legate::start(); });  // in legate/runtime.h
   mod.method(
       "initialize_cunumeric",
       &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
