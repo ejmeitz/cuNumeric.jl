@@ -26,9 +26,16 @@ using Preferences
 import Base: notnothing
 
 # Automatically pipes errors to build.log
-function run_sh(cmd::Cmd)
+function run_sh(cmd::Cmd, filename::String)
+
     build_log = joinpath(@__DIR__, "build.log")
-    run(pipeline(cmd, stdout = build_log, stderr = build_log, append = true))
+    err_log = joinpath(@__DIR__, "$(filename).err")
+    
+    if isfile(err_log)
+        rm(err_log)
+    end
+
+    run(pipeline(cmd, stdout = build_log, stderr = err_log, append = true))
 end
 
 function is_cupynumeric_installed(conda_env_dir::String; throw_errors::Bool = false)
@@ -58,7 +65,7 @@ function patch_legion(repo_root::String, conda_env_dir::String)
 
     legion_patch = joinpath(repo_root, "scripts/patch_legion.sh")
     @info "Running legion patch script: $legion_patch"
-    run_sh(`bash $legion_patch $repo_root $conda_env_dir`)
+    run_sh(`bash $legion_patch $repo_root $conda_env_dir`, "legion_patch")
 end
 
 function build_jlcxxwrap(repo_root)
@@ -72,7 +79,7 @@ function build_jlcxxwrap(repo_root)
 
     build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
     @info "Running libcxxwrap build script: $build_libcxxwrap"
-    run_sh(`bash $build_libcxxwrap $repo_root`)
+    run_sh(`bash $build_libcxxwrap $repo_root`, "libcxxwrap")
 end
 
 
@@ -91,7 +98,7 @@ function build_cpp_wrapper(repo_root, conda_env_dir)
     
     build_cpp_wrapper = joinpath(repo_root, "scripts/build_cpp_wrapper.sh")
     nthreads = Threads.nthreads()
-    run_sh(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`)
+    run_sh(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`, "cpp_wrapper")
 end
 
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
