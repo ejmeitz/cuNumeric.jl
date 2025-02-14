@@ -23,7 +23,7 @@ if [[ ! -d "$CONDA_ENV_DIR" ]]; then
     exit 1
 fi
 
-exists=$CONDA_ENV_DIR/include/legion/legion_redop.inl 
+exists=$CONDA_ENV_DIR/include/legate/deps/legion/legion_redop.inl 
 new=$CUNUMERIC_ROOT_DIR/scripts/legion_redop_patch.inl
 
 if [ -z "$CUNUMERIC_ROOT_DIR" ]; then

@@ -117,8 +117,7 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    cuNumPreferences.check_unchanged()
-
+    # cuNumPreferences.check_unchanged()
     @initcxx
 
     # Legate ignores these arguments...
@@ -127,8 +126,5 @@ function __init__()
     @info "Starting Legate"
     global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
     
-
 end
-
-
 end
