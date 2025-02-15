@@ -30,7 +30,7 @@ function run_sh(cmd::Cmd, filename::String)
 
     build_log = joinpath(@__DIR__, "build.log")
     err_log = joinpath(@__DIR__, "$(filename).err")
-    
+
     if isfile(err_log)
         rm(err_log)
     end
@@ -42,6 +42,7 @@ function is_cupynumeric_installed(conda_env_dir::String; throw_errors::Bool = fa
 
     include_dir = joinpath(conda_env_dir, "include")
 
+    # Far from an exhaustive check, but if these are missing something is definitely wrong
     if !isdir(joinpath(include_dir, "legate"))
         throw_errors && @error "Cannot find include/legate in $(conda_env_dir)"
         return false

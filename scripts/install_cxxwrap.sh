@@ -78,6 +78,6 @@ julia -e 'using Pkg; Pkg.activate("."); Pkg.develop(PackageSpec(name="libcxxwrap
 rm -rf $JULIA_CXXWRAP 
 mkdir $JULIA_CXXWRAP
 
-cmake -S $JULIA_CXXWRAP_SRC -B $JULIA_CXXWRAP -DJulia_EXECUTABLE=$JULIA_PATH 
+cmake -S $JULIA_CXXWRAP_SRC -B $JULIA_CXXWRAP -DJulia_EXECUTABLE=$JULIA_PATH -DCMAKE_BUILD_TYPE=Release
 cd $JULIA_CXXWRAP
 make -j 16
