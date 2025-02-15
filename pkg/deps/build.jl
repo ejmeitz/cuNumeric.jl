@@ -17,15 +17,18 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
-# deps/build.jl
 using Pkg
+import Base: notnothing
 
 import Conda
 using Preferences
+import CNPreferences
 
-import Base: notnothing
+const SUPPORTED_VERSIONS = ["25.01"]
 
-# Automatically pipes errors to build.log
+
+# Automatically pipes errors to new file
+# and appends stdout to build.log
 function run_sh(cmd::Cmd, filename::String)
 
     build_log = joinpath(@__DIR__, "build.log")
@@ -72,13 +75,8 @@ end
 function build_jlcxxwrap(repo_root)
 
     @info "Downloading libcxxwrap"
-
-    cd(repo_root) do
-        run(`git submodule init`)
-        run(`git submodule update`)
-    end
-
     build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
+
     @info "Running libcxxwrap build script: $build_libcxxwrap"
     run_sh(`bash $build_libcxxwrap $repo_root`, "libcxxwrap")
 end
@@ -102,6 +100,30 @@ function build_cpp_wrapper(repo_root, conda_env_dir)
     run_sh(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`, "cpp_wrapper")
 end
 
+function parse_cupynumeric_version(conda_env_dir)
+    version_file = joinpath(conda_env_dir, "include", "cupynumeric", "version_config.hpp")
+
+    version = nothing
+    open(version_file, "r") do f
+        data = readlines(f)
+        major = parse(Int, split(data[end-2])[end])
+        minor = parse(Int, split(data[end-1])[end])
+        version = "$(major).$(minor)"
+    end
+
+    if isnothing(version)
+        error("Failed to parse version from conda environment")
+    end
+
+    return version
+end
+
+function install_cupynumeric_condajl(env_name, version)
+    @info "Installing cupynumeric into new conda environment"
+    Conda.add_channel("conda-forge", env_name)
+    Conda.add("cupynumeric=$(version)", env_name, channel = "legate")
+end
+
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
 
     repo_root = abspath(joinpath(@__DIR__, "../../"))
@@ -121,10 +143,14 @@ end
 
 function build_from_user_conda(conda_env_dir)
     is_cupynumeric_installed(conda_env_dir; throw_errors = true)
+    version = parse_cupynumeric_version(conda_env_dir)
+    if version ∉ SUPPORTED_VERSIONS
+        error("Your local environment has an unsupported verison of cupynumeric: $(version)")
+    end
     core_build_process(conda_env_dir)
 end
 
-function build_from_julia_conda(env_name = :cupynumeric)
+function build_from_julia_conda(env_name, version)
 
     conda_env_dir = Conda.prefix(env_name)
 
@@ -133,11 +159,15 @@ function build_from_julia_conda(env_name = :cupynumeric)
     cupynumeric_installed = is_cupynumeric_installed(conda_env_dir)
 
     if cupynumeric_installed
-        @info "Found cupynumeric already installed."
+        installed_version = parse_cupynumeric_version(conda_env_dir)
+        if installed_version ∉ SUPPORTED_VERSIONS
+            @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
+            install_cupynumeric_condajl(env_name, SUPPORTED_VERSIONS[end])
+        else
+            @info "Found cupynumeric already installed."
+        end
     else
-        @info "Installing cupynumeric into new conda environment"
-        Conda.add_channel("conda-forge", env_name)
-        Conda.add("cupynumeric", env_name, channel = "legate")
+        install_cupynumeric_condajl(env_name, version)
     end
 
     core_build_process(conda_env_dir)
@@ -146,8 +176,9 @@ end
 
 ####################################
 
-const DEFAULT_ENV_NAME = :cupynumeric
-const conda_jl_env = load_preference("cuNumeric", "conda_jl_env", DEFAULT_ENV_NAME)
+const DEFAULT_MODE = CNPreferences.CONDA_JL_MODE
+const mode = load_preference("cuNumeric", "mode", DEFAULT_MODE)
+const conda_jl_env = load_preference("cuNumeric", "conda_jl_env", CNPreferences.DEFAULT_ENV_NAME)
 const user_env = load_preference("cuNumeric", "user_env", nothing)
 
 
@@ -155,16 +186,15 @@ const user_env = load_preference("cuNumeric", "user_env", nothing)
 #* PARSE GCC/CMAKE VERSION TO MAKE SURE ITS RECENT ENOUGH
 #* FIGURE OUT HOW TO AVOID REBUILDING JLCXXWRAPP ?
 
-if isnothing(user_env)
-    @info "User did not specify existing conda install in LocalPreferences.toml. Will use Conda.jl."
-    build_from_julia_conda(conda_jl_env)
-elseif conda_jl_env != DEFAULT_ENV_NAME && notnothing(user_env)
-    @info "User specified both a local environment and a Conda.jl environment. Will use local environment."
+if mode == CNPreferences.CONDA_JL_MODE
+    @info "Building with Conda.jl environment named $(conda_jl_env)."
+    build_from_julia_conda(Symbol(conda_jl_env), VERSION)
+elseif mode == CNPreferences.LOCAL_CONDA_MODE
+    if isnothing(user_env)
+        error("Mode was set to use a local conda environment, but environment path was nothing.")
+    end
+    @info "Building with local conda environment at $(user_env)"
     build_from_user_conda(user_env)
-elseif notnothing(user_env)
-    @info "Using local conda environment with cupynumeric."
-    build_from_user_conda(user_env)
-else # conda_jl_env is never nothing cause I set a default value
-    @info "Using Conda.jl to install cupynumeric"
-    build_from_julia_conda(conda_jl_env)
+else
+    error("Could not parse build settings. Got mode: $(mode), conda_jl_env: $(conda_jl_env), user_env: $(user_env)")
 end

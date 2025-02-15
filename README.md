@@ -17,22 +17,7 @@ This project is in alpha and we do not commit to anything necessarily working as
 - Julia 1.11
 - CMake 3.26.4 
 
-### 1. Download [cuPyNumeric](https://github.com/nv-legate/cupynumeric/tree/branch-24.11)
-The command below will attempt to use the CUDA 12.2 installed on your system instead of re-installing the entire CUDA toolkit. Change this to match your version or remove it.
-```bash 
-conda create --name myenv 
-conda activate myenv
-CONDA_OVERRIDE_CUDA="12.2" \
-  conda install -c conda-forge -c legate cupynumeric
-```
-
- Be sure that cupynumeric installed with gpu support. Check the build string, it should have "gpu" in it.
-```
-conda list | grep cupynumeric
-conda list | grep legate
-```
-
-### 2. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
+### 1. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
 ```
 curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11
 ```
@@ -48,19 +33,31 @@ If 1.11 is not your default, please set it to be the default. Other versions of 
 juliaup default 1.11
 ```
 
-### 3. Build Julia Package
+### 2. Download cuNumeric.jl
+cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your environment run:
+```julia
+using Pkg; Pkg.add(url = "https://github.com/ejmeitz/cuNumeric.jl", rev = "main")
+```
+
+The `rev` option can be main or any tagged version.
+
+### 3. Test the Julia Package
+Run this command in the Julia environment where cuNumeric.jl is installed.
+```julia
+using Pkg; Pkg.test("cuNumeric")
+```
+
+With everything working, its the perfect time to checkout some of our [examples](https://ejmeitz.github.io/cuNumeric.jl/dev/examples/)!
+
+
+## Custom Installs and Development
+See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) section of the documentation to build cuNumeric.jl with a local conda environment providing the cupynumeric binaries. 
+
 This command must be run form the root of the repository with the cupynumeric conda environment active. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```
 
-### 4. Test the Julia Package
-This command must be run form the root of the repository.
-```julia
-julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
-```
-
-With everything working, its the perfect time to checkout some of our [examples](https://ejmeitz.github.io/cuNumeric.jl/dev/examples/)!
 
 ## TO-DO List of Missing Important Features
 - Full slicing support
@@ -82,5 +79,5 @@ For technical questions, please either contact
 `krasow(at)u.northwestern.edu` OR
 `emeitz(at)andrew.cmu.edu`
 
-If the issue is building the package, please include the `build.log` and `env.log` found in `cuNumeric.jl/pkg/deps/` 
+If the issue is building the package, please include the `build.log` and `.err` files found in `cuNumeric.jl/pkg/deps/` 
 

@@ -43,15 +43,17 @@ fi
 
 echo "Using $JULIA at: $JULIA_PATH"
 
+GIT_REPO="https://github.com/JuliaInterop/libcxxwrap-julia.git"
+COMMIT_HASH="c47d1148355d30752aa772e03a2ac8078bb2d06b" #(v0.13.4)
 JULIA_CXXWRAP_SRC=$CUNUMERIC_ROOT_DIR/libcxxwrap-julia
 
-cd $JULIA_CXXWRAP_SRC
+if [ ! -d "$JULIA_CXXWRAP_SRC" ]; then
+    cd $CUNUMERIC_ROOT_DIR
+    git clone $GIT_REPO
+fi
 
-# grab latest release of libcxxwrap-julia
-# in theory the latest libcxxwrap could be incompatible with latest CxxWrap
-  # if CxxWrap has not tagged a new version
-tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-git checkout $tag
+cd $JULIA_CXXWRAP_SRC
+git checkout $COMMIT_HASH
 
 # find julia dependency path
 JULIA_DEP_PATH=$($JULIA -e 'println(DEPOT_PATH[1])')

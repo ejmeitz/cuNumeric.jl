@@ -5,9 +5,14 @@ using Preferences
 const PREFS_CHANGED = Ref(false)
 const DEPS_LOADED = Ref(false)
 
+const CONDA_JL_MODE = "conda_jl"
+const LOCAL_CONDA_MODE = "local_env"
+const DEFAULT_ENV_NAME = "cupynumeric"
+
 # Store what the values were when module loaded
 const user_env = @load_preference("user_env")
 const conda_jl_env = @load_preference("conda_jl_env")
+const mode = @load_preference("mode")
 
 # from MPIPreferences.jl
 """
@@ -41,15 +46,16 @@ function use_existing_conda_env(env_path::String; export_prefs = false, force = 
 
     set_preferences!(CNPreferences,
         "user_env" =>  env_path,
+        "mode" => LOCAL_CONDA_MODE,
         export_prefs = export_prefs,
         force = force
     )
 
-    if env_name == CNPreferences.user_env
-        @info "CNPreferences changed user_env" env_path
+    if env_path == CNPreferences.user_env && CNPreferences.mode == LOCAL_CONDA_MODE
+        @info "CNPreferences found no differences."
     else
         PREFS_CHANGED[] = true
-        @info "CNPreferences changed user_env" env_path
+        @info "CNPreferences set to use local conda env at:" env_path
 
         if DEPS_LOADED[]
             error("You will need to restart Julia for the changes to take effect")
@@ -69,19 +75,20 @@ could install cuda toolkit into the conda environment.
 
 Expects `env_name` to just be the name of the environment. For example, `cunumeric-gpu`.
 """
-function use_conda_jl(env_name::String = "cupynumeric"; export_prefs = false, force = true)
+function use_conda_jl(env_name::String = DEFAULT_ENV_NAME; export_prefs = false, force = true)
 
     set_preferences!(CNPreferences,
         "conda_jl_env" =>  env_name,
+        "mode" => CONDA_JL_MODE,
         export_prefs = export_prefs,
         force = force
     )
 
-    if env_name == CNPreferences.conda_jl_env
-        @info "CNPreferences changed conda_jl_env" env_name
+    if env_name == CNPreferences.conda_jl_env && CNPreferences.mode == CONDA_JL_MODE
+        @info "CNPreferences found no differences."
     else
         PREFS_CHANGED[] = true
-        @info "CNPreferences changed conda_jl_env" env_name
+        @info "CNPreferences set to use Conda.jl with env name:" env_name
 
         if DEPS_LOADED[]
             error("You will need to restart Julia for the changes to take effect")
