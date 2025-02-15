@@ -72,13 +72,8 @@ end
 function build_jlcxxwrap(repo_root)
 
     @info "Downloading libcxxwrap"
-
-    cd(repo_root) do
-        run(`git submodule init`)
-        run(`git submodule update`)
-    end
-
     build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
+    
     @info "Running libcxxwrap build script: $build_libcxxwrap"
     run_sh(`bash $build_libcxxwrap $repo_root`, "libcxxwrap")
 end
