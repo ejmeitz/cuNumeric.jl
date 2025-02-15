@@ -24,6 +24,9 @@ import Conda
 using Preferences
 import CNPreferences
 
+const SUPPORTED_VERSIONS = ["25.01"]
+
+
 # Automatically pipes errors to new file
 # and appends stdout to build.log
 function run_sh(cmd::Cmd, filename::String)
@@ -97,6 +100,30 @@ function build_cpp_wrapper(repo_root, conda_env_dir)
     run_sh(`bash $build_cpp_wrapper $repo_root $build_dir $conda_env_dir $nthreads`, "cpp_wrapper")
 end
 
+function parse_cupynumeric_version(conda_env_dir)
+    version_file = joinpath(conda_env_dir, "include", "cupynumeric", "version_config.hpp")
+
+    version = nothing
+    open(version_file, "r") do f
+        data = readlines(f)
+        major = parse(Int, split(data[end-2])[end])
+        minor = parse(Int, split(data[end-1])[end])
+        version = "$(major).$(minor)"
+    end
+
+    if isnothing(version)
+        error("Failed to parse version from conda environment")
+    end
+
+    return version
+end
+
+function install_cupynumeric_condajl(env_name, version)
+    @info "Installing cupynumeric into new conda environment"
+    Conda.add_channel("conda-forge", env_name)
+    Conda.add("cupynumeric=$(version)", env_name, channel = "legate")
+end
+
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
 
     repo_root = abspath(joinpath(@__DIR__, "../../"))
@@ -116,10 +143,14 @@ end
 
 function build_from_user_conda(conda_env_dir)
     is_cupynumeric_installed(conda_env_dir; throw_errors = true)
+    version = parse_cupynumeric_version(conda_env_dir)
+    if version ∉ SUPPORTED_VERSIONS
+        error("Your local environment has an unsupported verison of cupynumeric: $(version)")
+    end
     core_build_process(conda_env_dir)
 end
 
-function build_from_julia_conda(env_name)
+function build_from_julia_conda(env_name, version)
 
     conda_env_dir = Conda.prefix(env_name)
 
@@ -128,11 +159,15 @@ function build_from_julia_conda(env_name)
     cupynumeric_installed = is_cupynumeric_installed(conda_env_dir)
 
     if cupynumeric_installed
-        @info "Found cupynumeric already installed."
+        installed_version = parse_cupynumeric_version(conda_env_dir)
+        if installed_version ∉ SUPPORTED_VERSIONS
+            @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
+            install_cupynumeric_condajl(env_name, SUPPORTED_VERSIONS[end])
+        else
+            @info "Found cupynumeric already installed."
+        end
     else
-        @info "Installing cupynumeric into new conda environment"
-        Conda.add_channel("conda-forge", env_name)
-        Conda.add("cupynumeric", env_name, channel = "legate")
+        install_cupynumeric_condajl(env_name, version)
     end
 
     core_build_process(conda_env_dir)
@@ -153,7 +188,7 @@ const user_env = load_preference("cuNumeric", "user_env", nothing)
 
 if mode == CNPreferences.CONDA_JL_MODE
     @info "Building with Conda.jl environment named $(conda_jl_env)."
-    build_from_julia_conda(Symbol(conda_jl_env))
+    build_from_julia_conda(Symbol(conda_jl_env), VERSION)
 elseif mode == CNPreferences.LOCAL_CONDA_MODE
     if isnothing(user_env)
         error("Mode was set to use a local conda environment, but environment path was nothing.")
