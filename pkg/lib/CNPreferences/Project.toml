@@ -1,0 +1,11 @@
+name = "CNPreferences"
+uuid = "b1a454a6-5b08-49bf-9077-82f139a6b048"
+authors = []
+version = "0.0.1"
+
+[deps]
+Preferences = "21216c6a-2e73-6563-6e65-726566657250"
+
+[compat]
+Preferences = "1"
+julia = "1.6"

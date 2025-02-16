@@ -23,6 +23,8 @@
 
 #include "accessors.h"
 #include "cupynumeric.h"
+#include "cupynumeric/operators.h"
+
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
 #include "legate.h"
@@ -76,33 +78,37 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       std::integral_constant<legion_privilege_mode_t, LEGION_READ_ONLY>>;
 
   // These are used in stencil.cc, seem important
-  mod.method("start_legate", &legate::start);  // in legate/runtime.h
+  mod.method("start_legate", [] { legate::start(); });  // in legate/runtime.h
   mod.method(
       "initialize_cunumeric",
       &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
   mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
 
-//   mod.method("get_machine_info", &get_machine_info);
-//   mod.method("print_machine_info", &print_machine_info);
+  //   mod.method("get_machine_info", &get_machine_info);
+  //   mod.method("print_machine_info", &print_machine_info);
 
-// Need to put this before the optional definition,
-// but StdOptional has to be defined by NDArray::type
-auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
-      .constructor<const cupynumeric::NDArray&>();
+  // Need to put this before the optional definition,
+  // but StdOptional has to be defined by NDArray::type
+  auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
+                         .constructor<const cupynumeric::NDArray&>();
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(WrapCppOptional());
+      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(
+          WrapCppOptional());
 
-  mod.add_type<legate::LogicalStore>("LogicalStore"); 
+  mod.add_type<legate::LogicalStore>("LogicalStore");
 
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
-  jlcxx::stl::apply_stl<legate::Scalar>(mod); // enable std::vector<legate::Scalar>
+  jlcxx::stl::apply_stl<legate::Scalar>(
+      mod);  // enable std::vector<legate::Scalar>
 
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
-      .method("_size", &cupynumeric::NDArray::size) //hide with underscore cause in Julia `size` is same as shape
+      .method("_size",
+              &cupynumeric::NDArray::size)  // hide with underscore cause in
+                                            // Julia `size` is same as shape
       .method("shape", &cupynumeric::NDArray::shape)
       .method("type", &cupynumeric::NDArray::type)
       .method("copy", &cupynumeric::NDArray::copy)
@@ -115,12 +121,14 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
       .method("as_type", &cupynumeric::NDArray::as_type)
       .method("unary_op", &cupynumeric::NDArray::unary_op)
       // ew but necessary cause theres an overload in operators.cc
-      .method("unary_reduction", static_cast<void (cupynumeric::NDArray::*)(int32_t, cupynumeric::NDArray)>(&cupynumeric::NDArray::unary_reduction))
+      .method("unary_reduction", static_cast<void (cupynumeric::NDArray::*)(
+                                     int32_t, cupynumeric::NDArray)>(
+                                     &cupynumeric::NDArray::unary_reduction))
       .method("binary_op", &cupynumeric::NDArray::binary_op)
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
-      .method("_dot_three_arg", &cupynumeric::NDArray::dot)
+    //   .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)
@@ -148,10 +156,8 @@ auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
   mod.method("_multiply", &cupynumeric::multiply);
   mod.method("_random_ndarray", &cupynumeric::random);
 
-
-
-  mod.add_type<legate::timing::Time>("Time")
-    .method("value", &legate::timing::Time::value);
+  mod.add_type<legate::timing::Time>("Time").method(
+      "value", &legate::timing::Time::value);
   mod.method("time_microseconds", &legate::timing::measure_microseconds);
   mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
 

@@ -312,6 +312,14 @@ function Base.:(==)(julia_array::Array, arr::NDArray)
     return (arr == julia_array)
 end
 
+# we should support rtol
+function Base.isapprox(julia_array::AbstractArray, arr::NDArray; atol=0, rtol=0)
+    return compare(julia_array, arr, atol)
+end
+
+function Base.isapprox(arr::NDArray, julia_array::AbstractArray; atol=0, rtol=0)
+    return compare(julia_array, arr, atol)
+end
 
 #* ADD ISAPPROX FOR TWO NDARRAYS AFTER BINARY OPS DONE
 function compare(julia_array::AbstractArray, arr::NDArray, max_diff)

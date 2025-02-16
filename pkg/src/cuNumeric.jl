@@ -25,6 +25,7 @@ module cuNumeric
 
 using CxxWrap
 using Pkg
+# import CNPreferences
 
 using LinearAlgebra
 import LinearAlgebra: mul!
@@ -46,7 +47,7 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
 # abstract type AbstractAccessorWO{T,N} end
 
 lib = "libcupynumericwrapper.so"
-@wrapmodule(() -> joinpath(@__DIR__, "../", "../", "build", lib))
+@wrapmodule(() -> joinpath(@__DIR__, "../", "../", "wrapper", "build", lib))
 
 include("util.jl")
 include("ndarray.jl")
@@ -73,25 +74,16 @@ function my_on_exit()
     cuNumeric.legate_finish()
 end
 
-
-# Runtime initilization
-# Called once in lifetime of code
-function __init__()
-    @initcxx
-
-    # Legate ignores these arguments...
-    AA = ArgcArgv([Base.julia_cmd()[1]])
-
-    @info "Starting Legate"
-    
+function cupynumeric_setup(AA::ArgcArgv)
+   
     # Capture stdout from start_legate to 
     # see the hardware configuration
-    res = -1
+    res = 0
     pipe = Pipe()
     started = Base.Event()
     writer = @async redirect_stdout(pipe) do
         notify(started)
-        res = cuNumeric.start_legate(AA.argc, getargv(AA))
+        cuNumeric.start_legate()
         close(Base.pipe_writer(pipe))
     end
 
@@ -109,7 +101,31 @@ function __init__()
     Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
+
+    return legate_config_str
 end
 
 
+global legate_config::String = ""
+
+function versioninfo()
+    msg = """
+        Legate Configuration: $(legate_config)
+    """
+    println(msg)
+end
+
+# Runtime initilization
+# Called once in lifetime of code
+function __init__()
+    # cuNumPreferences.check_unchanged()
+    @initcxx
+
+    # Legate ignores these arguments...
+    AA = ArgcArgv([Base.julia_cmd()[1]])
+
+    @info "Starting Legate"
+    global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
+    
+end
 end

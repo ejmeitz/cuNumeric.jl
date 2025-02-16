@@ -21,7 +21,6 @@ using Test
 using cuNumeric
 using LinearAlgebra
 
-
 include("tests/daxpy.jl")
 include("tests/daxpy_advanced.jl")
 include("tests/sgemm.jl")
@@ -32,7 +31,7 @@ include("tests/sgemm.jl")
     @testset daxpy_advanced()
 end
 
-@testset verbose = true "SGEMM" begin
+@testset verbose = true "SGEMM" begin 
     max_diff = Float32(1e-4)
     @warn "SGEMM has some precision issues, using tol $(max_diff) 🥲"
     @testset sgemm(max_diff)

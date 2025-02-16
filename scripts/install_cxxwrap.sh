@@ -19,32 +19,41 @@
 
 set -e
 
-JULIA='julia'
-
-if [ -z "$CUNUMERIC_JL_HOME" ]; then
-  echo "Error: CUNUMERIC_JL_HOME is not set."
-  exit 1
+# Check if exactly one argument is provided
+if [[ $# -ne 1 ]]; then
+    echo "Usage: $0 <directory>"
+    exit 1
 fi
 
+CUNUMERIC_ROOT_DIR=$1  # First argument
+
+# Check if the provided argument is a valid directory
+if [[ ! -d "$CUNUMERIC_ROOT_DIR" ]]; then
+    echo "Error: '$CUNUMERIC_ROOT_DIR' is not a valid directory."
+    exit 1
+fi
+
+JULIA='julia'
+JULIA_PATH=$(which $JULIA)
 
 if [ -z "$JULIA_PATH" ]; then
   echo "Error: $JULIA is not installed or not in PATH."
   exit 1
 fi
 
-
 echo "Using $JULIA at: $JULIA_PATH"
 
+GIT_REPO="https://github.com/JuliaInterop/libcxxwrap-julia.git"
+COMMIT_HASH="c47d1148355d30752aa772e03a2ac8078bb2d06b" #(v0.13.4)
+JULIA_CXXWRAP_SRC=$CUNUMERIC_ROOT_DIR/libcxxwrap-julia
 
-JULIA_CXXWRAP_SRC=$CUNUMERIC_JL_HOME/libcxxwrap-julia
+if [ ! -d "$JULIA_CXXWRAP_SRC" ]; then
+    cd $CUNUMERIC_ROOT_DIR
+    git clone $GIT_REPO
+fi
 
 cd $JULIA_CXXWRAP_SRC
-
-# grab latest release of libcxxwrap-julia
-# in theory the latest libcxxwrap could be incompatible with latest CxxWrap
-  # if CxxWrap has not tagged a new version
-tag=$(git describe --tags `git rev-list --tags --max-count=1`)
-git checkout $tag
+git checkout $COMMIT_HASH
 
 # find julia dependency path
 JULIA_DEP_PATH=$($JULIA -e 'println(DEPOT_PATH[1])')
@@ -56,7 +65,7 @@ JULIA_CXXWRAP=$JULIA_CXXWRAP_DEV/override
 # Clean up whatever env is there right now and
 # build default version of CxxWrap / libcxxwrap_julia
 #* THIS COULD BREAK SOME USERS CODE IF THEY ALREADY OVERRIDE THIS PKG
-cd $CUNUMERIC_JL_HOME/pkg
+cd $CUNUMERIC_ROOT_DIR/pkg
 rm -rf "Manifest.toml"
 rm -rf $JULIA_CXXWRAP_DEV
 julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.precompile(["CxxWrap"])'
@@ -71,6 +80,6 @@ julia -e 'using Pkg; Pkg.activate("."); Pkg.develop(PackageSpec(name="libcxxwrap
 rm -rf $JULIA_CXXWRAP 
 mkdir $JULIA_CXXWRAP
 
-cmake -S $JULIA_CXXWRAP_SRC -B $JULIA_CXXWRAP -DJulia_EXECUTABLE=$JULIA_PATH 
+cmake -S $JULIA_CXXWRAP_SRC -B $JULIA_CXXWRAP -DJulia_EXECUTABLE=$JULIA_PATH -DCMAKE_BUILD_TYPE=Release
 cd $JULIA_CXXWRAP
 make -j 16
