@@ -22,9 +22,10 @@ import Base: notnothing
 
 import Conda
 using Preferences
-import CNPreferences
+# import CNPreferences
 
-const SUPPORTED_VERSIONS = ["25.01"]
+const SUPPORTED_CUPYNUMERIC_VERSIONS = ["25.01"]
+const LATEST_CUPYNUMERIC_VERSION = SUPPORTED_CUPYNUMERIC_VERSIONS[end]
 
 
 # Automatically pipes errors to new file
@@ -107,7 +108,7 @@ function parse_cupynumeric_version(conda_env_dir)
     open(version_file, "r") do f
         data = readlines(f)
         major = parse(Int, split(data[end-2])[end])
-        minor = parse(Int, split(data[end-1])[end])
+        minor = lpad(split(data[end-1])[end], 2, '0')
         version = "$(major).$(minor)"
     end
 
@@ -118,10 +119,10 @@ function parse_cupynumeric_version(conda_env_dir)
     return version
 end
 
-function install_cupynumeric_condajl(env_name, version)
+function install_cupynumeric_condajl(env_name, version_to_install)
     @info "Installing cupynumeric into new conda environment"
     Conda.add_channel("conda-forge", env_name)
-    Conda.add("cupynumeric=$(version)", env_name, channel = "legate")
+    Conda.add("cupynumeric=$(version_to_install)", env_name, channel = "legate")
 end
 
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
@@ -143,9 +144,9 @@ end
 
 function build_from_user_conda(conda_env_dir)
     is_cupynumeric_installed(conda_env_dir; throw_errors = true)
-    version = parse_cupynumeric_version(conda_env_dir)
-    if version ∉ SUPPORTED_VERSIONS
-        error("Your local environment has an unsupported verison of cupynumeric: $(version)")
+    cupynumeric_version = parse_cupynumeric_version(conda_env_dir)
+    if cupynumeric_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
+        error("Your local environment has an unsupported verison of cupynumeric: $(cupynumeric_version)")
     end
     core_build_process(conda_env_dir)
 end
@@ -160,9 +161,9 @@ function build_from_julia_conda(env_name, version)
 
     if cupynumeric_installed
         installed_version = parse_cupynumeric_version(conda_env_dir)
-        if installed_version ∉ SUPPORTED_VERSIONS
+        if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
             @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
-            install_cupynumeric_condajl(env_name, SUPPORTED_VERSIONS[end])
+            install_cupynumeric_condajl(env_name, LATEST_CUPYNUMERIC_VERSION)
         else
             @info "Found cupynumeric already installed."
         end
@@ -176,20 +177,22 @@ end
 
 ####################################
 
-const DEFAULT_MODE = CNPreferences.CONDA_JL_MODE
-const mode = load_preference("cuNumeric", "mode", DEFAULT_MODE)
-const conda_jl_env = load_preference("cuNumeric", "conda_jl_env", CNPreferences.DEFAULT_ENV_NAME)
+const CONDA_JL_MODE = "conda_jl"
+const LOCAL_CONDA_MODE = "local_env"
+const DEFAULT_ENV_NAME = "cupynumeric"
+
+const mode = load_preference("cuNumeric", "mode", CONDA_JL_MODE)
+const conda_jl_env = load_preference("cuNumeric", "conda_jl_env", DEFAULT_ENV_NAME)#CNPreferences.DEFAULT_ENV_NAME)
 const user_env = load_preference("cuNumeric", "user_env", nothing)
 
 
 #* TODO PARSE CUPYNUMERIC VERSION TO DECIDE IF WE NEED TO PATCH LEGION??
 #* PARSE GCC/CMAKE VERSION TO MAKE SURE ITS RECENT ENOUGH
 #* FIGURE OUT HOW TO AVOID REBUILDING JLCXXWRAPP ?
-
-if mode == CNPreferences.CONDA_JL_MODE
+if mode == CONDA_JL_MODE #CNPreferences.CONDA_JL_MODE
     @info "Building with Conda.jl environment named $(conda_jl_env)."
-    build_from_julia_conda(Symbol(conda_jl_env), VERSION)
-elseif mode == CNPreferences.LOCAL_CONDA_MODE
+    build_from_julia_conda(Symbol(conda_jl_env), LATEST_CUPYNUMERIC_VERSION)
+elseif mode == LOCAL_CONDA_MODE #CNPreferences.LOCAL_CONDA_MODE
     if isnothing(user_env)
         error("Mode was set to use a local conda environment, but environment path was nothing.")
     end

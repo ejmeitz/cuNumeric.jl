@@ -14,23 +14,23 @@ This project is in alpha and we do not commit to anything necessarily working as
 - CUDA 12.2
 - Python 3.10
 - Ubuntu 20.04 or RHEL 8
-- Julia 1.11
+- Julia 1.10
 - CMake 3.26.4 
 
 ### 1. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
 ```
-curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11
+curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.10
 ```
 
-This will install version 1.11 by default since that is what we have tested against. To verify 1.11 is the default run either of the following (your may need to source bashrc):
+This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (your may need to source bashrc):
 ```bash
 juliaup status
 julia --version
 ```
 
-If 1.11 is not your default, please set it to be the default. Other versions of Julia are untested.
+If 1.10 is not your default, please set it to be the default. Other versions of Julia are untested.
 ```bash
-juliaup default 1.11
+juliaup default 1.10
 ```
 
 ### 2. Download cuNumeric.jl
@@ -53,7 +53,7 @@ With everything working, its the perfect time to checkout some of our [examples]
 ## Custom Installs and Development
 See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) section of the documentation to build cuNumeric.jl with a local conda environment providing the cupynumeric binaries. 
 
-This command must be run form the root of the repository with the cupynumeric conda environment active. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
+To re-build `cuNumeric.jl` with a local environment run the following command. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
 ```julia
 julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
 ```
