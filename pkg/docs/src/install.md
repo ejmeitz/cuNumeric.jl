@@ -23,6 +23,13 @@ conda_jl_env = "cupynumeric"
 user_env = "/home/emeitz/.conda/envs/cunumeric-gpu"
 ```
 
+After setting the `LocalPreferences.toml` you must re-build cuNumeric.jl by running:
+```julia
+julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
+```
+
+## Using Local CUDA
+
 A common reason to link against an existing environment is to avoid cupynumeric re-installing the entire CUDA toolkit. To make your own conda environment built off an existing CUDA install run the following with whatever version of CUDA is on the `LD_LIBRARY_PATH` in place of 12.2.
 
 ```bash 
