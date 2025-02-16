@@ -53,9 +53,9 @@ With everything working, its the perfect time to checkout some of our [examples]
 ## Custom Installs and Development
 See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) section of the documentation to build cuNumeric.jl with a local conda environment providing the cupynumeric binaries. 
 
-If you cloned the `cuNumeric.jl` git-repo isntead of using Pkg.add you will need to manually trigger the build process. The command is below. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
+If you cloned the `cuNumeric.jl` git-repo isntead of using Pkg.add you will need to manually trigger the build process. The command is below. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile. This command assumes the `Project.toml` for `cuNumeric.jl` is in the current working directory.
 ```julia
-julia -e 'using Pkg; Pkg.resolve(); Pkg.build()'
+julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
 ```
 
 
