@@ -2,7 +2,7 @@
 
 By default `cuNumeric.jl` will install cupynumeric with [Conda.jl](https://github.com/JuliaPy/Conda.jl) into a new conda environment stored inside the `.julia/conda` directory.
 
-To customize the build process create a `LocalPreferences.toml` file in the same directory as the `Project.toml` of the environment you installed `cuNumeric.jl` into.
+To customize the build process create a `LocalPreferences.toml` file in the same directory as the `Project.toml` where `cuNumeric.jl` is installed (or in the cuNumeric.jl git repo).
 
  The `LocalPreferences.toml` defines 3 keys : `mode`, `conda_jl_env`,  and `user_env`.
 
@@ -25,7 +25,7 @@ user_env = "/home/emeitz/.conda/envs/cunumeric-gpu"
 
 After setting the `LocalPreferences.toml` you must re-build cuNumeric.jl by running:
 ```julia
-julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
+julia -e 'using Pkg; Pkg.build()'
 ```
 
 ## Using Local CUDA

@@ -55,7 +55,7 @@ See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) sec
 
 If you cloned the `cuNumeric.jl` git-repo isntead of using Pkg.add you will need to manually trigger the build process. The command is below. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
 ```julia
-julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
+julia -e 'using Pkg; Pkg.resolve(); Pkg.build()'
 ```
 
 

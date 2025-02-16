@@ -127,19 +127,17 @@ end
 
 function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
 
-    repo_root = abspath(joinpath(@__DIR__, "../../"))
-    @info "Parsed Repo Root as: $(repo_root)"
+    pkg_root = abspath(joinpath(@__DIR__, "../"))
+    @info "Parsed Package Dir as: $(pkg_root)"
 
-    # patch legion. The readme below talks about our compilation error
-    # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
-    run_legion_patch && patch_legion(repo_root, conda_env_dir)
+    run_legion_patch && patch_legion(pkg_root, conda_env_dir)
 
     # We still need to build libcxxwrap from source until 
     # everything is on BinaryBuilder to ensure compiler compatability
-    build_jlcxxwrap(repo_root)
+    build_jlcxxwrap(pkg_root)
 
     # create libcupynumericwrapper.so
-    build_cpp_wrapper(repo_root, conda_env_dir)
+    build_cpp_wrapper(pkg_root, conda_env_dir)
 end
 
 function build_from_user_conda(conda_env_dir)
