@@ -32,6 +32,10 @@ jobs:
           
       - name: Install Dependencies
         run: |
+          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          pushd libcxxwrap-julia
+          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
+          popd
           echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
           julia -e 'using Pkg; Pkg.activate("."); Pkg.update(); Pkg.resolve(); Pkg.build();'
 
