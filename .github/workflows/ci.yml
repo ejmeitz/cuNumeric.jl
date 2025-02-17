@@ -23,6 +23,19 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
+      - name: Create Conda environment
+        run: |
+          mkdir -p ~/miniconda3
+          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
+          bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
+          rm ~/miniconda3/miniconda.sh
+          source ~/miniconda3/bin/activate
+          conda init --all
+          export PATH="$HOME/miniconda/bin:$PATH"
+          conda create --name myenv python=3.10 -y
+          conda activate myenv
+          conda install -c conda-forge -c legate cupynumeric -y
+
       - name: Install Julia 
         uses: julia-actions/setup-julia@v1
         with:
@@ -30,8 +43,11 @@ jobs:
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v2
           
-      - name: Build Package
+      - name: Install Dependencies
         run: |
+          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
+          export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
           julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.build()'
 
       - name: Run Tests
@@ -56,12 +72,12 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v2
       - name: Install docs dependencies
-        run: julia --project=./docs/ -e 'using Pkg; Pkg.instantiate()'
+        run: julia --project=docs/ -e 'using Pkg; Pkg.instantiate()'
       - name: Build and deploy docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
-        run: julia --project=./docs/ ./docs/make.jl
+        run: julia --project=docs/ docs/make.jl
 
 
 
