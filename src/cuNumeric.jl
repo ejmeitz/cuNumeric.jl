@@ -118,7 +118,7 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    # cuNumPreferences.check_unchanged()
+    CNPreferences.check_unchanged()
     @initcxx
 
     # Legate ignores these arguments...
