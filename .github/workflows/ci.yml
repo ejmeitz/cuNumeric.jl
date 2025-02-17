@@ -46,8 +46,10 @@ jobs:
       - name: Install Dependencies
         run: |
           git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          pushd libcxxwrap-julia
           git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
           export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
+          popd
           julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.build()'
 
       - name: Run Tests
