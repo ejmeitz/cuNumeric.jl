@@ -25,7 +25,9 @@ module cuNumeric
 
 using CxxWrap
 using Pkg
-# import CNPreferences
+
+Pkg.develop(path="./lib/CNPreferences") 
+using CNPreferences
 
 using LinearAlgebra
 import LinearAlgebra: mul!
