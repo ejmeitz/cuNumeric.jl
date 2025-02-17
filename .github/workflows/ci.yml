@@ -23,19 +23,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Create Conda environment
-        run: |
-          mkdir -p ~/miniconda3
-          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-          bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-          rm ~/miniconda3/miniconda.sh
-          source ~/miniconda3/bin/activate
-          conda init --all
-          export PATH="$HOME/miniconda/bin:$PATH"
-          conda create --name myenv python=3.10 -y
-          conda activate myenv
-          conda install -c conda-forge -c legate cupynumeric -y
-
       - name: Install Julia 
         uses: julia-actions/setup-julia@v1
         with:
@@ -45,13 +32,8 @@ jobs:
           
       - name: Install Dependencies
         run: |
-          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
-          pushd libcxxwrap-julia
-          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
-          export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
-          popd
-          echo -e "[cuNumeric]\nmode = \"local_env\"\nconda_jl_env = \"cupynumeric\"\nuser_env = \"$HOME/miniconda3/envs/myenv\"" > LocalPreferences.toml
-          julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.build()'
+          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
+          julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate(); Pkg.resolve(); Pkg.build();'
 
       - name: Run Tests
         run: julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
