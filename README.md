@@ -39,7 +39,7 @@ cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your env
 using Pkg; Pkg.add(url = "https://github.com/ejmeitz/cuNumeric.jl", rev = "main")
 ```
 
-The `rev` option can be main or any tagged version. This will use Conda.jl to install the cupynumeric C++ API.
+The `rev` option can be main or any tagged version. This will use Conda.jl to install the cupynumeric C++ API. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`.
 
 ### 3. Test the Julia Package
 Run this command in the Julia environment where cuNumeric.jl is installed.
