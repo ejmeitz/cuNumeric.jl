@@ -14,53 +14,50 @@ This project is in alpha and we do not commit to anything necessarily working as
 - CUDA 12.2
 - Python 3.10
 - Ubuntu 20.04 or RHEL 8
-- Julia 1.11
+- Julia 1.10
 - CMake 3.26.4 
 
-### 1. Download [cuPyNumeric](https://github.com/nv-legate/cupynumeric/tree/branch-24.11)
-The command below will attempt to use the CUDA 12.2 installed on your system instead of re-installing the entire CUDA toolkit. Change this to match your version or remove it.
-```bash 
-conda create --name myenv 
-conda activate myenv
-CONDA_OVERRIDE_CUDA="12.2" \
-  conda install -c conda-forge -c legate cupynumeric
+### 1. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
+```
+curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.10
 ```
 
- Be sure that cupynumeric installed with gpu support. Check the build string, it should have "gpu" in it.
-```
-conda list | grep cupynumeric
-conda list | grep legate
-```
-
-### 2. Install Julia through [JuliaUp](https://github.com/JuliaLang/juliaup)
-```
-curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11
-```
-
-This will install version 1.11 by default since that is what we have tested against. To verify 1.11 is the default run either of the following (your may need to source bashrc):
+This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (your may need to source bashrc):
 ```bash
 juliaup status
 julia --version
 ```
 
-If 1.11 is not your default, please set it to be the default. Other versions of Julia are untested.
+If 1.10 is not your default, please set it to be the default. Other versions of Julia are untested.
 ```bash
-juliaup default 1.11
+juliaup default 1.10
 ```
 
-### 3. Build Julia Package
-This command must be run form the root of the repository with the cupynumeric conda environment active. The progress of this command is piped into `./pkg/deps/build.log`. It may take a few minutes to compile.
+### 2. Download cuNumeric.jl
+cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your environment run:
 ```julia
-julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.build()'
+using Pkg; Pkg.add(url = "https://github.com/ejmeitz/cuNumeric.jl", rev = "main")
 ```
 
-### 4. Test the Julia Package
-This command must be run form the root of the repository.
+The `rev` option can be main or any tagged version. This will use Conda.jl to install the cupynumeric C++ API. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`.
+
+### 3. Test the Julia Package
+Run this command in the Julia environment where cuNumeric.jl is installed.
 ```julia
-julia -e 'using Pkg; Pkg.activate("./pkg"); Pkg.resolve(); Pkg.test()'
+using Pkg; Pkg.test("cuNumeric")
 ```
 
 With everything working, its the perfect time to checkout some of our [examples](https://ejmeitz.github.io/cuNumeric.jl/dev/examples/)!
+
+
+## Custom Installs and Development
+See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) section of the documentation to build cuNumeric.jl with a local conda environment providing the cupynumeric binaries. 
+
+If you cloned the `cuNumeric.jl` git-repo isntead of using Pkg.add you will need to manually trigger the build process. The command is below. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile. This command assumes the `Project.toml` for `cuNumeric.jl` is in the current working directory.
+```julia
+julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
+```
+
 
 ## TO-DO List of Missing Important Features
 - Full slicing support
@@ -82,5 +79,5 @@ For technical questions, please either contact
 `krasow(at)u.northwestern.edu` OR
 `emeitz(at)andrew.cmu.edu`
 
-If the issue is building the package, please include the `build.log` and `env.log` found in `cuNumeric.jl/pkg/deps/` 
+If the issue is building the package, please include the `build.log` and `.err` files found in `cuNumeric.jl/pkg/deps/` 
 

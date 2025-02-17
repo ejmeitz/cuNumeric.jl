@@ -2,7 +2,7 @@ set -e
 
 # Check if exactly one argument is provided
 if [[ $# -ne 4 ]]; then
-    echo "Usage: $0 <directory> <build-dir> <cmake-prefix> <nthreads>"
+    echo "Usage: $0 <root-dir> <build-dir> <cmake-prefix> <nthreads>"
     exit 1
 fi
 
@@ -28,5 +28,5 @@ if [[ ! -d "$BUILD_DIR" ]]; then
 fi
 
 
-CMAKE_PREFIX_PATH=$PREFIX_PATH cmake -S $CUNUMERIC_ROOT_DIR -B $BUILD_DIR
+CMAKE_PREFIX_PATH=$PREFIX_PATH cmake -S $CUNUMERIC_ROOT_DIR/wrapper -B $BUILD_DIR
 cmake --build $BUILD_DIR  --parallel $NTHREADS --verbose
