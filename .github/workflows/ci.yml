@@ -50,6 +50,7 @@ jobs:
           git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
           export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
           popd
+          echo -e "[cuNumeric]\nmode = \"local_env\"\nconda_jl_env = \"cupynumeric\"\nuser_env = \"$HOME/miniconda3/envs/myenv\"" > LocalPreferences.toml
           julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.build()'
 
       - name: Run Tests
