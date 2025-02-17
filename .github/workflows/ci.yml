@@ -33,7 +33,7 @@ jobs:
       - name: Install Dependencies
         run: |
           echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
-          julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate(); Pkg.resolve(); Pkg.build();'
+          julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.build(); Pkg.instantiate();'
 
       - name: Run Tests
         run: julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
