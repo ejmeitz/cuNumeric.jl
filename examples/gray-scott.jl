@@ -61,8 +61,8 @@ function gray_scott()
     u_new = cuNumeric.zeros(dims)
     v_new = cuNumeric.zeros(dims)
 
-    u[1:15,1:15] = rand(FT, (15,15))
-    v[1:15,1:15] = rand(FT, (15,15))
+    u[1:15,1:15] = cuNumeric.random(FT, (15,15))
+    v[1:15,1:15] = cuNumeric.random(FT, (15,15))
 
     for n in 1:n_steps
         step(u, v, u_new, v_new, args)
@@ -73,7 +73,7 @@ function gray_scott()
 
         if n%frame_interval == 0
             u_cpu = u[:, :]
-            heatmap(u, clims=(0, 1))
+            heatmap(u_cpu, clims=(0, 1))
             frame(anim)
         end
     end
