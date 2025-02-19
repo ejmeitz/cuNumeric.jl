@@ -37,6 +37,8 @@ jobs:
           git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
           popd
           export LEGATE_CONFIG="--logging 2"
+          export LEGATE_AUTO_CONFIG=1
+          export LEGATE_SHOW_CONFIG=1
           echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
           julia -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
 
