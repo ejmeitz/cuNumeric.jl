@@ -343,6 +343,9 @@ Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 Random.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
 Random.rand(::Type{NDArray}, dims::Int...) = cuNumeric.rand(NDArray, dims)
 
+random(::Type{T}, dims::Dims) where T  = cuNumeric._random_ndarray(to_cpp_dims(dims))
+random(dims::Dims, e::Type{T}) where T  = cuNumeric.rand(e, dims)
+
 
 #### OPERATIONS ####
 
