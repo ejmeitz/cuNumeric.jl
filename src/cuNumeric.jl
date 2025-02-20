@@ -83,7 +83,7 @@ function cupynumeric_setup(AA::ArgcArgv)
     res = 0
     pipe = Pipe()
     started = Base.Event()
-    writer = @async redirect_stdout(pipe) do
+    writer = Threads.@spawn redirect_stdout(pipe) do
         notify(started)
         cuNumeric.start_legate()
         close(Base.pipe_writer(pipe))
@@ -127,7 +127,7 @@ function __init__()
     AA = ArgcArgv([Base.julia_cmd()[1]])
 
     @info "Starting Legate"
-    global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
+    global legate_config = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
     
 end
 end
