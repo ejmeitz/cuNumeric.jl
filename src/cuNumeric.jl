@@ -81,18 +81,20 @@ function cupynumeric_setup(AA::ArgcArgv)
     # Capture stdout from start_legate to 
     # see the hardware configuration
     res = 0
-    pipe = Pipe()
-    started = Base.Event()
-    writer = Threads.@spawn redirect_stdout(pipe) do
-        notify(started)
-        cuNumeric.start_legate()
-        close(Base.pipe_writer(pipe))
-    end
+    cuNumeric.start_legate()
+    #pipe = Pipe()
+    #started = Base.Event()
+    #writer = Threads.@spawn redirect_stdout(pipe) do
+        #notify(started)
+        #cuNumeric.start_legate()
+        #close(Base.pipe_writer(pipe))
+    #end
 
-    wait(started)
-    legate_config_str = Base.read(pipe, String)
-    wait(writer) 
-    print(legate_config_str)
+    #wait(started)
+    #legate_config_str = Base.read(pipe, String)
+    #wait(writer) 
+    #print(legate_config_str)
+    legate_config_str = ""
 
     if res == 0
         @info "Started Legate successfully"
