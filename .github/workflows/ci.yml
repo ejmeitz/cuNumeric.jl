@@ -39,6 +39,7 @@ jobs:
           export LEGATE_CONFIG="--logging 2"
           export LEGATE_AUTO_CONFIG=0
           export LEGATE_SHOW_CONFIG=1
+          export JULIA_NUM_THREADS=4
           echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
           julia -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
 
