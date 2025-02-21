@@ -80,7 +80,12 @@ function cupynumeric_setup(AA::ArgcArgv)
    
     # Capture stdout from start_legate to 
     # see the hardware configuration
-    res = 0
+
+    # TODO CATCH STDERR
+    println(ENV["LEGATE_AUTO_CONFIG"])
+    @info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
+    println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
+  
     cuNumeric.start_legate()
     #pipe = Pipe()
     #started = Base.Event()
@@ -96,12 +101,8 @@ function cupynumeric_setup(AA::ArgcArgv)
     #print(legate_config_str)
     legate_config_str = ""
 
-    if res == 0
-        @info "Started Legate successfully"
-    else
-        @error "Failed to start Legate, got exit code $(res), exiting"
-        Base.exit(res)
-    end
+    @info "Started Legate"
+
     Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
