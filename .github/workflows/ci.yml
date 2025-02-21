@@ -36,12 +36,8 @@ jobs:
           pushd libcxxwrap-julia
           git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
           popd
-          export LEGATE_CONFIG="--logging 2"
-          export LEGATE_AUTO_CONFIG=0
-          export LEGATE_SHOW_CONFIG=1
-          export JULIA_NUM_THREADS=4
           echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
-          julia -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
+          LEGATE_AUTO_CONFIG=0 LEGATE_SHOW_CONFIG=1 LEGATE_CONFIG="--logging 2" julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
 
       - name: Run Tests
         run: julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
