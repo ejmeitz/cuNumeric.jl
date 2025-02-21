@@ -82,9 +82,12 @@ function cupynumeric_setup(AA::ArgcArgv)
     # see the hardware configuration
 
     # TODO CATCH STDERR
-    println(ENV["LEGATE_AUTO_CONFIG"])
-    @info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
-    println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
+    run(`export LEGATE_AUTO_CONFIG=0`)
+    run(`export LEGATE_SHOW_CONFIG=1`)
+    run(`export LEGATE_CONFIG="--logging 2"`)
+    #println(ENV["LEGATE_AUTO_CONFIG"])
+    #@info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
+    #println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
   
     cuNumeric.start_legate()
     #pipe = Pipe()
