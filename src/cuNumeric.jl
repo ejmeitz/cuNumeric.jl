@@ -82,9 +82,9 @@ function cupynumeric_setup(AA::ArgcArgv)
     # see the hardware configuration
 
     # TODO CATCH STDERR
-    run(`export LEGATE_AUTO_CONFIG=0`)
-    run(`export LEGATE_SHOW_CONFIG=1`)
-    run(`export LEGATE_CONFIG="--logging 2"`)
+    run(`bash -c "export LEGATE_AUTO_CONFIG=0"`)
+    run(`bash -c "export LEGATE_SHOW_CONFIG=1"`)
+    run(`bash -c "export LEGATE_CONFIG=\"--logging 2\""`)
     #println(ENV["LEGATE_AUTO_CONFIG"])
     #@info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
     #println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
