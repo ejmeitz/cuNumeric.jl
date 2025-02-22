@@ -39,7 +39,19 @@ function run_sh(cmd::Cmd, filename::String)
         rm(err_log)
     end
 
-    run(pipeline(cmd, stdout = build_log, stderr = err_log, append = true))
+    try
+        run(pipeline(cmd, stdout = build_log, stderr = err_log, append = true))
+    catch e
+        for line in eachline(err_log)
+            println(err_log)
+            exit(1)
+        end
+    end
+
+    for line in eachline(build_log)
+        println(line)
+    end
+
 end
 
 function is_cupynumeric_installed(conda_env_dir::String; throw_errors::Bool = false)
