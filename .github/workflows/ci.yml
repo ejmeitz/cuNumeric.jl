@@ -31,6 +31,16 @@ jobs:
       - uses: julia-actions/cache@v2
           
       - name: Install Dependencies
+        run: |
+
+          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          pushd libcxxwrap-julia
+          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
+          popd
+          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
+          julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
+
+      - name: Run Tests
         env: 
           LEGATE_AUTO_CONFIG: 0
           LEGATE_SHOW_CONFIG: 1
@@ -38,16 +48,8 @@ jobs:
         run: |
           echo "LEGATE_AUTO_CONFIG = $LEGATE_AUTO_CONFIG"
           echo "LEGATE_SHOW_CONFIG = $LEGATE_SHOW_CONFIG"
-          echo "LEGATE_CONFIG = $LEGATE_CONFIG"
-          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
-          pushd libcxxwrap-julia
-          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
-          popd
-          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
-          LEGATE_AUTO_CONFIG=0 LEGATE_SHOW_CONFIG=1 LEGATE_CONFIG="--logging 2" julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
-
-      - name: Run Tests
-        run: julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
+          echo "LEGATE_CONFIG = $LEGATE_CONFIG"  
+          julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
