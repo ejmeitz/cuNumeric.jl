@@ -1,1 +1,1 @@
-/home/david/cuNumeric.jl/README.md
+../../README.md
