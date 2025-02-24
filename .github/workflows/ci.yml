@@ -11,6 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      max-parallel: 1 # avoid race condition
       matrix:
         version:
           - '1.10'
