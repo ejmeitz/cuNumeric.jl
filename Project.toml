@@ -12,7 +12,6 @@ Preferences = "21216c6a-2e73-6563-6e65-726566657250"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 libcxxwrap_julia_jll = "3eaa8342-bff7-56a5-9981-c04077f7cee7"
 
-
 [compat]
 CxxWrap = "0.16"
 julia = "1.10"
