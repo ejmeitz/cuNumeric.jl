@@ -11,6 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
+      max-parallel: 1 # avoid race condition
       matrix:
         version:
           - '1.10'
@@ -48,8 +49,7 @@ jobs:
           echo "LEGATE_AUTO_CONFIG = $LEGATE_AUTO_CONFIG"
           echo "LEGATE_SHOW_CONFIG = $LEGATE_SHOW_CONFIG"
           echo "LEGATE_CONFIG = $LEGATE_CONFIG"  
-          rm Manifest.toml
-          julia -e 'using Pkg; Pkg.activate("."); Pkg.develop(path="./lib/CNPreferences"); Pkg.resolve(); Pkg.instantiate(); Pkg.test();'
+          julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
