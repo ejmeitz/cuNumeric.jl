@@ -3,7 +3,6 @@ uuid = "0fd9ffd4-7e84-4cd0-b8f8-645bd8c73620"
 version = "0.0.1"
 
 [deps]
-CNPreferences = "b1a454a6-5b08-49bf-9077-82f139a6b048"
 Conda = "8f4d0f93-b110-5947-807f-2305c1781a2d"
 CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
