@@ -1,0 +1,577 @@
+[0 - 7fc6d68c2000]    0.051402 {3}{legion_spy}: Legion Spy Logging
+[0 - 7fc6d68c2000]    0.051628 {3}{legion_spy}: Processor Kind 3 Utility
+[0 - 7fc6d68c2000]    0.051636 {3}{legion_spy}: Processor 1d00000000000000 3
+[0 - 7fc6d68c2000]    0.051642 {3}{legion_spy}: Processor 1d00000000000001 3
+[0 - 7fc6d68c2000]    0.051648 {3}{legion_spy}: Processor Kind 2 CPU
+[0 - 7fc6d68c2000]    0.051653 {3}{legion_spy}: Processor 1d00000000000002 2
+[0 - 7fc6d68c2000]    0.051657 {3}{legion_spy}: Processor Kind 7 OpenMP
+[0 - 7fc6d68c2000]    0.051662 {3}{legion_spy}: Processor 1d00000000000003 7
+[0 - 7fc6d68c2000]    0.051666 {3}{legion_spy}: Processor Kind 1 GPU
+[0 - 7fc6d68c2000]    0.051671 {3}{legion_spy}: Processor 1d00000000000004 1
+[0 - 7fc6d68c2000]    0.051677 {3}{legion_spy}: Memory Kind 2 System
+[0 - 7fc6d68c2000]    0.051683 {3}{legion_spy}: Memory 1e00000000000000 323270737920 2
+[0 - 7fc6d68c2000]    0.051689 {3}{legion_spy}: Memory Kind 2 System
+[0 - 7fc6d68c2000]    0.051692 {3}{legion_spy}: Memory 1e00000000000001 0 2
+[0 - 7fc6d68c2000]    0.051696 {3}{legion_spy}: Memory Kind 6 Framebuffer
+[0 - 7fc6d68c2000]    0.051699 {3}{legion_spy}: Memory 1e00000000000002 24073207808 6
+[0 - 7fc6d68c2000]    0.051703 {3}{legion_spy}: Memory Kind 14 Dynamic Framebuffer
+[0 - 7fc6d68c2000]    0.051706 {3}{legion_spy}: Memory 1e00000000000003 25341198336 14
+[0 - 7fc6d68c2000]    0.051709 {3}{legion_spy}: Memory Kind 5 Zero-Copy
+[0 - 7fc6d68c2000]    0.051713 {3}{legion_spy}: Memory 1e00000000000004 134217728 5
+[0 - 7fc6d68c2000]    0.051716 {3}{legion_spy}: Memory Kind 9 File
+[0 - 7fc6d68c2000]    0.051720 {3}{legion_spy}: Memory 1e00000000000005 0 9
+[0 - 7fc6d68c2000]    0.051725 {3}{legion_spy}: Processor Memory 1d00000000000000 1e00000000000000 100 5
+[0 - 7fc6d68c2000]    0.051729 {3}{legion_spy}: Processor Memory 1d00000000000000 1e00000000000001 100 5
+[0 - 7fc6d68c2000]    0.051732 {3}{legion_spy}: Processor Memory 1d00000000000000 1e00000000000004 40 3
+[0 - 7fc6d68c2000]    0.051735 {3}{legion_spy}: Processor Memory 1d00000000000000 1e00000000000005 5 100
+[0 - 7fc6d68c2000]    0.051740 {3}{legion_spy}: Processor Memory 1d00000000000001 1e00000000000000 100 5
+[0 - 7fc6d68c2000]    0.051743 {3}{legion_spy}: Processor Memory 1d00000000000001 1e00000000000001 100 5
+[0 - 7fc6d68c2000]    0.051746 {3}{legion_spy}: Processor Memory 1d00000000000001 1e00000000000004 40 3
+[0 - 7fc6d68c2000]    0.051750 {3}{legion_spy}: Processor Memory 1d00000000000001 1e00000000000005 5 100
+[0 - 7fc6d68c2000]    0.051754 {3}{legion_spy}: Processor Memory 1d00000000000002 1e00000000000000 100 5
+[0 - 7fc6d68c2000]    0.051757 {3}{legion_spy}: Processor Memory 1d00000000000002 1e00000000000001 100 5
+[0 - 7fc6d68c2000]    0.051760 {3}{legion_spy}: Processor Memory 1d00000000000002 1e00000000000004 40 3
+[0 - 7fc6d68c2000]    0.051764 {3}{legion_spy}: Processor Memory 1d00000000000002 1e00000000000005 5 100
+[0 - 7fc6d68c2000]    0.051768 {3}{legion_spy}: Processor Memory 1d00000000000003 1e00000000000000 100 5
+[0 - 7fc6d68c2000]    0.051771 {3}{legion_spy}: Processor Memory 1d00000000000003 1e00000000000001 100 5
+[0 - 7fc6d68c2000]    0.051774 {3}{legion_spy}: Processor Memory 1d00000000000003 1e00000000000004 40 3
+[0 - 7fc6d68c2000]    0.051778 {3}{legion_spy}: Processor Memory 1d00000000000004 1e00000000000002 1223424 6
+[0 - 7fc6d68c2000]    0.051782 {3}{legion_spy}: Processor Memory 1d00000000000004 1e00000000000003 1223424 6
+[0 - 7fc6d68c2000]    0.051785 {3}{legion_spy}: Processor Memory 1d00000000000004 1e00000000000004 1223424 6
+[0 - 7fc6d68c2000]    0.080723 {3}{legion_spy}: Projection Function 0 0 0
+[0 - 7fc6d68c2000]    0.080999 {3}{legion_spy}: Task ID Name 1073741825 core::extract_scalar
+[0 - 7fc6d68c2000]    0.081050 {3}{legion_spy}: Task Variant 1073741825 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081063 {3}{legion_spy}: Task Variant 1073741825 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081071 {3}{legion_spy}: Task Variant 1073741825 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081091 {3}{legion_spy}: Task ID Name 1073741839 legate::detail::(anonymous namespace)::PrefetchBloatedInstances
+[0 - 7fc6d68c2000]    0.081117 {3}{legion_spy}: Task Variant 1073741839 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081126 {3}{legion_spy}: Task Variant 1073741839 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081135 {3}{legion_spy}: Task Variant 1073741839 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081153 {3}{legion_spy}: Task ID Name 1073741834 legate::detail::FixupRanges
+[0 - 7fc6d68c2000]    0.081164 {3}{legion_spy}: Task Variant 1073741834 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081173 {3}{legion_spy}: Task Variant 1073741834 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081180 {3}{legion_spy}: Task Variant 1073741834 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081190 {3}{legion_spy}: Task ID Name 1073741835 legate::detail::OffsetsToRanges
+[0 - 7fc6d68c2000]    0.081200 {3}{legion_spy}: Task Variant 1073741835 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081208 {3}{legion_spy}: Task Variant 1073741835 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081228 {3}{legion_spy}: Task Variant 1073741835 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081238 {3}{legion_spy}: Task ID Name 1073741836 legate::detail::RangesToOffsets
+[0 - 7fc6d68c2000]    0.081249 {3}{legion_spy}: Task Variant 1073741836 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081257 {3}{legion_spy}: Task Variant 1073741836 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081264 {3}{legion_spy}: Task Variant 1073741836 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081286 {3}{legion_spy}: Task ID Name 1073741837 legate::detail::FindBoundingBox
+[0 - 7fc6d68c2000]    0.081298 {3}{legion_spy}: Task Variant 1073741837 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081306 {3}{legion_spy}: Task Variant 1073741837 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081313 {3}{legion_spy}: Task Variant 1073741837 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081324 {3}{legion_spy}: Task ID Name 1073741838 legate::detail::FindBoundingBoxSorted
+[0 - 7fc6d68c2000]    0.081333 {3}{legion_spy}: Task Variant 1073741838 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081342 {3}{legion_spy}: Task Variant 1073741838 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081349 {3}{legion_spy}: Task Variant 1073741838 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081397 {3}{legion_spy}: Task ID Name 1073741826 legate::detail::comm::nccl::InitId
+[0 - 7fc6d68c2000]    0.081408 {3}{legion_spy}: Task Variant 1073741826 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081416 {3}{legion_spy}: Task ID Name 1073741827 legate::detail::comm::nccl::Init
+[0 - 7fc6d68c2000]    0.081425 {3}{legion_spy}: Task Variant 1073741827 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081432 {3}{legion_spy}: Task ID Name 1073741828 legate::detail::comm::nccl::Finalize
+[0 - 7fc6d68c2000]    0.081443 {3}{legion_spy}: Task Variant 1073741828 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081452 {3}{legion_spy}: Task ID Name 1073741829 legate::detail::comm::cal::Init
+[0 - 7fc6d68c2000]    0.081463 {3}{legion_spy}: Task Variant 1073741829 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081470 {3}{legion_spy}: Task ID Name 1073741830 legate::detail::comm::cal::Finalize
+[0 - 7fc6d68c2000]    0.081478 {3}{legion_spy}: Task Variant 1073741830 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081494 {3}{legion_spy}: Task ID Name 1073741831 legate::detail::comm::local::InitMapping
+[0 - 7fc6d68c2000]    0.081503 {3}{legion_spy}: Task Variant 1073741831 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081511 {3}{legion_spy}: Task Variant 1073741831 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081520 {3}{legion_spy}: Task Variant 1073741831 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081530 {3}{legion_spy}: Task ID Name 1073741832 legate::detail::comm::local::Init
+[0 - 7fc6d68c2000]    0.081540 {3}{legion_spy}: Task Variant 1073741832 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081547 {3}{legion_spy}: Task Variant 1073741832 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081554 {3}{legion_spy}: Task Variant 1073741832 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081563 {3}{legion_spy}: Task ID Name 1073741833 legate::detail::comm::local::Finalize
+[0 - 7fc6d68c2000]    0.081573 {3}{legion_spy}: Task Variant 1073741833 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081581 {3}{legion_spy}: Task Variant 1073741833 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081589 {3}{legion_spy}: Task Variant 1073741833 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081606 {3}{legion_spy}: Task ID Name 1073742352 legate::experimental::io::kvikio::detail::BasicRead
+[0 - 7fc6d68c2000]    0.081623 {3}{legion_spy}: Task Variant 1073742352 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081631 {3}{legion_spy}: Task Variant 1073742352 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081639 {3}{legion_spy}: Task Variant 1073742352 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081650 {3}{legion_spy}: Task ID Name 1073742353 legate::experimental::io::kvikio::detail::BasicWrite
+[0 - 7fc6d68c2000]    0.081658 {3}{legion_spy}: Task Variant 1073742353 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081665 {3}{legion_spy}: Task Variant 1073742353 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081674 {3}{legion_spy}: Task Variant 1073742353 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081684 {3}{legion_spy}: Task ID Name 1073742354 legate::experimental::io::kvikio::detail::TileRead
+[0 - 7fc6d68c2000]    0.081693 {3}{legion_spy}: Task Variant 1073742354 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081701 {3}{legion_spy}: Task Variant 1073742354 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081708 {3}{legion_spy}: Task Variant 1073742354 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081717 {3}{legion_spy}: Task ID Name 1073742355 legate::experimental::io::kvikio::detail::TileWrite
+[0 - 7fc6d68c2000]    0.081726 {3}{legion_spy}: Task Variant 1073742355 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081734 {3}{legion_spy}: Task Variant 1073742355 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081742 {3}{legion_spy}: Task Variant 1073742355 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081752 {3}{legion_spy}: Task ID Name 1073742356 legate::experimental::io::kvikio::detail::TileByOffsetsRead
+[0 - 7fc6d68c2000]    0.081762 {3}{legion_spy}: Task Variant 1073742356 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081770 {3}{legion_spy}: Task Variant 1073742356 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081776 {3}{legion_spy}: Task Variant 1073742356 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081785 {3}{legion_spy}: Task ID Name 1073742357 legate::io::hdf5::detail::HDF5Read
+[0 - 7fc6d68c2000]    0.081795 {3}{legion_spy}: Task Variant 1073742357 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081802 {3}{legion_spy}: Task Variant 1073742357 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081811 {3}{legion_spy}: Task Variant 1073742357 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081820 {3}{legion_spy}: Task ID Name 1073741846 legate::detail::(anonymous namespace)::OffloadTo
+[0 - 7fc6d68c2000]    0.081833 {3}{legion_spy}: Task Variant 1073741846 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.081840 {3}{legion_spy}: Task Variant 1073741846 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.081847 {3}{legion_spy}: Task Variant 1073741846 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.081885 {3}{legion_spy}: Task ID Name 0 Legate Core Toplevel Task
+[0 - 7fc6d68c2000]    0.081980 {3}{legion_spy}: Future Creation 1 648518346341351427 1 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.081988 {3}{legion_spy}: Top Task 0 2 1 Legate Core Toplevel Task
+[0 - 7fc6d68c2000]    0.081992 {3}{legion_spy}: Individual Task 2 0 1 Legate Core Toplevel Task
+[0 - 7fc6d68c2000]    0.082034 {3}{legion_spy}: Task Processor 1 1d00000000000002
+[0 - 7fc6d68c2000]    0.082207 {3}{legion_spy}: Task ID Name 1073743413 cupynumeric::WhereTask
+[0 - 7fc6d68c2000]    0.082225 {3}{legion_spy}: Task Variant 1073743413 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082234 {3}{legion_spy}: Task Variant 1073743413 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082242 {3}{legion_spy}: Task Variant 1073743413 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082259 {3}{legion_spy}: Task ID Name 1073743373 cupynumeric::ScanGlobalTask
+[0 - 7fc6d68c2000]    0.082268 {3}{legion_spy}: Task Variant 1073743373 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082277 {3}{legion_spy}: Task Variant 1073743373 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082285 {3}{legion_spy}: Task Variant 1073743373 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082300 {3}{legion_spy}: Task ID Name 1073743374 cupynumeric::ScanLocalTask
+[0 - 7fc6d68c2000]    0.082310 {3}{legion_spy}: Task Variant 1073743374 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082318 {3}{legion_spy}: Task Variant 1073743374 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082329 {3}{legion_spy}: Task Variant 1073743374 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082356 {3}{legion_spy}: Task ID Name 1073743365 cupynumeric::BinaryOpTask
+[0 - 7fc6d68c2000]    0.082365 {3}{legion_spy}: Task Variant 1073743365 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082375 {3}{legion_spy}: Task Variant 1073743365 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082383 {3}{legion_spy}: Task Variant 1073743365 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082397 {3}{legion_spy}: Task ID Name 1073743366 cupynumeric::BinaryRedTask
+[0 - 7fc6d68c2000]    0.082407 {3}{legion_spy}: Task Variant 1073743366 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082416 {3}{legion_spy}: Task Variant 1073743366 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082423 {3}{legion_spy}: Task Variant 1073743366 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082442 {3}{legion_spy}: Task ID Name 1073743389 cupynumeric::PackbitsTask
+[0 - 7fc6d68c2000]    0.082450 {3}{legion_spy}: Task Variant 1073743389 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082460 {3}{legion_spy}: Task Variant 1073743389 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082468 {3}{legion_spy}: Task Variant 1073743389 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082481 {3}{legion_spy}: Task ID Name 1073743412 cupynumeric::UnpackbitsTask
+[0 - 7fc6d68c2000]    0.082492 {3}{legion_spy}: Task Variant 1073743412 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082500 {3}{legion_spy}: Task Variant 1073743412 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082507 {3}{legion_spy}: Task Variant 1073743412 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082532 {3}{legion_spy}: Task ID Name 1073743396 cupynumeric::ScalarUnaryRedTask
+[0 - 7fc6d68c2000]    0.082541 {3}{legion_spy}: Task Variant 1073743396 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082551 {3}{legion_spy}: Task Variant 1073743396 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082558 {3}{legion_spy}: Task Variant 1073743396 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082574 {3}{legion_spy}: Task ID Name 1073743407 cupynumeric::UnaryOpTask
+[0 - 7fc6d68c2000]    0.082585 {3}{legion_spy}: Task Variant 1073743407 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082593 {3}{legion_spy}: Task Variant 1073743407 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082600 {3}{legion_spy}: Task Variant 1073743407 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082621 {3}{legion_spy}: Task ID Name 1073743408 cupynumeric::UnaryRedTask
+[0 - 7fc6d68c2000]    0.082629 {3}{legion_spy}: Task Variant 1073743408 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082639 {3}{legion_spy}: Task Variant 1073743408 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082646 {3}{legion_spy}: Task Variant 1073743408 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082663 {3}{legion_spy}: Task ID Name 1073743371 cupynumeric::ConvertTask
+[0 - 7fc6d68c2000]    0.082674 {3}{legion_spy}: Task Variant 1073743371 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082681 {3}{legion_spy}: Task Variant 1073743371 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082688 {3}{legion_spy}: Task Variant 1073743371 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082704 {3}{legion_spy}: Task ID Name 1073743362 cupynumeric::ArangeTask
+[0 - 7fc6d68c2000]    0.082712 {3}{legion_spy}: Task Variant 1073743362 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082720 {3}{legion_spy}: Task Variant 1073743362 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082729 {3}{legion_spy}: Task Variant 1073743362 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082742 {3}{legion_spy}: Task ID Name 1073743377 cupynumeric::EyeTask
+[0 - 7fc6d68c2000]    0.082753 {3}{legion_spy}: Task Variant 1073743377 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082761 {3}{legion_spy}: Task Variant 1073743377 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082767 {3}{legion_spy}: Task Variant 1073743377 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082781 {3}{legion_spy}: Task ID Name 1073743379 cupynumeric::FillTask
+[0 - 7fc6d68c2000]    0.082796 {3}{legion_spy}: Task Variant 1073743379 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082804 {3}{legion_spy}: Task Variant 1073743379 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082813 {3}{legion_spy}: Task Variant 1073743379 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082827 {3}{legion_spy}: Task ID Name 1073743414 cupynumeric::WindowTask
+[0 - 7fc6d68c2000]    0.082837 {3}{legion_spy}: Task Variant 1073743414 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082845 {3}{legion_spy}: Task Variant 1073743414 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082857 {3}{legion_spy}: Task Variant 1073743414 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082870 {3}{legion_spy}: Task ID Name 1073743361 cupynumeric::AdvancedIndexingTask
+[0 - 7fc6d68c2000]    0.082881 {3}{legion_spy}: Task Variant 1073743361 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082890 {3}{legion_spy}: Task Variant 1073743361 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082896 {3}{legion_spy}: Task Variant 1073743361 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082912 {3}{legion_spy}: Task ID Name 1073743369 cupynumeric::ChooseTask
+[0 - 7fc6d68c2000]    0.082921 {3}{legion_spy}: Task Variant 1073743369 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082930 {3}{legion_spy}: Task Variant 1073743369 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082937 {3}{legion_spy}: Task Variant 1073743369 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082951 {3}{legion_spy}: Task ID Name 1073743391 cupynumeric::PutmaskTask
+[0 - 7fc6d68c2000]    0.082961 {3}{legion_spy}: Task Variant 1073743391 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.082969 {3}{legion_spy}: Task Variant 1073743391 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.082976 {3}{legion_spy}: Task Variant 1073743391 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.082995 {3}{legion_spy}: Task ID Name 1073743395 cupynumeric::RepeatTask
+[0 - 7fc6d68c2000]    0.083004 {3}{legion_spy}: Task Variant 1073743395 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083013 {3}{legion_spy}: Task Variant 1073743395 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083020 {3}{legion_spy}: Task Variant 1073743395 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083033 {3}{legion_spy}: Task ID Name 1073743398 cupynumeric::SelectTask
+[0 - 7fc6d68c2000]    0.083044 {3}{legion_spy}: Task Variant 1073743398 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083052 {3}{legion_spy}: Task Variant 1073743398 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083059 {3}{legion_spy}: Task Variant 1073743398 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083074 {3}{legion_spy}: Task ID Name 1073743415 cupynumeric::WrapTask
+[0 - 7fc6d68c2000]    0.083082 {3}{legion_spy}: Task Variant 1073743415 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083090 {3}{legion_spy}: Task Variant 1073743415 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083099 {3}{legion_spy}: Task Variant 1073743415 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083113 {3}{legion_spy}: Task ID Name 1073743417 cupynumeric::ZipTask
+[0 - 7fc6d68c2000]    0.083123 {3}{legion_spy}: Task Variant 1073743417 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083131 {3}{legion_spy}: Task Variant 1073743417 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083137 {3}{legion_spy}: Task Variant 1073743417 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083151 {3}{legion_spy}: Task ID Name 1073743394 cupynumeric::ReadTask
+[0 - 7fc6d68c2000]    0.083162 {3}{legion_spy}: Task Variant 1073743394 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083170 {3}{legion_spy}: Task Variant 1073743394 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083179 {3}{legion_spy}: Task Variant 1073743394 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083192 {3}{legion_spy}: Task ID Name 1073743416 cupynumeric::WriteTask
+[0 - 7fc6d68c2000]    0.083203 {3}{legion_spy}: Task Variant 1073743416 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083210 {3}{legion_spy}: Task Variant 1073743416 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083218 {3}{legion_spy}: Task Variant 1073743416 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083233 {3}{legion_spy}: Task ID Name 1073743364 cupynumeric::BatchedCholeskyTask
+[0 - 7fc6d68c2000]    0.083241 {3}{legion_spy}: Task Variant 1073743364 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083249 {3}{legion_spy}: Task Variant 1073743364 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083258 {3}{legion_spy}: Task Variant 1073743364 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083270 {3}{legion_spy}: Task ID Name 1073743370 cupynumeric::ContractTask
+[0 - 7fc6d68c2000]    0.083281 {3}{legion_spy}: Task Variant 1073743370 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083289 {3}{legion_spy}: Task Variant 1073743370 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083296 {3}{legion_spy}: Task Variant 1073743370 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083310 {3}{legion_spy}: Task ID Name 1073743375 cupynumeric::DiagTask
+[0 - 7fc6d68c2000]    0.083329 {3}{legion_spy}: Task Variant 1073743375 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083343 {3}{legion_spy}: Task Variant 1073743375 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083353 {3}{legion_spy}: Task Variant 1073743375 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083366 {3}{legion_spy}: Task ID Name 1073743381 cupynumeric::GemmTask
+[0 - 7fc6d68c2000]    0.083376 {3}{legion_spy}: Task Variant 1073743381 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083384 {3}{legion_spy}: Task Variant 1073743381 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083391 {3}{legion_spy}: Task Variant 1073743381 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083403 {3}{legion_spy}: Task ID Name 1073743384 cupynumeric::MatMulTask
+[0 - 7fc6d68c2000]    0.083414 {3}{legion_spy}: Task Variant 1073743384 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083422 {3}{legion_spy}: Task Variant 1073743384 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083429 {3}{legion_spy}: Task Variant 1073743384 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083444 {3}{legion_spy}: Task ID Name 1073743385 cupynumeric::MatVecMulTask
+[0 - 7fc6d68c2000]    0.083453 {3}{legion_spy}: Task Variant 1073743385 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083463 {3}{legion_spy}: Task Variant 1073743385 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083470 {3}{legion_spy}: Task Variant 1073743385 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083488 {3}{legion_spy}: Task ID Name 1073743376 cupynumeric::DotTask
+[0 - 7fc6d68c2000]    0.083499 {3}{legion_spy}: Task Variant 1073743376 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083507 {3}{legion_spy}: Task Variant 1073743376 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083514 {3}{legion_spy}: Task Variant 1073743376 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083529 {3}{legion_spy}: Task ID Name 1073743390 cupynumeric::PotrfTask
+[0 - 7fc6d68c2000]    0.083538 {3}{legion_spy}: Task Variant 1073743390 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083549 {3}{legion_spy}: Task Variant 1073743390 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083556 {3}{legion_spy}: Task Variant 1073743390 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083568 {3}{legion_spy}: Task ID Name 1073743392 cupynumeric::QrTask
+[0 - 7fc6d68c2000]    0.083578 {3}{legion_spy}: Task Variant 1073743392 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083586 {3}{legion_spy}: Task Variant 1073743392 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083593 {3}{legion_spy}: Task Variant 1073743392 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083609 {3}{legion_spy}: Task ID Name 1073743399 cupynumeric::SolveTask
+[0 - 7fc6d68c2000]    0.083620 {3}{legion_spy}: Task Variant 1073743399 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083628 {3}{legion_spy}: Task Variant 1073743399 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083635 {3}{legion_spy}: Task Variant 1073743399 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083647 {3}{legion_spy}: Task ID Name 1073743401 cupynumeric::SvdTask
+[0 - 7fc6d68c2000]    0.083657 {3}{legion_spy}: Task Variant 1073743401 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083665 {3}{legion_spy}: Task Variant 1073743401 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083672 {3}{legion_spy}: Task Variant 1073743401 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083685 {3}{legion_spy}: Task ID Name 1073743402 cupynumeric::SyrkTask
+[0 - 7fc6d68c2000]    0.083694 {3}{legion_spy}: Task Variant 1073743402 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083708 {3}{legion_spy}: Task Variant 1073743402 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083715 {3}{legion_spy}: Task Variant 1073743402 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083730 {3}{legion_spy}: Task ID Name 1073743403 cupynumeric::TileTask
+[0 - 7fc6d68c2000]    0.083741 {3}{legion_spy}: Task Variant 1073743403 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083749 {3}{legion_spy}: Task Variant 1073743403 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083756 {3}{legion_spy}: Task Variant 1073743403 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083772 {3}{legion_spy}: Task ID Name 1073743404 cupynumeric::TransposeTask
+[0 - 7fc6d68c2000]    0.083781 {3}{legion_spy}: Task Variant 1073743404 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083791 {3}{legion_spy}: Task Variant 1073743404 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083798 {3}{legion_spy}: Task Variant 1073743404 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083810 {3}{legion_spy}: Task ID Name 1073743405 cupynumeric::TriluTask
+[0 - 7fc6d68c2000]    0.083825 {3}{legion_spy}: Task Variant 1073743405 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083833 {3}{legion_spy}: Task Variant 1073743405 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083840 {3}{legion_spy}: Task Variant 1073743405 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083856 {3}{legion_spy}: Task ID Name 1073743406 cupynumeric::TrsmTask
+[0 - 7fc6d68c2000]    0.083865 {3}{legion_spy}: Task Variant 1073743406 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083872 {3}{legion_spy}: Task Variant 1073743406 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083881 {3}{legion_spy}: Task Variant 1073743406 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083894 {3}{legion_spy}: Task ID Name 1073743368 cupynumeric::BitGeneratorTask
+[0 - 7fc6d68c2000]    0.083905 {3}{legion_spy}: Task Variant 1073743368 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083913 {3}{legion_spy}: Task Variant 1073743368 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083920 {3}{legion_spy}: Task Variant 1073743368 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083937 {3}{legion_spy}: Task ID Name 1073743393 cupynumeric::RandTask
+[0 - 7fc6d68c2000]    0.083949 {3}{legion_spy}: Task Variant 1073743393 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.083957 {3}{legion_spy}: Task Variant 1073743393 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.083966 {3}{legion_spy}: Task Variant 1073743393 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.083984 {3}{legion_spy}: Task ID Name 1073743363 cupynumeric::ArgWhereTask
+[0 - 7fc6d68c2000]    0.083995 {3}{legion_spy}: Task Variant 1073743363 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084003 {3}{legion_spy}: Task Variant 1073743363 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084010 {3}{legion_spy}: Task Variant 1073743363 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084027 {3}{legion_spy}: Task ID Name 1073743388 cupynumeric::NonzeroTask
+[0 - 7fc6d68c2000]    0.084038 {3}{legion_spy}: Task Variant 1073743388 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084046 {3}{legion_spy}: Task Variant 1073743388 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084055 {3}{legion_spy}: Task Variant 1073743388 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084067 {3}{legion_spy}: Task ID Name 1073743409 cupynumeric::UniqueTask
+[0 - 7fc6d68c2000]    0.084075 {3}{legion_spy}: Task Variant 1073743409 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084085 {3}{legion_spy}: Task Variant 1073743409 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084092 {3}{legion_spy}: Task Variant 1073743409 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084104 {3}{legion_spy}: Task ID Name 1073743410 cupynumeric::UniqueReduceTask
+[0 - 7fc6d68c2000]    0.084114 {3}{legion_spy}: Task Variant 1073743410 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084121 {3}{legion_spy}: Task Variant 1073743410 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084134 {3}{legion_spy}: Task ID Name 1073743367 cupynumeric::BincountTask
+[0 - 7fc6d68c2000]    0.084149 {3}{legion_spy}: Task Variant 1073743367 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084157 {3}{legion_spy}: Task Variant 1073743367 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084166 {3}{legion_spy}: Task Variant 1073743367 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084178 {3}{legion_spy}: Task ID Name 1073743372 cupynumeric::ConvolveTask
+[0 - 7fc6d68c2000]    0.084188 {3}{legion_spy}: Task Variant 1073743372 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084196 {3}{legion_spy}: Task Variant 1073743372 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084203 {3}{legion_spy}: Task Variant 1073743372 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084215 {3}{legion_spy}: Task ID Name 1073743380 cupynumeric::FlipTask
+[0 - 7fc6d68c2000]    0.084225 {3}{legion_spy}: Task Variant 1073743380 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084233 {3}{legion_spy}: Task Variant 1073743380 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084242 {3}{legion_spy}: Task Variant 1073743380 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084256 {3}{legion_spy}: Task ID Name 1073743382 cupynumeric::HistogramTask
+[0 - 7fc6d68c2000]    0.084266 {3}{legion_spy}: Task Variant 1073743382 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084274 {3}{legion_spy}: Task Variant 1073743382 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084281 {3}{legion_spy}: Task Variant 1073743382 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084298 {3}{legion_spy}: Task ID Name 1073743378 cupynumeric::FFTTask
+[0 - 7fc6d68c2000]    0.084314 {3}{legion_spy}: Task Variant 1073743378 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084326 {3}{legion_spy}: Task ID Name 1073743383 cupynumeric::LoadCUDALibsTask
+[0 - 7fc6d68c2000]    0.084335 {3}{legion_spy}: Task Variant 1073743383 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084345 {3}{legion_spy}: Task ID Name 1073743411 cupynumeric::UnloadCUDALibsTask
+[0 - 7fc6d68c2000]    0.084357 {3}{legion_spy}: Task Variant 1073743411 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084376 {3}{legion_spy}: Task ID Name 1073743400 cupynumeric::SortTask
+[0 - 7fc6d68c2000]    0.084387 {3}{legion_spy}: Task Variant 1073743400 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084395 {3}{legion_spy}: Task Variant 1073743400 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084402 {3}{legion_spy}: Task Variant 1073743400 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084421 {3}{legion_spy}: Task ID Name 1073743397 cupynumeric::SearchSortedTask
+[0 - 7fc6d68c2000]    0.084430 {3}{legion_spy}: Task Variant 1073743397 1 0 1 0 CPU
+[0 - 7fc6d68c2000]    0.084440 {3}{legion_spy}: Task Variant 1073743397 2 0 1 0 GPU
+[0 - 7fc6d68c2000]    0.084446 {3}{legion_spy}: Task Variant 1073743397 3 0 1 0 OMP
+[0 - 7fc6d68c2000]    0.084548 {3}{legion_spy}: Index Space 1 0 
+[0 - 7fc6d68c2000]    0.084580 {3}{legion_spy}: Index Space Expression 1 1
+[0 - 7fc6d68c2000]    0.084628 {3}{legion_spy}: Index Space Rect 1 2 0 999 0 999 0 0 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.084647 {3}{legion_spy}: Field Space 1 0 
+[0 - 7fc6d68c2000]    0.084659 {3}{legion_spy}: Region 1 1 1 0 
+[0 - 7fc6d68c2000]    0.084684 {3}{legion_spy}: Logical Requirement 1 0 1 1 1 1 7 0 0 1
+[0 - 7fc6d68c2000]    0.084696 {3}{legion_spy}: Field Creation 1 10000 8 
+[0 - 7fc6d68c2000]    0.084857 {3}{legion_spy}: Fill Operation 1 3
+[0 - 7fc6d68c2000]    0.084866 {3}{legion_spy}: Future Usage 3 648518346341351432
+[0 - 7fc6d68c2000]    0.084876 {3}{legion_spy}: Operation Index 1 0 3
+[0 - 7fc6d68c2000]    0.084917 {3}{legion_spy}: Field Creation 1 10001 8 
+[0 - 7fc6d68c2000]    0.084945 {3}{legion_spy}: Fill Operation 1 4
+[0 - 7fc6d68c2000]    0.084950 {3}{legion_spy}: Future Usage 4 648518346341351433
+[0 - 7fc6d68c2000]    0.084955 {3}{legion_spy}: Operation Index 1 1 4
+[0 - 7fc2d4074000]    0.084960 {3}{legion_spy}: Logical Requirement 3 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2d4074000]    0.085011 {3}{legion_spy}: Logical Requirement Field 3 0 10000
+[0 - 7fc6d68c2000]    0.084974 {3}{legion_spy}: Index Space 2 0 
+[0 - 7fc6d68c2000]    0.085035 {3}{legion_spy}: Index Space Expression 2 2
+[0 - 7fc6d68c2000]    0.085043 {3}{legion_spy}: Index Space Rect 2 2 0 149 0 149 0 0 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085049 {3}{legion_spy}: Field Space 2 0 
+[0 - 7fc6d68c2000]    0.085056 {3}{legion_spy}: Region 2 2 2 0 
+[0 - 7fc6d68c2000]    0.085067 {3}{legion_spy}: Logical Requirement 1 1 1 2 2 2 7 0 0 2
+[0 - 7fc6d68c2000]    0.085074 {3}{legion_spy}: Field Creation 2 10000 8 
+[0 - 7fc2c9eb4000]    0.085210 {3}{legion_spy}: Logical Requirement 4 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2c9eb4000]    0.085232 {3}{legion_spy}: Logical Requirement Field 4 0 10001
+[0 - 7fc6d68c2000]    0.085219 {3}{legion_spy}: Future Creation 5 648518346341351437 1 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085257 {3}{legion_spy}: Individual Task 1 1073743393 5 cupynumeric::RandTask
+[0 - 7fc6d68c2000]    0.085270 {3}{legion_spy}: Operation Index 1 2 5
+[0 - 7fc6d68c2000]    0.085306 {3}{legion_spy}: Field Creation 2 10001 8 
+[0 - 7fc6d68c2000]    0.085344 {3}{legion_spy}: Future Creation 6 648518346341351438 1 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085350 {3}{legion_spy}: Individual Task 1 1073743393 6 cupynumeric::RandTask
+[0 - 7fc6d68c2000]    0.085355 {3}{legion_spy}: Operation Index 1 3 6
+[0 - 7fc2c9eb4000]    0.085382 {3}{legion_spy}: Logical Requirement 5 0 1 2 2 2 268435458 0 0 2
+[0 - 7fc6d68c2000]    0.085385 {3}{legion_spy}: Index Space 3 0 
+[0 - 7fc6d68c2000]    0.085416 {3}{legion_spy}: Index Space Expression 3 3
+[0 - 7fc2c9eb4000]    0.085401 {3}{legion_spy}: Logical Requirement Field 5 0 10000
+[0 - 7fc6d68c2000]    0.085424 {3}{legion_spy}: Index Space Point 3 2 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085463 {3}{legion_spy}: Pending Partition Operation 1 7
+[0 - 7fc6d68c2000]    0.085467 {3}{legion_spy}: Pending Partition Target 7 1 6
+[0 - 7fc6d68c2000]    0.085502 {3}{legion_spy}: Index Partition 1 1 2 0 0 0 
+[0 - 7fc6d68c2000]    0.085511 {3}{legion_spy}: Operation Index 1 4 7
+[0 - 7fc6d68c2000]    0.085539 {3}{legion_spy}: Index Space Expression 4 4
+[0 - 7fc6d68c2000]    0.085547 {3}{legion_spy}: Index Subspace 1 4 0 2 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085566 {3}{legion_spy}: Pending Partition Operation 1 8
+[0 - 7fc6d68c2000]    0.085570 {3}{legion_spy}: Pending Partition Target 8 2 6
+[0 - 7fc6d68c2000]    0.085577 {3}{legion_spy}: Index Partition 1 2 2 0 1 0 
+[0 - 7fc6d68c2000]    0.085581 {3}{legion_spy}: Operation Index 1 5 8
+[0 - 7fc6d68c2000]    0.085591 {3}{legion_spy}: Index Space Expression 5 5
+[0 - 7fc6d68c2000]    0.085597 {3}{legion_spy}: Index Subspace 2 5 0 2 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085677 {3}{legion_spy}: Future Creation 9 648518346341351447 1 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.085685 {3}{legion_spy}: Individual Task 1 1073743407 9 cupynumeric::UnaryOpTask
+[0 - 7fc6d68c2000]    0.085692 {3}{legion_spy}: Operation Index 1 6 9
+[0 - 7fc2d4074000]    0.132777 {3}{legion_spy}: Logical Requirement 6 0 1 2 2 2 268435458 0 0 2
+[0 - 7fc2d4074000]    0.137491 {3}{legion_spy}: Logical Requirement Field 6 0 10001
+[0 - 7fc2d4074000]    0.138020 {3}{legion_spy}: Index Space Rect 4 2 0 149 0 999 0 0 0 0 0 0 0 0
+[0 - 7fc2d4074000]    0.138567 {3}{legion_spy}: Physical Instance 8000001000100003 4000000000800000 1e00000000000002 0 2 2 2
+[0 - 7fc2d4074000]    0.138595 {3}{legion_spy}: Physical Instance Field 8000001000100003 10000
+[0 - 7fc2d4074000]    0.138607 {3}{legion_spy}: Physical Instance Creator 8000001000100003 5 1c00000000000003
+[0 - 7fc2d4074000]    0.138615 {3}{legion_spy}: Physical Instance Creation Region 8000001000100003 2 2 2
+[0 - 7fc2d4074000]    0.138624 {3}{legion_spy}: Instance Specialized Constraint 8000001000100003 1 0
+[0 - 7fc2d4074000]    0.138630 {3}{legion_spy}: Instance Memory Constraint 8000001000100003 6
+[0 - 7fc2d4074000]    0.138639 {3}{legion_spy}: Instance Field Constraint 8000001000100003 1 1 1
+[0 - 7fc2d4074000]    0.138647 {3}{legion_spy}: Instance Field Constraint Field 8000001000100003 10000
+[0 - 7fc2d4074000]    0.138654 {3}{legion_spy}: Instance Ordering Constraint 8000001000100003 1 3
+[0 - 7fc2d4074000]    0.138663 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000100003 1
+[0 - 7fc2d4074000]    0.138672 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000100003 0
+[0 - 7fc2d4074000]    0.138680 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000100003 9
+[0 - 7fc2d4074000]    0.138815 {3}{legion_spy}: Mapping Decision 5 0 10000 8000001000100003
+[0 - 7fc2d4074000]    0.139015 {3}{legion_spy}: Variant Decision 5 2
+[0 - 7fc2d4074000]    0.139032 {3}{legion_spy}: Task Priority 5 0
+[0 - 7f719fd51000]    0.139146 {3}{legion_spy}: Task Processor 5 1d00000000000004
+[0 - 7fc2d4074000]    0.139299 {3}{legion_spy}: Physical Instance 8000001000400003 4000000000800001 1e00000000000002 0 2 2 2
+[0 - 7fc2d4074000]    0.139335 {3}{legion_spy}: Physical Instance Field 8000001000400003 10001
+[0 - 7fc2d4074000]    0.139348 {3}{legion_spy}: Physical Instance Creator 8000001000400003 6 1c00000000000003
+[0 - 7fc2d4074000]    0.139357 {3}{legion_spy}: Physical Instance Creation Region 8000001000400003 2 2 2
+[0 - 7fc2d4074000]    0.139365 {3}{legion_spy}: Instance Specialized Constraint 8000001000400003 1 0
+[0 - 7fc2d4074000]    0.139372 {3}{legion_spy}: Instance Memory Constraint 8000001000400003 6
+[0 - 7fc2d4074000]    0.139380 {3}{legion_spy}: Instance Field Constraint 8000001000400003 1 1 1
+[0 - 7fc2d4074000]    0.139387 {3}{legion_spy}: Instance Field Constraint Field 8000001000400003 10001
+[0 - 7fc2d4074000]    0.139395 {3}{legion_spy}: Instance Ordering Constraint 8000001000400003 1 3
+[0 - 7fc2d4074000]    0.139404 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000400003 1
+[0 - 7fc2d4074000]    0.139432 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000400003 0
+[0 - 7fc2d4074000]    0.139441 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000400003 9
+[0 - 7fc2d4074000]    0.139505 {3}{legion_spy}: Mapping Decision 6 0 10001 8000001000400003
+[0 - 7fc2d4074000]    0.139650 {3}{legion_spy}: Variant Decision 6 2
+[0 - 7fc2d4074000]    0.139667 {3}{legion_spy}: Task Priority 6 0
+[0 - 7fc2d4074000]    0.139696 {3}{legion_spy}: Index Space Rect 5 2 0 149 0 149 0 0 0 0 0 0 0 0
+[0 - 7fc2c9eb4000]    0.188192 {3}{legion_spy}: Logical Requirement 9 0 1 5 1 1 268435458 0 0 1
+[0 - 7fc2c9eb4000]    0.188254 {3}{legion_spy}: Logical Requirement Field 9 0 10000
+[0 - 7fc2c9eb4000]    0.188260 {3}{legion_spy}: Logical Requirement 9 1 1 2 2 2 1 0 0 2
+[0 - 7fc2c9eb4000]    0.188265 {3}{legion_spy}: Logical Requirement Field 9 1 10000
+[0 - 7fc6d68c2000]    0.188332 {3}{legion_spy}: Future Creation 10 648518346341351460 1 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.188377 {3}{legion_spy}: Individual Task 1 1073743407 10 cupynumeric::UnaryOpTask
+[0 - 7fc6d68c2000]    0.188390 {3}{legion_spy}: Operation Index 1 7 10
+[0 - 7fc2d4074000]    0.188403 {3}{legion_spy}: Refinement Operation 1 11
+[0 - 7fc2d4074000]    0.188421 {3}{legion_spy}: Logical Requirement 11 0 1 5 1 1 7 0 0 1
+[0 - 7fc2c9eb4000]    0.188427 {3}{legion_spy}: Logical Requirement 10 0 1 5 1 1 268435458 0 0 1
+[0 - 7fc2c9eb4000]    0.188438 {3}{legion_spy}: Logical Requirement Field 10 0 10001
+[0 - 7fc6d68c2000]    0.188440 {3}{legion_spy}: Field Creation 1 10002 8 
+[0 - 7fc2c9eb4000]    0.188449 {3}{legion_spy}: Logical Requirement 10 1 1 2 2 2 1 0 0 2
+[0 - 7fc2d4074000]    0.188430 {3}{legion_spy}: Internal Operation Creator 11 9 0
+[0 - 7fc2c9eb4000]    0.188471 {3}{legion_spy}: Logical Requirement Field 10 1 10001
+[0 - 7fc6d68c2000]    0.188507 {3}{legion_spy}: Fill Operation 1 12
+[0 - 7fc6d68c2000]    0.188521 {3}{legion_spy}: Future Usage 12 648518346341351461
+[0 - 7fc2d4074000]    0.188510 {3}{legion_spy}: Logical Requirement Field 11 0 10000
+[0 - 7fc6d68c2000]    0.188529 {3}{legion_spy}: Operation Index 1 8 12
+[0 - 7fc6d68c2000]    0.188561 {3}{legion_spy}: Field Creation 1 10003 8 
+[0 - 7fc2d4074000]    0.188565 {3}{legion_spy}: Logical Requirement 12 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2d4074000]    0.188576 {3}{legion_spy}: Logical Requirement Field 12 0 10002
+[0 - 7fc6d68c2000]    0.188584 {3}{legion_spy}: Fill Operation 1 13
+[0 - 7fc6d68c2000]    0.188596 {3}{legion_spy}: Future Usage 13 648518346341351462
+[0 - 7fc2c9eb4000]    0.188589 {3}{legion_spy}: Refinement Operation 1 14
+[0 - 7fc2c9eb4000]    0.188615 {3}{legion_spy}: Logical Requirement 14 0 1 5 1 1 7 0 0 1
+[0 - 7fc2c9eb4000]    0.188627 {3}{legion_spy}: Internal Operation Creator 14 10 0
+[0 - 7fc6d68c2000]    0.188601 {3}{legion_spy}: Operation Index 1 9 13
+[0 - 7fc2c9eb4000]    0.188645 {3}{legion_spy}: Logical Requirement Field 14 0 10001
+[0 - 7fc6d68c2000]    0.188656 {3}{legion_spy}: Field Creation 1 10004 8 
+[0 - 7fc2c9eb4000]    0.188676 {3}{legion_spy}: Logical Requirement 13 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2c9eb4000]    0.188686 {3}{legion_spy}: Logical Requirement Field 13 0 10003
+[0 - 7fc6d68c2000]    0.188691 {3}{legion_spy}: Fill Operation 1 15
+[0 - 7fc6d68c2000]    0.188699 {3}{legion_spy}: Future Usage 15 648518346341351463
+[0 - 7fc6d68c2000]    0.188703 {3}{legion_spy}: Operation Index 1 10 15
+[0 - 7fc6d68c2000]    0.188729 {3}{legion_spy}: Pending Partition Operation 1 16
+[0 - 7fc6d68c2000]    0.188734 {3}{legion_spy}: Pending Partition Target 16 3 6
+[0 - 7fc6d68c2000]    0.188758 {3}{legion_spy}: Index Partition 1 3 2 0 2 0 
+[0 - 7fc6d68c2000]    0.188768 {3}{legion_spy}: Operation Index 1 11 16
+[0 - 7fc6d68c2000]    0.188796 {3}{legion_spy}: Index Space Expression 6 6
+[0 - 7fc2c9eb4000]    0.188808 {3}{legion_spy}: Logical Requirement 15 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2c9eb4000]    0.188823 {3}{legion_spy}: Logical Requirement Field 15 0 10004
+[0 - 7fc6d68c2000]    0.188809 {3}{legion_spy}: Index Subspace 3 6 0 2 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.188872 {3}{legion_spy}: Pending Partition Operation 1 17
+[0 - 7fc6d68c2000]    0.188877 {3}{legion_spy}: Pending Partition Target 17 4 6
+[0 - 7fc6d68c2000]    0.188886 {3}{legion_spy}: Index Partition 1 4 2 0 3 0 
+[0 - 7fc6d68c2000]    0.188891 {3}{legion_spy}: Operation Index 1 12 17
+[0 - 7fc6d68c2000]    0.188907 {3}{legion_spy}: Index Space Expression 7 7
+[0 - 7fc6d68c2000]    0.188913 {3}{legion_spy}: Index Subspace 4 7 0 2 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.188950 {3}{legion_spy}: Index Space 8 0 
+[0 - 7fc6d68c2000]    0.188961 {3}{legion_spy}: Index Space Expression 8 8
+[0 - 7fc6d68c2000]    0.188974 {3}{legion_spy}: Index Space Rect 8 2 0 997 0 997 0 0 0 0 0 0 0 0
+[0 - 7fc2c9eb4000]    0.188986 {3}{legion_spy}: Index Space Rect 6 2 1 998 0 999 0 0 0 0 0 0 0 0
+[0 - 7fc6d68c2000]    0.188988 {3}{legion_spy}: Field Space 3 0 
+[0 - 7fc6d68c2000]    0.189024 {3}{legion_spy}: Region 8 3 3 0 
+[0 - 7fc6d68c2000]    0.189043 {3}{legion_spy}: Logical Requirement 1 2 1 8 3 3 7 0 0 8
+[0 - 7fc6d68c2000]    0.189053 {3}{legion_spy}: Field Creation 3 10000 8 
+[0 - 7fc2c9eb4000]    0.189091 {3}{legion_spy}: Index Space Rect 7 2 1 998 1 998 0 0 0 0 0 0 0 0
+[0 - 7fc2d4074000]    0.189150 {3}{legion_spy}: Physical Instance 8000001000500007 4000000000800002 1e00000000000002 0 5 1 1
+[0 - 7fc2d4074000]    0.189168 {3}{legion_spy}: Physical Instance Field 8000001000500007 10001
+[0 - 7fc6d68c2000]    0.189158 {3}{legion_spy}: Future Creation 18 648518346341351481 1 0 0 0 0 0 0
+[0 - 7fc2d4074000]    0.189178 {3}{legion_spy}: Physical Instance Creator 8000001000500007 10 1c00000000000003
+[0 - 7fc2d4074000]    0.189204 {3}{legion_spy}: Physical Instance Creation Region 8000001000500007 5 1 1
+[0 - 7fc6d68c2000]    0.189194 {3}{legion_spy}: Individual Task 1 1073743365 18 cupynumeric::BinaryOpTask
+[0 - 7fc2d4074000]    0.189209 {3}{legion_spy}: Instance Specialized Constraint 8000001000500007 1 0
+[0 - 7fc2d4074000]    0.189233 {3}{legion_spy}: Instance Memory Constraint 8000001000500007 6
+[0 - 7fc2d4074000]    0.189243 {3}{legion_spy}: Instance Field Constraint 8000001000500007 1 1 1
+[0 - 7fc2d4074000]    0.189250 {3}{legion_spy}: Instance Field Constraint Field 8000001000500007 10001
+[0 - 7fc6d68c2000]    0.189224 {3}{legion_spy}: Operation Index 1 13 18
+[0 - 7fc2d4074000]    0.189254 {3}{legion_spy}: Instance Ordering Constraint 8000001000500007 1 3
+[0 - 7fc2d4074000]    0.189275 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000500007 1
+[0 - 7fc2d4074000]    0.189281 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000500007 0
+[0 - 7fc2d4074000]    0.189286 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000001000500007 9
+[0 - 7fc6d68c2000]    0.189290 {3}{legion_spy}: Field Creation 1 10005 8 
+[0 - 7fc2c9eb4000]    0.189313 {3}{legion_spy}: Logical Requirement 18 0 1 7 1 1 1 0 0 1
+[0 - 7fc2c9eb4000]    0.189326 {3}{legion_spy}: Logical Requirement Field 18 0 10001
+[0 - 7fc2c9eb4000]    0.189336 {3}{legion_spy}: Logical Requirement 18 1 1 8 3 3 268435458 0 0 8
+[0 - 7fc2c9eb4000]    0.189344 {3}{legion_spy}: Logical Requirement Field 18 1 10000
+[0 - 7fc6d68c2000]    0.189328 {3}{legion_spy}: Fill Operation 1 19
+[0 - 7fc6d68c2000]    0.189364 {3}{legion_spy}: Future Usage 19 648518346341351482
+[0 - 7fc2d4074000]    0.189367 {3}{legion_spy}: Mapping Decision 10 0 10001 8000001000500007
+[0 - 7fc6d68c2000]    0.189371 {3}{legion_spy}: Operation Index 1 14 19
+[0 - 7fc2d4074000]    0.189387 {3}{legion_spy}: Mapping Decision 10 1 10001 8000001000400003
+[0 - 7fc2c9eb4000]    0.189447 {3}{legion_spy}: Close Operation 1 20 1
+[0 - 7fc2c9eb4000]    0.189458 {3}{legion_spy}: Internal Operation Creator 20 18 0
+[0 - 7fc2c9eb4000]    0.189465 {3}{legion_spy}: Logical Requirement 20 0 1 1 1 1 7 0 0 1
+[0 - 7fc2c9eb4000]    0.189469 {3}{legion_spy}: Logical Requirement Field 20 0 10001
+[0 - 7fc2d4074000]    0.189549 {3}{legion_spy}: Index Space Intersection 9 2  1 2
+[0 - 7fc2c9eb4000]    0.189573 {3}{legion_spy}: Physical Instance 8000002000100005 4000000000800003 1e00000000000002 0 5 1 1
+[0 - 7fc2c9eb4000]    0.189587 {3}{legion_spy}: Physical Instance Field 8000002000100005 10000
+[0 - 7fc2c9eb4000]    0.189618 {3}{legion_spy}: Physical Instance Creator 8000002000100005 9 1c00000000000003
+[0 - 7fc2c9eb4000]    0.189627 {3}{legion_spy}: Physical Instance Creation Region 8000002000100005 5 1 1
+[0 - 7fc2c9eb4000]    0.189635 {3}{legion_spy}: Instance Specialized Constraint 8000002000100005 1 0
+[0 - 7fc2c9eb4000]    0.189640 {3}{legion_spy}: Instance Memory Constraint 8000002000100005 6
+[0 - 7fc2c9eb4000]    0.189644 {3}{legion_spy}: Instance Field Constraint 8000002000100005 1 1 1
+[0 - 7fc2c9eb4000]    0.189650 {3}{legion_spy}: Instance Field Constraint Field 8000002000100005 10000
+[0 - 7fc2c9eb4000]    0.189655 {3}{legion_spy}: Instance Ordering Constraint 8000002000100005 1 3
+[0 - 7fc2c9eb4000]    0.189660 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000100005 1
+[0 - 7fc2c9eb4000]    0.189665 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000100005 0
+[0 - 7fc2c9eb4000]    0.189670 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000100005 9
+[0 - 7fc2c9eb4000]    0.189730 {3}{legion_spy}: Mapping Decision 9 0 10000 8000002000100005
+[0 - 7fc2c9eb4000]    0.189740 {3}{legion_spy}: Mapping Decision 9 1 10000 8000001000100003
+[0 - 7fc2d4074000]    0.189919 {3}{legion_spy}: Index Space Difference 10 1 2
+[0 - 7fc2d4074000]    0.190070 {3}{legion_spy}: Variant Decision 10 2
+[0 - 7fc2d4074000]    0.190088 {3}{legion_spy}: Task Priority 10 0
+[0 - 7fc2c9eb4000]    0.190070 {3}{legion_spy}: Variant Decision 9 2
+[0 - 7fc2c9eb4000]    0.190109 {3}{legion_spy}: Task Priority 9 0
+[0 - 7fc2d4074000]    0.190116 {3}{legion_spy}: Logical Requirement 19 0 1 1 1 1 268435463 0 0 1
+[0 - 7fc2d4074000]    0.190125 {3}{legion_spy}: Logical Requirement Field 19 0 10005
+[0 - 7fc2c9eb4000]    0.190245 {3}{legion_spy}: Index Space Union 11 2 2 7
+[0 - 7fc2c9eb4000]    0.190330 {3}{legion_spy}: Index Space 9 0 
+[0 - 7fc2c9eb4000]    0.190343 {3}{legion_spy}: Index Space Expression 9 12
+[0 - 7fc2c9eb4000]    0.190350 {3}{legion_spy}: Index Space Rect 9 2 0 998 0 998 0 0 0 0 0 0 0 0
+[0 - 7fc2c9eb4000]    0.190357 {3}{legion_spy}: Physical Instance 8000002000200007 4000000000800004 1e00000000000002 0 11 1 1
+[0 - 7fc2c9eb4000]    0.190362 {3}{legion_spy}: Physical Instance Field 8000002000200007 10001
+[0 - 7fc2c9eb4000]    0.190366 {3}{legion_spy}: Physical Instance Creator 8000002000200007 18 1c00000000000003
+[0 - 7fc2c9eb4000]    0.190370 {3}{legion_spy}: Physical Instance Creation Region 8000002000200007 5 1 1
+[0 - 7fc2c9eb4000]    0.190374 {3}{legion_spy}: Physical Instance Creation Region 8000002000200007 7 1 1
+[0 - 7fc2c9eb4000]    0.190378 {3}{legion_spy}: Instance Specialized Constraint 8000002000200007 1 0
+[0 - 7fc2c9eb4000]    0.190381 {3}{legion_spy}: Instance Memory Constraint 8000002000200007 6
+[0 - 7fc2c9eb4000]    0.190385 {3}{legion_spy}: Instance Field Constraint 8000002000200007 1 1 1
+[0 - 7fc2c9eb4000]    0.190389 {3}{legion_spy}: Instance Field Constraint Field 8000002000200007 10001
+[0 - 7fc2c9eb4000]    0.190393 {3}{legion_spy}: Instance Ordering Constraint 8000002000200007 1 3
+[0 - 7fc2c9eb4000]    0.190397 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000200007 1
+[0 - 7fc2c9eb4000]    0.190400 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000200007 0
+[0 - 7fc2c9eb4000]    0.190404 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000200007 9
+[0 - 7fc2c9eb4000]    0.190476 {3}{legion_spy}: Physical Instance 8000002000700003 4000000000800005 1e00000000000002 0 8 3 3
+[0 - 7fc2c9eb4000]    0.190485 {3}{legion_spy}: Physical Instance Field 8000002000700003 10000
+[0 - 7fc2c9eb4000]    0.190490 {3}{legion_spy}: Physical Instance Creator 8000002000700003 18 1c00000000000003
+[0 - 7fc2c9eb4000]    0.190495 {3}{legion_spy}: Physical Instance Creation Region 8000002000700003 8 3 3
+[0 - 7fc2c9eb4000]    0.190499 {3}{legion_spy}: Instance Specialized Constraint 8000002000700003 1 0
+[0 - 7fc2c9eb4000]    0.190503 {3}{legion_spy}: Instance Memory Constraint 8000002000700003 6
+[0 - 7fc2c9eb4000]    0.190517 {3}{legion_spy}: Instance Field Constraint 8000002000700003 1 1 1
+[0 - 7fc2c9eb4000]    0.190521 {3}{legion_spy}: Instance Field Constraint Field 8000002000700003 10000
+[0 - 7fc2c9eb4000]    0.190525 {3}{legion_spy}: Instance Ordering Constraint 8000002000700003 1 3
+[0 - 7fc2c9eb4000]    0.190537 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000700003 1
+[0 - 7fc2c9eb4000]    0.190542 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000700003 0
+[0 - 7fc2c9eb4000]    0.190546 {3}{legion_spy}: Instance Ordering Constraint Dimension 8000002000700003 9
+[0 - 7fc2c9eb4000]    0.190573 {3}{legion_spy}: Mapping Decision 18 0 10001 8000002000200007
+[0 - 7fc2c9eb4000]    0.190580 {3}{legion_spy}: Mapping Decision 18 1 10000 8000002000700003
+[0 - 7fc2c9eb4000]    0.190690 {3}{legion_spy}: Index Space Intersection 13 2  1 7
+[0 - 7fc2c9eb4000]    0.190728 {3}{legion_spy}: Index Space Difference 14 7 2
+[0 - 7fc2c9eb4000]    0.190798 {3}{legion_spy}: Index Space Intersection 15 2  10 14
+[0 - 7fc2c9eb4000]    0.190857 {3}{legion_spy}: Index Space Intersection 16 2  2 7
+[0 - 7fc2c9eb4000]    0.191058 {3}{legion_spy}: Index Space Intersection 17 2  14 16
+[0 - 7fc2c9eb4000]    0.191151 {3}{legion_spy}: Index Space Intersection 18 2  7 14
+[0 - 7fc2c9eb4000]    0.191180 {3}{legion_spy}: Index Space Intersection 19 2  7 16
+[0 - 7fc2c9eb4000]    0.191213 {3}{legion_spy}: Variant Decision 18 2
+[0 - 7fc2c9eb4000]    0.191222 {3}{legion_spy}: Task Priority 18 0
+[0 - 7f719fd51000]    0.239685 {3}{legion_spy}: Task Processor 6 1d00000000000004
+[0 - 7f719fd51000]    0.239997 {3}{legion_spy}: Task Processor 9 1d00000000000004
+[0 - 7f719fd51000]    0.372370 {3}{legion_spy}: Task Processor 10 1d00000000000004
+[0 - 7f719fd51000]    0.372860 {3}{legion_spy}: Task Processor 18 1d00000000000004
