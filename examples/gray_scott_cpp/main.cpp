@@ -2,9 +2,7 @@
 #include <iostream>
 
 #include "cupynumeric.h"
-
 #include "cupynumeric/ndarray.h"
-
 #include "legate.h"
 #include "realm/cmdline.h"
 
@@ -16,14 +14,14 @@ int main(int argc, char** argv) {
   initialize(argc, argv);
 
   // Problem parameters
-  const auto  dx = legate::Scalar{1.0};
-  //const auto dx_sq = legate::Scalar{1.0}; // hardcoded should be dx*dx
-  const auto dt = legate::Scalar{1.0 / 5.0}; //hardcoded should be dx / 5
-  //const auto  c_u = legate::Scalar{1.0};
+  const auto dx = legate::Scalar{1.0};
+  // const auto dx_sq = legate::Scalar{1.0}; // hardcoded should be dx*dx
+  const auto dt = legate::Scalar{1.0 / 5.0};  // hardcoded should be dx / 5
+  // const auto  c_u = legate::Scalar{1.0};
   const auto c_v = legate::Scalar{0.3};
   const auto f = legate::Scalar{0.03};
   const auto k = legate::Scalar{0.06};
-  const auto f_plus_k = legate::Scalar{0.03 + 0.06}; // hard coded to be f + k
+  const auto f_plus_k = legate::Scalar{0.03 + 0.06};  // hard coded to be f + k
 
   // Grid size and number of steps
   const int N = 1000;
@@ -57,16 +55,19 @@ int main(int argc, char** argv) {
     NDArray centerU_negative = u[{slice(1, -1), slice(1, -1)}];
     NDArray F_u_LHS = u[{slice(1, -1), slice(1, -1)}];
 
-    centerU_negative.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE, centerU); // -u
+    centerU_negative.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE,
+                              centerU);  // -u
 
-    NDArray _f = full({N-1, N-1}, f);
-    NDArray F_u = centerU_negative * v_sq + _f * (_ones + centerU_negative); // -u*(v^2) + f*(1-u)
+    NDArray _f = full({N - 1, N - 1}, f);
+    NDArray F_u = centerU_negative * v_sq +
+                  _f * (_ones + centerU_negative);  // -u*(v^2) + f*(1-u)
 
-    NDArray _f_plus_k = full({N-1, N-1}, f_plus_k);
+    NDArray _f_plus_k = full({N - 1, N - 1}, f_plus_k);
 
     auto fpktimev_neg = centerV * _f_plus_k;
-    fpktimev_neg.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE, fpktimev_neg); // - (f+k)*v
-    NDArray F_v = (centerU * v_sq) + fpktimev_neg; //  u*(v^2) - (f+k)*v
+    fpktimev_neg.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE,
+                          fpktimev_neg);            // - (f+k)*v
+    NDArray F_v = (centerU * v_sq) + fpktimev_neg;  //  u*(v^2) - (f+k)*v
 
     // 2D Laplacian of u
     NDArray upU = u[{slice(0, -2), slice(1, -1)}];
@@ -75,12 +76,14 @@ int main(int argc, char** argv) {
     NDArray rightU = u[{slice(1, -1), slice(2, open)}];
 
     auto two_centerU_negative = centerU + centerU;
-    two_centerU_negative.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE, two_centerU_negative); // -2u
+    two_centerU_negative.unary_op(
+        CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE,
+        two_centerU_negative);  // -2u
 
     NDArray partialVertU = upU + two_centerU_negative + downU;
     NDArray partialHorizU = leftU + two_centerU_negative + rightU;
     NDArray lapU = partialVertU + partialHorizU;
-    //lapU = lapU / dx_sq;
+    // lapU = lapU / dx_sq;
 
     // 2D Laplacian of v
     NDArray upV = v[{slice(0, -2), slice(1, -1)}];
@@ -88,19 +91,21 @@ int main(int argc, char** argv) {
     NDArray leftV = v[{slice(1, -1), slice(0, -2)}];
     NDArray rightV = v[{slice(1, -1), slice(2, open)}];
 
-    auto two_centerV_negative =  centerV + centerV;
-    two_centerV_negative.unary_op(CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE, two_centerV_negative); // -2v
+    auto two_centerV_negative = centerV + centerV;
+    two_centerV_negative.unary_op(
+        CuPyNumericUnaryOpCode::CUPYNUMERIC_UOP_NEGATIVE,
+        two_centerV_negative);  // -2v
 
     NDArray partialVertV = upV + two_centerV_negative + downV;
     NDArray partialHorizV = leftV + two_centerV_negative + rightV;
     NDArray lapV = partialVertV + partialHorizV;
-    //lapV = lapV / dx_sq;
+    // lapV = lapV / dx_sq;
 
     // Forward-Euler update for the interior
     NDArray interiorU_new = u_new[{slice(1, -1), slice(1, -1)}];
     NDArray interiorV_new = v_new[{slice(1, -1), slice(1, -1)}];
-    NDArray _dt = full({N-1, N-1}, dt);
-    NDArray _c_v = full({N-1, N-1}, c_v);
+    NDArray _dt = full({N - 1, N - 1}, dt);
+    NDArray _c_v = full({N - 1, N - 1}, c_v);
 
     interiorU_new.assign(centerU + _dt * (lapU + F_u));
     interiorV_new.assign(centerV + _dt * ((lapV * _c_v) + F_v));
