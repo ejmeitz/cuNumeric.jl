@@ -115,10 +115,15 @@ function versioninfo()
     println(msg)
 end
 
+function callback_oom(arg::Ptr{Cvoid})
+    GC.gc()
+    cuNumeric.mapper_remove_usage(1000);
+end
+
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    # cuNumPreferences.check_unchanged()
+    # CNPreferences.check_unchanged()
     @initcxx
 
     # Legate ignores these arguments...
@@ -127,5 +132,8 @@ function __init__()
     @info "Starting Legate"
     global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
     
+    # register callback
+    cfunc = @cfunction(callback_oom, Nothing, (Ptr{Cvoid},))
+    cuNumeric.mapper_register_oom_callback(cfunc)
 end
 end

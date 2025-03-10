@@ -35,6 +35,7 @@ add_library(cupynumericwrapper SHARED
 
 # both can be private I think
 target_link_libraries(cupynumericwrapper 
+                        PRIVATE /home/david/cuNumeric.jl/garbage-gc-planning/callback/libcallback.so
                         PRIVATE cupynumeric::cupynumeric
                         PRIVATE legate::legate
                         PUBLIC JlCxx::cxxwrap_julia)
@@ -42,8 +43,7 @@ target_link_libraries(cupynumericwrapper
 
 target_include_directories(cupynumericwrapper PRIVATE 
                             include
-                        )
-
+                            /home/david/cuNumeric.jl/garbage-gc-planning/callback/)
 install(TARGETS cupynumericwrapper 
           DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
 

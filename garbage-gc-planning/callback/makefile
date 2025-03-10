@@ -1,8 +1,6 @@
 all: build
-JULIA_DIR=$(shell which julia)
 build: 
-	# gcc -o callback -fPIC -I$(JULIA_DIR)/include/julia -L$(JULIA_DIR)/lib -Wl,-rpath,$(JULIA_DIR)/lib test.c -ljulia
-	gcc -shared -fPIC -o callback.so callback.c 
+	g++ -shared -fPIC -o libcallback.so callback.cc -I.
 test: 
 	./callback 
 clean:

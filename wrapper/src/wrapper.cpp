@@ -35,6 +35,8 @@
 #include "legion/legion_config.h"
 #include "types.h"
 
+#include "callback.h"
+
 struct WrapCppOptional {
   template <typename TypeWrapperT>
   void operator()(TypeWrapperT&& wrapped) {
@@ -193,6 +195,10 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       "value", &legate::timing::Time::value);
   mod.method("time_microseconds", &legate::timing::measure_microseconds);
   mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
+
+  mod.method("mapper_register_oom_callback", &callback::mapper_register_oom_callback);
+  mod.method("mapper_remove_usage", &callback::mapper_remove_usage);
+  mod.method("mapper_alloc", &callback::mapper_alloc);
 
   //.method("add_eq", &cupynumeric::NDArray::operator+=)
   //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
