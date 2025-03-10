@@ -54,9 +54,6 @@ include("ndarray.jl")
 include("unary.jl")
 include("binary.jl")
 
-# cfunc in global scope
-cfunc = Nothing 
-const cond = Nothing
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
@@ -120,13 +117,15 @@ function versioninfo()
 end
 
 function callback_oom(arg::Ptr{Cvoid})
+    println("sebvo\n")
     notify(cond)
 end
 
 function wait_for_callback()
     while true
         wait(cond)
-        GC.gc(false)  # Perform garbage collection
+        # GC.gc(false)  # Perform garbage collection
+        println("shark\n")
     end
 end
 
@@ -145,13 +144,15 @@ function __init__()
     @info "Starting Legate"
     global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
     if !_isprecompiling()
-        cond = Base.AsyncCondition()
+        global cfunc
+        global cond  
+    
         # register callback
         cfunc = @cfunction(callback_oom, Nothing, (Ptr{Cvoid},))
         GC.@preserve cfunc begin
             cuNumeric.mapper_register_oom_callback(cfunc)
         end
-
+        cond = Base.Condition()
         @async wait_for_callback()
     end
 
