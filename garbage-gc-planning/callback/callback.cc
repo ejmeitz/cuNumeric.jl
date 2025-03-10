@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
-#include <julia.h>
+// #include <julia.h>
 #include <callback.h>
 
 #include <iostream>
@@ -28,7 +28,7 @@ namespace callback {
 
 
   void *thread_function(void *arg) {
-    jl_adopt_thread();
+    // jl_adopt_thread();
     callback_info_t *cb_info = (callback_info_t *)arg;
     
     if (cb_info->function) {
@@ -82,7 +82,7 @@ namespace callback {
   // cuNumeric.jl will initialize a Cfunction that it created to call GC.gc()
   void mapper_register_oom_callback(void* function) {
       fprintf(stderr, "Registered a OOM callback function\n");
-      jl_init();
+      // jl_init();
       registered_oom_callback = reinterpret_cast<callback_t>(function);
   }
 };
