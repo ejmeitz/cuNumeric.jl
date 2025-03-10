@@ -23,9 +23,9 @@
 #include <type_traits>
 
 #include "accessors.h"
+#include "callback.h"
 #include "cupynumeric.h"
 #include "cupynumeric/operators.h"
-
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
 #include "legate.h"
@@ -34,8 +34,6 @@
 #include "legion.h"
 #include "legion/legion_config.h"
 #include "types.h"
-
-#include "callback.h"
 
 struct WrapCppOptional {
   template <typename TypeWrapperT>
@@ -125,7 +123,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("push", [](std::vector<legate::Slice>& v, legate::Slice s) {
         v.push_back(s);
       });
-    
+
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
@@ -156,7 +154,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
-    //   .method("_dot_three_arg", &cupynumeric::NDArray::dot)
+      //   .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)
@@ -196,7 +194,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.method("time_microseconds", &legate::timing::measure_microseconds);
   mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
 
-  mod.method("mapper_register_oom_callback", &callback::mapper_register_oom_callback);
+  mod.method("mapper_register_oom_callback",
+             &callback::mapper_register_oom_callback);
   mod.method("mapper_remove_usage", &callback::mapper_remove_usage);
   mod.method("mapper_alloc", &callback::mapper_alloc);
 

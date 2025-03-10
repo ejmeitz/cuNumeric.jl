@@ -54,6 +54,10 @@ include("ndarray.jl")
 include("unary.jl")
 include("binary.jl")
 
+# cfunc in global scope
+cfunc = Nothing 
+const cond = Nothing
+
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv
     argv
@@ -116,9 +120,18 @@ function versioninfo()
 end
 
 function callback_oom(arg::Ptr{Cvoid})
-    GC.gc()
-    cuNumeric.mapper_remove_usage(1000);
+    notify(cond)
 end
+
+function wait_for_callback()
+    while true
+        wait(cond)
+        GC.gc(false)  # Perform garbage collection
+    end
+end
+
+# https://discourse.julialang.org/t/precompilation-init-and-eval/70188/2
+_isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
 
 # Runtime initilization
 # Called once in lifetime of code
@@ -131,9 +144,16 @@ function __init__()
 
     @info "Starting Legate"
     global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
-    
-    # register callback
-    cfunc = @cfunction(callback_oom, Nothing, (Ptr{Cvoid},))
-    cuNumeric.mapper_register_oom_callback(cfunc)
+    if !_isprecompiling()
+        cond = Base.AsyncCondition()
+        # register callback
+        cfunc = @cfunction(callback_oom, Nothing, (Ptr{Cvoid},))
+        GC.@preserve cfunc begin
+            cuNumeric.mapper_register_oom_callback(cfunc)
+        end
+
+        @async wait_for_callback()
+    end
+
 end
 end
