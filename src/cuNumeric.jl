@@ -118,16 +118,17 @@ end
 
 function callback_oom(arg::Ptr{Cvoid})
     println("sebvo\n")
-    notify(cond)
+    # GC.gc(false) # call the GC here instead
+    #notify(cond) #
 end
 
-function wait_for_callback()
-    while true
-        wait(cond)
-        # GC.gc(false)  # Perform garbage collection
-        println("shark\n")
-    end
-end
+# function wait_for_callback()
+#     while true
+#         wait(cond)
+#         # GC.gc(false)  # Perform garbage collection
+#         println("shark\n")
+#     end
+# end
 
 # https://discourse.julialang.org/t/precompilation-init-and-eval/70188/2
 _isprecompiling() = ccall(:jl_generating_output, Cint, ()) == 1
@@ -143,18 +144,20 @@ function __init__()
 
     @info "Starting Legate"
     global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
-    if !_isprecompiling()
-        global cfunc
-        global cond  
+    # if !_isprecompiling()
+        # global cfunc
+        # global cond  
     
         # register callback
         cfunc = @cfunction(callback_oom, Nothing, (Ptr{Cvoid},))
-        GC.@preserve cfunc begin
-            cuNumeric.mapper_register_oom_callback(cfunc)
-        end
-        cond = Base.Condition()
-        @async wait_for_callback()
-    end
+        # GC.@preserve cfunc begin
+        cuNumeric.mapper_register_oom_callback(cfunc)
+        # end
+        # cond = Base.Condition()
+        # @async wait_for_callback()
+
+        # cuNumeric.mapper_alloc(100000)
+    # end
 
 end
 end
