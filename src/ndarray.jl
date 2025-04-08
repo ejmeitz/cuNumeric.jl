@@ -20,6 +20,8 @@ export NDArray, LegateType
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
 =#
 
+Base.Broadcast.broadcastable(v::NDArray) = v
+
 # is legion Complex128 same as ComplexF64 in julia? 
 # These are methods that return a Legate::Type
 global const type_map = Dict{Type, Function}(
@@ -95,6 +97,105 @@ function Base.setindex!(arr::NDArray, value::T, idxs::Vararg{Int, N}) where {T <
     write(acc, arr, to_cpp_index(idxs), value)
 end
 
+
+#### ARRAY INDEXING WITH SLICES ####
+#=
+* @brief Describes C++ concept of Legate Slice
+*
+* @param _start The optional begin index of the slice, or `Slice::OPEN` if the start of the
+* slice is unbounded.
+* @param _stop The optional stop index of the slice, or `Slice::OPEN` if the end of the
+* slice if unbounded.
+*
+* If provided (and not `Slice::OPEN`), `_start` must compare less than or equal to
+* `_stop`. Similarly, if provided (and not `Slice::OPEN`), `_stop` must compare greater than
+* or equal to`_start`. Put simply, unless one or both of the ends are unbounded, `[_start,
+* _stop]` must form a valid (possibly empty) interval.
+=#
+
+
+# to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(collect(slices))
+function to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N 
+    v = LegateSlices()
+    for s in slices 
+        push(v, s)
+    end
+    return v
+end
+
+function slice(start::Int, stop::Int)
+    return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
+end
+
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(j-1, j)))
+    assign(s, rhs);
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
+    s = get_slice(lhs, to_cpp_init_slice(slice(i-1, i)))
+    assign(s, rhs);
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Colon)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(lhs, 2))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Int64)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(j-1, j)))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(i-1, i), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
+function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::UnitRange)
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j))))
+    assign(s, rhs)
+end
+
+function Base.getindex(arr::NDArray, i::Colon, j::Int64)
+    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
+end
+
+function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
+    return get_slice(arr, to_cpp_init_slice(slice(i-1, i)))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::Colon)
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(arr, 2))))
+end
+
+function Base.getindex(arr::NDArray,  i::Colon, j::UnitRange)
+    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(first(j) - 1, last(j))))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::Int64)
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(j-1, j)))
+end
+
+function Base.getindex(arr::NDArray,  i::Int64, j::UnitRange)
+    return get_slice(arr, to_cpp_init_slice(slice(i-1, i), slice(first(j) - 1, last(j))))
+end
+
+function Base.getindex(arr::NDArray, i::UnitRange, j::UnitRange)
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(first(j) - 1, last(j))))
+end
+
+
+# function Base.getindex(ranges::Vararg{UnitRange{Int}, N}) where N
+#     return Tuple(slice(first(r), last(r)) for r in ranges)
+# end
+
 # USED TO CONVERT NDArray to Julia Array
 # Long term probably be a named function since we allocate
 # whole new array in here. Not exactly what I expect form []
@@ -140,6 +241,13 @@ end
 
 #### INITIALIZATION ####
 
+
+function full(dims::Dims{N}, val::Union{Float32, Float64, Int64, Int32}) where N
+    dims_uint64 = to_cpp_dims(dims)
+    return _full(dims_uint64, LegateScalar(val))
+end
+
+
 #* is this type piracy?
 """
     cuNumeric.zeros([T=Float64,] dims::Int...)
@@ -180,9 +288,40 @@ function zeros(dims::Int...)
 end
 
 
-function full(dims::Dims{N}, val::Union{Float32, Float64}) where N
-    dims_uint64 = to_cpp_dims(dims)
-    return _full(dims_uint64, LegateScalar(val))
+
+"""
+    cuNumeric.ones([T=Float64,] dims::Int...)
+    cuNumeric.ones([T=Float64,] dims::Tuple)
+
+Create an NDArray with element type `T`, of all zeros with size specified by `dims`.
+This function has the same signature as `Base.ones`, so be sure to call it as `cuNuermic.ones`.
+
+# Examples
+```jldoctest
+julia> cuNumeric.ones(2,2)
+NDArray of Float64s, Dim: [2, 2]
+
+julia> cuNumeric.ones(Float32, 3)
+NDArray of Float32s, Dim: [3]
+
+julia> cuNumeric.ones(Int32,(2,3))
+NDArray of Int32s, Dim: [2, 3]
+```
+"""
+function ones(::Type{T}, dims::Dims) where T
+    return full(dims, T(1))
+end
+
+function ones(::Type{T}, dims::Int...) where T
+    return ones(T, dims)
+end
+
+function ones(dims::Dims{N}) where N
+    return ones(Float64, dims)
+end
+
+function ones(dims::Int...)
+    return ones(Float64, dims)
 end
 
 
@@ -204,6 +343,9 @@ Create a new NDArray of size `dims`, filled with Float64s uniformly at random
 Random.rand(::Type{NDArray}, dims::Dims) = cuNumeric._random_ndarray(to_cpp_dims(dims))
 Random.rand(::Type{NDArray}, dims::Int...) = cuNumeric.rand(NDArray, dims)
 
+random(::Type{T}, dims::Dims) where T  = cuNumeric._random_ndarray(to_cpp_dims(dims))
+random(dims::Dims, e::Type{T}) where T  = cuNumeric.rand(e, dims)
+
 
 #### OPERATIONS ####
 
@@ -217,30 +359,82 @@ function reshape(arr::NDArray, i::Int64)
     return _reshape(arr, i_int64)
 end
 
-# For matricies some might expect this to be matmul
-# should probably only call this when .* is used
-# function Base.:*(arr1::NDArray, arr2::NDArray)
-#     return multiply(arr1, arr2)
-# end
-
-# function Base.:+(arr1::NDArray, arr2::NDArray)
-#     return add(arr1, arr2)
-# end
-
-function Base.:+(val::Union{Float32, Float64}, arr::NDArray)
+function Base.:+(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
     return add_scalar(arr, LegateScalar(val))
 end
-
-function Base.:+(arr::NDArray, val::Union{Float32, Float64})
-    return add_scalar(arr, LegateScalar(val))
+function Base.:+(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
+    return +(arr, val)
 end
 
-function Base.:*(val::Union{Float32, Float64}, arr::NDArray)
+function Base.Broadcast.broadcasted(::typeof(+), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
+    return +(arr, val)
+end
+
+function Base.Broadcast.broadcasted(::typeof(+), val::Union{Float32, Float64, Int64, Int32}, arr::NDArray) 
+    return +(arr, val)
+end
+
+function Base.Broadcast.broadcasted(::typeof(+), lhs::NDArray, rhs::NDArray) 
+    return +(lhs, rhs)
+end
+
+function Base.:-(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
+    return multiply_scalar(arr, LegateScalar(-val))
+end
+
+function Base.:-(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
+    return +(arr, (-1*val))
+end
+
+function Base.Broadcast.broadcasted(::typeof(-), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
+    return -(arr, val)
+end
+function Base.Broadcast.broadcasted(::typeof(-), val::Union{Float32, Float64, Int64, Int32}, rhs::NDArray) 
+    # throw(ErrorException("element wise [val - NDArray] is not supported yet"))
+    lhs = full(size(rhs), val)
+    return -(lhs, rhs)
+end
+
+function Base.Broadcast.broadcasted(::typeof(-), lhs::NDArray, rhs::NDArray) 
+    return -(lhs, rhs)
+end
+
+function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
     return multiply_scalar(arr, LegateScalar(val))
 end
 
-function Base.:-(arr::NDArray, val::Union{Float32, Float64})
-    return arr + (-1*val)
+function Base.:*( arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
+    # return throw(ErrorException("[NDArray * val] is not supported. Please use [NDArray .* val]"))
+    return *(val, arr)
+end
+
+
+function Base.Broadcast.broadcasted(::typeof(*), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
+    return *(val, arr)
+end
+
+function Base.Broadcast.broadcasted(::typeof(*), val::Union{Float32, Float64, Int64, Int32}, arr::NDArray) 
+    return *(val, arr)
+end
+
+function Base.Broadcast.broadcasted(::typeof(*), lhs::NDArray, rhs::NDArray) 
+    return *(lhs, rhs)
+end
+
+function Base.:/(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
+    throw(ErrorException("[/] is not supported yet"))
+end
+
+function Base.Broadcast.broadcasted(::typeof(/), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
+    return multiply_scalar(arr, LegateScalar(Float64(1 / val)))
+end
+
+function Base.Broadcast.broadcasted(::typeof(/), val::Union{Float32, Float64, Int64, Int32}, arr::NDArray) 
+    return throw(ErrorException("element wise [val ./ NDArray] is not supported yet"))
+end
+
+function Base.Broadcast.broadcasted(::typeof(/), lhs::NDArray, rhs::NDArray) 
+    return /(lhs, rhs)
 end
 
 #* Can't overload += in Julia, this should be called by .+= 

@@ -17,6 +17,7 @@
  *            Ethan Meitz <emeitz@andrew.cmu.edu>
  */
 
+#include <initializer_list>
 #include <iostream>
 #include <string>  //needed for return type of toString methods
 #include <type_traits>
@@ -41,6 +42,24 @@ struct WrapCppOptional {
     wrapped.template constructor<typename WrappedT::value_type>();
   }
 };
+
+cupynumeric::NDArray get_slice(cupynumeric::NDArray arr,
+                               std::vector<legate::Slice> slices) {
+  switch (slices.size()) {
+    case 1: {
+      std::initializer_list<legate::Slice> slice_list = {slices[0]};
+      return arr[slice_list];
+    }
+    case 2: {
+      std::initializer_list<legate::Slice> slice_list = {slices[0], slices[1]};
+      return arr[slice_list];
+    }
+    default: {
+      assert(0 && "dim gteq 3 not supported yet\b");
+    }
+  };
+  assert(0 && "you should not enter here\n");
+}
 
 // std::string get_machine_info() {
 //   auto runtime = legate::Runtime::get_runtime();
@@ -93,11 +112,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
                          .constructor<const cupynumeric::NDArray&>();
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>>(
-          WrapCppOptional());
+      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>,
+             std::optional<int64_t>>(WrapCppOptional());
 
   mod.add_type<legate::LogicalStore>("LogicalStore");
+  mod.add_type<legate::Slice>("LegateSlice")
+      .constructor<std::optional<int64_t>, std::optional<int64_t>>();
 
+  mod.add_type<std::vector<legate::Slice>>("LegateSlices")
+      .method("push", [](std::vector<legate::Slice>& v, legate::Slice s) {
+        v.push_back(s);
+      });
+    
   mod.add_type<legate::Scalar>("LegateScalar")
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
@@ -141,6 +167,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*);
+  // replacing this with get_slice custom method
+  // .method("get_slice",
+  //         (cupynumeric::NDArray(cupynumeric::NDArray::*)(
+  //             std::initializer_list<cupynumeric::slice>) const) &
+  //             cupynumeric::NDArray::operator[]);
+
+  mod.method("get_slice", &get_slice);
 
   auto ndarray_accessor =
       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("NDArrayAccessor");
