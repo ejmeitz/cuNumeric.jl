@@ -25,7 +25,9 @@ module cuNumeric
 
 using CxxWrap
 using Pkg
-# import CNPreferences
+
+Pkg.develop(path="./lib/CNPreferences") 
+using CNPreferences
 
 using LinearAlgebra
 import LinearAlgebra: mul!
@@ -78,26 +80,32 @@ function cupynumeric_setup(AA::ArgcArgv)
    
     # Capture stdout from start_legate to 
     # see the hardware configuration
-    res = 0
-    pipe = Pipe()
-    started = Base.Event()
-    writer = @async redirect_stdout(pipe) do
-        notify(started)
-        cuNumeric.start_legate()
-        close(Base.pipe_writer(pipe))
-    end
 
-    wait(started)
-    legate_config_str = Base.read(pipe, String)
-    wait(writer) 
-    print(legate_config_str)
+    # TODO CATCH STDERR
+    # run(`bash -c "export LEGATE_AUTO_CONFIG=0"`)
+    # run(`bash -c "export LEGATE_SHOW_CONFIG=1"`)
+    # run(`bash -c "export LEGATE_CONFIG=\"--logging 2\""`)
+    #println(ENV["LEGATE_AUTO_CONFIG"])
+    #@info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
+    #println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
+  
+    cuNumeric.start_legate()
+    #pipe = Pipe()
+    #started = Base.Event()
+    #writer = Threads.@spawn redirect_stdout(pipe) do
+        #notify(started)
+        #cuNumeric.start_legate()
+        #close(Base.pipe_writer(pipe))
+    #end
 
-    if res == 0
-        @info "Started Legate successfully"
-    else
-        @error "Failed to start Legate, got exit code $(res), exiting"
-        Base.exit(res)
-    end
+    #wait(started)
+    #legate_config_str = Base.read(pipe, String)
+    #wait(writer) 
+    #print(legate_config_str)
+    legate_config_str = ""
+
+    @info "Started Legate"
+
     Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
@@ -118,14 +126,14 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    # cuNumPreferences.check_unchanged()
+    CNPreferences.check_unchanged()
     @initcxx
 
     # Legate ignores these arguments...
     AA = ArgcArgv([Base.julia_cmd()[1]])
 
     @info "Starting Legate"
-    global legate_config_str = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
+    global legate_config = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
     
 end
 end
