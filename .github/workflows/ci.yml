@@ -23,19 +23,6 @@ jobs:
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      - name: Create Conda environment
-        run: |
-          mkdir -p ~/miniconda3
-          wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
-          bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
-          rm ~/miniconda3/miniconda.sh
-          source ~/miniconda3/bin/activate
-          conda init --all
-          export PATH="$HOME/miniconda/bin:$PATH"
-          conda create --name myenv python=3.10 -y
-          conda activate myenv
-          conda install -c conda-forge -c legate cupynumeric -y
-
       - name: Install Julia 
         uses: julia-actions/setup-julia@v1
         with:
@@ -45,14 +32,24 @@ jobs:
           
       - name: Install Dependencies
         run: |
+
           git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
+          pushd libcxxwrap-julia
           git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
-          export CONDA_PREFIX="$HOME/miniconda3/envs/myenv"
-          julia --project=. -e 'using Pkg; Pkg.build(); Pkg.instantiate()'
+          popd
+          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
+          julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
 
       - name: Run Tests
-        run: julia --project=. -e 'using Pkg; Pkg.test()'
-
+        env: 
+          LEGATE_AUTO_CONFIG: 0
+          LEGATE_SHOW_CONFIG: 1
+          LEGATE_CONFIG: "--logging 2"
+        run: |
+          echo "LEGATE_AUTO_CONFIG = $LEGATE_AUTO_CONFIG"
+          echo "LEGATE_SHOW_CONFIG = $LEGATE_SHOW_CONFIG"
+          echo "LEGATE_CONFIG = $LEGATE_CONFIG"  
+          julia -e 'using Pkg; Pkg.activate("."); Pkg.test();'
       - uses: julia-actions/julia-processcoverage@v1
       - uses: codecov/codecov-action@v5
         with:
@@ -79,7 +76,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
         run: julia --project=docs/ docs/make.jl
-
-
-
-
