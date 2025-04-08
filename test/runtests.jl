@@ -23,12 +23,18 @@ using LinearAlgebra
 
 include("tests/daxpy.jl")
 include("tests/daxpy_advanced.jl")
+include("tests/elementwise.jl")
+include("tests/slicing.jl")
 include("tests/sgemm.jl")
 
 
 @testset verbose = true "DAXPY" begin
     @testset daxpy_basic()
     @testset daxpy_advanced()
+end
+
+@testset verbose = true "Operators" begin
+    @testset elementwise()
 end
 
 @testset verbose = true "SGEMM" begin 
@@ -121,3 +127,9 @@ end
 # @testset verbose = true "Unary Ops w/ Args" begin
 
 # end
+
+
+@testset verbose = true "Slicing Tests" begin
+    max_diff = Float64(1e-4)
+    @testset slicing(max_diff)
+end
