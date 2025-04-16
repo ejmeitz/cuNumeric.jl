@@ -47,22 +47,24 @@ end
 function gray_scott()
     anim = Animation()
 
-    N = 100
+    N = 4000
     dims = (N, N)
 
     FT = Float64
     args = Params()
 
-    n_steps = 20000 # number of steps to take
+    n_steps = 10 # number of steps to take
     frame_interval = 200 # steps to take between making plots
+
+    garbage_interval = 1
 
     u = cuNumeric.ones(dims)
     v = cuNumeric.zeros(dims)
     u_new = cuNumeric.zeros(dims)
     v_new = cuNumeric.zeros(dims)
 
-    u[1:15,1:15] = cuNumeric.random(FT, (15,15))
-    v[1:15,1:15] = cuNumeric.random(FT, (15,15))
+    u[1:150,1:150] = cuNumeric.random(FT, (150,150)) 
+    v[1:150,1:150] = cuNumeric.random(FT, (150,150))
 
     for n in 1:n_steps
         step(u, v, u_new, v_new, args)
@@ -71,13 +73,17 @@ function gray_scott()
         u, u_new = u_new, u
         v, v_new = v_new, v
 
-        if n%frame_interval == 0
-            u_cpu = u[:, :]
-            heatmap(u_cpu, clims=(0, 1))
-            frame(anim)
+        if n % garbage_interval == 0
+            GC.gc()
         end
+
+        # if n%frame_interval == 0
+        #     u_cpu = u[:, :]
+        #     heatmap(u_cpu, clims=(0, 1))
+        #     frame(anim)
+        # end
     end
-    gif(anim, "gray-scott.gif", fps=10)
+    # gif(anim, "gray-scott.gif", fps=10)
 
 end
 

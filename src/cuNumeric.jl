@@ -26,8 +26,8 @@ module cuNumeric
 using CxxWrap
 using Pkg
 
-Pkg.develop(path="./lib/CNPreferences") 
-using CNPreferences
+# Pkg.develop(path="./lib/CNPreferences") 
+# using CNPreferences
 
 using LinearAlgebra
 import LinearAlgebra: mul!
@@ -126,7 +126,7 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    CNPreferences.check_unchanged()
+    # CNPreferences.check_unchanged()
     @initcxx
 
     # Legate ignores these arguments...
