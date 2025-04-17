@@ -66,7 +66,7 @@ JULIA_CXXWRAP=$JULIA_CXXWRAP_DEV/override
 # build default version of CxxWrap / libcxxwrap_julia
 #* THIS COULD BREAK SOME USERS CODE IF THEY ALREADY OVERRIDE THIS PKG
 cd $CUNUMERIC_ROOT_DIR
-rm "Manifest.toml"
+[ -f Manifest.toml ] && rm Manifest.toml
 rm -rf $JULIA_CXXWRAP_DEV
 julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.precompile(["CxxWrap"])'
 
