@@ -263,7 +263,7 @@ end
     cuNumeric.zeros([T=Float64,] dims::Int...)
     cuNumeric.zeros([T=Float64,] dims::Tuple)
 
-Create an NDArray with element type `T`, of all zeros with Base specified by `dims`.
+Create an NDArray with element type `T`, of all zeros with size specified by `dims`.
 This function has the same signature as `Base.zeros`, so be sure to call it as `cuNuermic.zeros`.
 
 # Examples
