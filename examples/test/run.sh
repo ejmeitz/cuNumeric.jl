@@ -1,4 +1,9 @@
 export PATH=/home/david/FlameGraph:$PATH
+export JULIA_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export OMP_NUM_THREADS=1
+
+
 ENABLE_JITPROFILING=1  perf record -F 99 -g julia --project="." ccall_gc.jl 
 perf script > out_c.perf
 stackcollapse-perf.pl out_c.perf > out_c.folded

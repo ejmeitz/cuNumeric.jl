@@ -1,0 +1,2238 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" width="1200" height="1206" onload="init(evt)" viewBox="0 0 1200 1206" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<!-- Flame graph stack visualization. See https://github.com/brendangregg/FlameGraph for latest version, and http://www.brendangregg.com/flamegraphs.html for examples. -->
+<!-- NOTES:  -->
+<defs>
+	<linearGradient id="background" y1="0" y2="1" x1="0" x2="0" >
+		<stop stop-color="#eeeeee" offset="5%" />
+		<stop stop-color="#eeeeb0" offset="95%" />
+	</linearGradient>
+</defs>
+<style type="text/css">
+	text { font-family:Verdana; font-size:12px; fill:rgb(0,0,0); }
+	#search, #ignorecase { opacity:0.1; cursor:pointer; }
+	#search:hover, #search.show, #ignorecase:hover, #ignorecase.show { opacity:1; }
+	#subtitle { text-anchor:middle; font-color:rgb(160,160,160); }
+	#title { text-anchor:middle; font-size:17px}
+	#unzoom { cursor:pointer; }
+	#frames > *:hover { stroke:black; stroke-width:0.5; cursor:pointer; }
+	.hide { display:none; }
+	.parent { opacity:0.5; }
+</style>
+<script type="text/ecmascript">
+<![CDATA[
+	"use strict";
+	var details, searchbtn, unzoombtn, matchedtxt, svg, searching, currentSearchTerm, ignorecase, ignorecaseBtn;
+	function init(evt) {
+		details = document.getElementById("details").firstChild;
+		searchbtn = document.getElementById("search");
+		ignorecaseBtn = document.getElementById("ignorecase");
+		unzoombtn = document.getElementById("unzoom");
+		matchedtxt = document.getElementById("matched");
+		svg = document.getElementsByTagName("svg")[0];
+		searching = 0;
+		currentSearchTerm = null;
+
+		// use GET parameters to restore a flamegraphs state.
+		var params = get_params();
+		if (params.x && params.y)
+			zoom(find_group(document.querySelector('[x="' + params.x + '"][y="' + params.y + '"]')));
+                if (params.s) search(params.s);
+	}
+
+	// event listeners
+	window.addEventListener("click", function(e) {
+		var target = find_group(e.target);
+		if (target) {
+			if (target.nodeName == "a") {
+				if (e.ctrlKey === false) return;
+				e.preventDefault();
+			}
+			if (target.classList.contains("parent")) unzoom(true);
+			zoom(target);
+			if (!document.querySelector('.parent')) {
+				// we have basically done a clearzoom so clear the url
+				var params = get_params();
+				if (params.x) delete params.x;
+				if (params.y) delete params.y;
+				history.replaceState(null, null, parse_params(params));
+				unzoombtn.classList.add("hide");
+				return;
+			}
+
+			// set parameters for zoom state
+			var el = target.querySelector("rect");
+			if (el && el.attributes && el.attributes.y && el.attributes._orig_x) {
+				var params = get_params()
+				params.x = el.attributes._orig_x.value;
+				params.y = el.attributes.y.value;
+				history.replaceState(null, null, parse_params(params));
+			}
+		}
+		else if (e.target.id == "unzoom") clearzoom();
+		else if (e.target.id == "search") search_prompt();
+		else if (e.target.id == "ignorecase") toggle_ignorecase();
+	}, false)
+
+	// mouse-over for info
+	// show
+	window.addEventListener("mouseover", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = "Function: " + g_to_text(target);
+	}, false)
+
+	// clear
+	window.addEventListener("mouseout", function(e) {
+		var target = find_group(e.target);
+		if (target) details.nodeValue = ' ';
+	}, false)
+
+	// ctrl-F for search
+	// ctrl-I to toggle case-sensitive search
+	window.addEventListener("keydown",function (e) {
+		if (e.keyCode === 114 || (e.ctrlKey && e.keyCode === 70)) {
+			e.preventDefault();
+			search_prompt();
+		}
+		else if (e.ctrlKey && e.keyCode === 73) {
+			e.preventDefault();
+			toggle_ignorecase();
+		}
+	}, false)
+
+	// functions
+	function get_params() {
+		var params = {};
+		var paramsarr = window.location.search.substr(1).split('&');
+		for (var i = 0; i < paramsarr.length; ++i) {
+			var tmp = paramsarr[i].split("=");
+			if (!tmp[0] || !tmp[1]) continue;
+			params[tmp[0]]  = decodeURIComponent(tmp[1]);
+		}
+		return params;
+	}
+	function parse_params(params) {
+		var uri = "?";
+		for (var key in params) {
+			uri += key + '=' + encodeURIComponent(params[key]) + '&';
+		}
+		if (uri.slice(-1) == "&")
+			uri = uri.substring(0, uri.length - 1);
+		if (uri == '?')
+			uri = window.location.href.split('?')[0];
+		return uri;
+	}
+	function find_child(node, selector) {
+		var children = node.querySelectorAll(selector);
+		if (children.length) return children[0];
+	}
+	function find_group(node) {
+		var parent = node.parentElement;
+		if (!parent) return;
+		if (parent.id == "frames") return node;
+		return find_group(parent);
+	}
+	function orig_save(e, attr, val) {
+		if (e.attributes["_orig_" + attr] != undefined) return;
+		if (e.attributes[attr] == undefined) return;
+		if (val == undefined) val = e.attributes[attr].value;
+		e.setAttribute("_orig_" + attr, val);
+	}
+	function orig_load(e, attr) {
+		if (e.attributes["_orig_"+attr] == undefined) return;
+		e.attributes[attr].value = e.attributes["_orig_" + attr].value;
+		e.removeAttribute("_orig_"+attr);
+	}
+	function g_to_text(e) {
+		var text = find_child(e, "title").firstChild.nodeValue;
+		return (text)
+	}
+	function g_to_func(e) {
+		var func = g_to_text(e);
+		// if there's any manipulation we want to do to the function
+		// name before it's searched, do it here before returning.
+		return (func);
+	}
+	function update_text(e) {
+		var r = find_child(e, "rect");
+		var t = find_child(e, "text");
+		var w = parseFloat(r.attributes.width.value) -3;
+		var txt = find_child(e, "title").textContent.replace(/\([^(]*\)$/,"");
+		t.attributes.x.value = parseFloat(r.attributes.x.value) + 3;
+
+		// Smaller than this size won't fit anything
+		if (w < 2 * 12 * 0.59) {
+			t.textContent = "";
+			return;
+		}
+
+		t.textContent = txt;
+		var sl = t.getSubStringLength(0, txt.length);
+		// check if only whitespace or if we can fit the entire string into width w
+		if (/^ *$/.test(txt) || sl < w)
+			return;
+
+		// this isn't perfect, but gives a good starting point
+		// and avoids calling getSubStringLength too often
+		var start = Math.floor((w/sl) * txt.length);
+		for (var x = start; x > 0; x = x-2) {
+			if (t.getSubStringLength(0, x + 2) <= w) {
+				t.textContent = txt.substring(0, x) + "..";
+				return;
+			}
+		}
+		t.textContent = "";
+	}
+
+	// zoom
+	function zoom_reset(e) {
+		if (e.attributes != undefined) {
+			orig_load(e, "x");
+			orig_load(e, "width");
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_reset(c[i]);
+		}
+	}
+	function zoom_child(e, x, ratio) {
+		if (e.attributes != undefined) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = (parseFloat(e.attributes.x.value) - x - 10) * ratio + 10;
+				if (e.tagName == "text")
+					e.attributes.x.value = find_child(e.parentNode, "rect[x]").attributes.x.value + 3;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseFloat(e.attributes.width.value) * ratio;
+			}
+		}
+
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_child(c[i], x - 10, ratio);
+		}
+	}
+	function zoom_parent(e) {
+		if (e.attributes) {
+			if (e.attributes.x != undefined) {
+				orig_save(e, "x");
+				e.attributes.x.value = 10;
+			}
+			if (e.attributes.width != undefined) {
+				orig_save(e, "width");
+				e.attributes.width.value = parseInt(svg.width.baseVal.value) - (10 * 2);
+			}
+		}
+		if (e.childNodes == undefined) return;
+		for (var i = 0, c = e.childNodes; i < c.length; i++) {
+			zoom_parent(c[i]);
+		}
+	}
+	function zoom(node) {
+		var attr = find_child(node, "rect").attributes;
+		var width = parseFloat(attr.width.value);
+		var xmin = parseFloat(attr.x.value);
+		var xmax = parseFloat(xmin + width);
+		var ymin = parseFloat(attr.y.value);
+		var ratio = (svg.width.baseVal.value - 2 * 10) / width;
+
+		// XXX: Workaround for JavaScript float issues (fix me)
+		var fudge = 0.0001;
+
+		unzoombtn.classList.remove("hide");
+
+		var el = document.getElementById("frames").children;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var a = find_child(e, "rect").attributes;
+			var ex = parseFloat(a.x.value);
+			var ew = parseFloat(a.width.value);
+			var upstack;
+			// Is it an ancestor
+			if (0 == 0) {
+				upstack = parseFloat(a.y.value) > ymin;
+			} else {
+				upstack = parseFloat(a.y.value) < ymin;
+			}
+			if (upstack) {
+				// Direct ancestor
+				if (ex <= xmin && (ex+ew+fudge) >= xmax) {
+					e.classList.add("parent");
+					zoom_parent(e);
+					update_text(e);
+				}
+				// not in current path
+				else
+					e.classList.add("hide");
+			}
+			// Children maybe
+			else {
+				// no common path
+				if (ex < xmin || ex + fudge >= xmax) {
+					e.classList.add("hide");
+				}
+				else {
+					zoom_child(e, xmin, ratio);
+					update_text(e);
+				}
+			}
+		}
+		search();
+	}
+	function unzoom(dont_update_text) {
+		unzoombtn.classList.add("hide");
+		var el = document.getElementById("frames").children;
+		for(var i = 0; i < el.length; i++) {
+			el[i].classList.remove("parent");
+			el[i].classList.remove("hide");
+			zoom_reset(el[i]);
+			if(!dont_update_text) update_text(el[i]);
+		}
+		search();
+	}
+	function clearzoom() {
+		unzoom();
+
+		// remove zoom state
+		var params = get_params();
+		if (params.x) delete params.x;
+		if (params.y) delete params.y;
+		history.replaceState(null, null, parse_params(params));
+	}
+
+	// search
+	function toggle_ignorecase() {
+		ignorecase = !ignorecase;
+		if (ignorecase) {
+			ignorecaseBtn.classList.add("show");
+		} else {
+			ignorecaseBtn.classList.remove("show");
+		}
+		reset_search();
+		search();
+	}
+	function reset_search() {
+		var el = document.querySelectorAll("#frames rect");
+		for (var i = 0; i < el.length; i++) {
+			orig_load(el[i], "fill")
+		}
+		var params = get_params();
+		delete params.s;
+		history.replaceState(null, null, parse_params(params));
+	}
+	function search_prompt() {
+		if (!searching) {
+			var term = prompt("Enter a search term (regexp " +
+			    "allowed, eg: ^ext4_)"
+			    + (ignorecase ? ", ignoring case" : "")
+			    + "\nPress Ctrl-i to toggle case sensitivity", "");
+			if (term != null) search(term);
+		} else {
+			reset_search();
+			searching = 0;
+			currentSearchTerm = null;
+			searchbtn.classList.remove("show");
+			searchbtn.firstChild.nodeValue = "Search"
+			matchedtxt.classList.add("hide");
+			matchedtxt.firstChild.nodeValue = ""
+		}
+	}
+	function search(term) {
+		if (term) currentSearchTerm = term;
+		if (currentSearchTerm === null) return;
+
+		var re = new RegExp(currentSearchTerm, ignorecase ? 'i' : '');
+		var el = document.getElementById("frames").children;
+		var matches = new Object();
+		var maxwidth = 0;
+		for (var i = 0; i < el.length; i++) {
+			var e = el[i];
+			var func = g_to_func(e);
+			var rect = find_child(e, "rect");
+			if (func == null || rect == null)
+				continue;
+
+			// Save max width. Only works as we have a root frame
+			var w = parseFloat(rect.attributes.width.value);
+			if (w > maxwidth)
+				maxwidth = w;
+
+			if (func.match(re)) {
+				// highlight
+				var x = parseFloat(rect.attributes.x.value);
+				orig_save(rect, "fill");
+				rect.attributes.fill.value = "rgb(230,0,230)";
+
+				// remember matches
+				if (matches[x] == undefined) {
+					matches[x] = w;
+				} else {
+					if (w > matches[x]) {
+						// overwrite with parent
+						matches[x] = w;
+					}
+				}
+				searching = 1;
+			}
+		}
+		if (!searching)
+			return;
+		var params = get_params();
+		params.s = currentSearchTerm;
+		history.replaceState(null, null, parse_params(params));
+
+		searchbtn.classList.add("show");
+		searchbtn.firstChild.nodeValue = "Reset Search";
+
+		// calculate percent matched, excluding vertical overlap
+		var count = 0;
+		var lastx = -1;
+		var lastw = 0;
+		var keys = Array();
+		for (k in matches) {
+			if (matches.hasOwnProperty(k))
+				keys.push(k);
+		}
+		// sort the matched frames by their x location
+		// ascending, then width descending
+		keys.sort(function(a, b){
+			return a - b;
+		});
+		// Step through frames saving only the biggest bottom-up frames
+		// thanks to the sort order. This relies on the tree property
+		// where children are always smaller than their parents.
+		var fudge = 0.0001;	// JavaScript floating point
+		for (var k in keys) {
+			var x = parseFloat(keys[k]);
+			var w = matches[keys[k]];
+			if (x >= lastx + lastw - fudge) {
+				count += w;
+				lastx = x;
+				lastw = w;
+			}
+		}
+		// display matched percent
+		matchedtxt.classList.remove("hide");
+		var pct = 100 * count / maxwidth;
+		if (pct != 100) pct = pct.toFixed(1)
+		matchedtxt.firstChild.nodeValue = "Matched: " + pct + "%";
+	}
+]]>
+</script>
+<rect x="0.0" y="0" width="1200.0" height="1206.0" fill="url(#background)"  />
+<text id="title" x="600.00" y="24" >Flame Graph</text>
+<text id="details" x="10.00" y="1189" > </text>
+<text id="unzoom" x="10.00" y="24" class="hide">Reset Zoom</text>
+<text id="search" x="1090.00" y="24" >Search</text>
+<text id="ignorecase" x="1174.00" y="24" >ic</text>
+<text id="matched" x="1090.00" y="1189" > </text>
+<g id="frames">
+<g >
+<title>ijl_apply_tuple_type_v (169,071,559 samples, 3.26%)</title><rect x="773.3" y="373" width="38.4" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="776.30" y="383.5" >ijl..</text>
+</g>
+<g >
+<title>bprm_execve (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1029" width="2.9" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="280.98" y="1039.5" ></text>
+</g>
+<g >
+<title>subtype (56,354,097 samples, 1.09%)</title><rect x="651.7" y="437" width="12.8" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="654.68" y="447.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="325" width="6.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="565.05" y="335.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="837" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="847.5" ></text>
+</g>
+<g >
+<title>_Fork (7,343,477 samples, 0.14%)</title><rect x="269.8" y="1109" width="1.6" height="15.0" fill="rgb(252,220,52)" rx="2" ry="2" />
+<text  x="272.76" y="1119.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_node_visitor (28,149,280 samples, 0.54%)</title><rect x="517.3" y="533" width="6.3" height="15.0" fill="rgb(207,10,2)" rx="2" ry="2" />
+<text  x="520.25" y="543.5" ></text>
+</g>
+<g >
+<title>intersect (28,149,280 samples, 0.54%)</title><rect x="517.3" y="357" width="6.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="520.25" y="367.5" ></text>
+</g>
+<g >
+<title>intersect (28,181,350 samples, 0.54%)</title><rect x="568.5" y="389" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="571.45" y="399.5" ></text>
+</g>
+<g >
+<title>alloc_env (28,192,646 samples, 0.54%)</title><rect x="856.5" y="453" width="6.4" height="15.0" fill="rgb(246,188,45)" rx="2" ry="2" />
+<text  x="859.53" y="463.5" ></text>
+</g>
+<g >
+<title>obviously_unequal (28,178,942 samples, 0.54%)</title><rect x="1151.0" y="485" width="6.4" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="1154.05" y="495.5" ></text>
+</g>
+<g >
+<title>intersect (28,149,280 samples, 0.54%)</title><rect x="517.3" y="453" width="6.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="520.25" y="463.5" ></text>
+</g>
+<g >
+<title>intersect (225,432,062 samples, 4.34%)</title><rect x="760.5" y="453" width="51.2" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="763.50" y="463.5" >inter..</text>
+</g>
+<g >
+<title>perf_event_mmap (28,111,211 samples, 0.54%)</title><rect x="357.6" y="693" width="6.4" height="15.0" fill="rgb(229,112,26)" rx="2" ry="2" />
+<text  x="360.61" y="703.5" ></text>
+</g>
+<g >
+<title>julia__require_search_from_serialized_80843.2 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="645" width="665.8" height="15.0" fill="rgb(241,170,40)" rx="2" ry="2" />
+<text  x="520.25" y="655.5" >julia__require_search_from_serialized_80843.2</text>
+</g>
+<g >
+<title>ijl_apply_generic (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="549" width="12.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1173.33" y="559.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (309,964,471 samples, 5.97%)</title><rect x="555.6" y="517" width="70.5" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="558.65" y="527.5" >jl_type..</text>
+</g>
+<g >
+<title>forall_exists_equal (28,174,280 samples, 0.54%)</title><rect x="722.1" y="357" width="6.4" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="725.09" y="367.5" ></text>
+</g>
+<g >
+<title>do_exit (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1045" width="6.4" height="15.0" fill="rgb(231,122,29)" rx="2" ry="2" />
+<text  x="341.43" y="1055.5" ></text>
+</g>
+<g >
+<title>subtype (28,169,105 samples, 0.54%)</title><rect x="786.1" y="117" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="127.5" ></text>
+</g>
+<g >
+<title>ijl_method_instance_add_backedge (28,165,488 samples, 0.54%)</title><rect x="542.8" y="549" width="6.4" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="545.85" y="559.5" ></text>
+</g>
+<g >
+<title>subtype (28,192,194 samples, 0.54%)</title><rect x="939.8" y="389" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="942.77" y="399.5" ></text>
+</g>
+<g >
+<title>exec_binprm (12,723,684 samples, 0.24%)</title><rect x="278.0" y="997" width="2.9" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="280.98" y="1007.5" ></text>
+</g>
+<g >
+<title>exit_mmap (28,124,839 samples, 0.54%)</title><rect x="338.4" y="997" width="6.4" height="15.0" fill="rgb(236,143,34)" rx="2" ry="2" />
+<text  x="341.43" y="1007.5" ></text>
+</g>
+<g >
+<title>julia_abstract_eval_statement_expr_35014.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="245" width="6.4" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="1179.73" y="255.5" ></text>
+</g>
+<g >
+<title>ijl_types_equal.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="517" width="6.4" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="526.65" y="527.5" ></text>
+</g>
+<g >
+<title>[unknown] (337,557,743 samples, 6.50%)</title><rect x="22.8" y="1093" width="76.7" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1103.5" >[unknown]</text>
+</g>
+<g >
+<title>do_user_addr_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1061" width="6.6" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="274.43" y="1071.5" ></text>
+</g>
+<g >
+<title>intersect (28,180,889 samples, 0.54%)</title><rect x="562.0" y="405" width="6.5" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="565.05" y="415.5" ></text>
+</g>
+<g >
+<title>julia___init___44629 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="517" width="12.8" height="15.0" fill="rgb(209,22,5)" rx="2" ry="2" />
+<text  x="1173.33" y="527.5" ></text>
+</g>
+<g >
+<title>intersect (84,541,428 samples, 1.63%)</title><rect x="555.6" y="437" width="19.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="558.65" y="447.5" ></text>
+</g>
+<g >
+<title>intersect (28,180,282 samples, 0.54%)</title><rect x="830.9" y="357" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="833.92" y="367.5" ></text>
+</g>
+<g >
+<title>perf_iterate_ctx (28,111,211 samples, 0.54%)</title><rect x="357.6" y="645" width="6.4" height="15.0" fill="rgb(205,4,0)" rx="2" ry="2" />
+<text  x="360.61" y="655.5" ></text>
+</g>
+<g >
+<title>ijl_matching_methods (56,351,656 samples, 1.08%)</title><rect x="530.0" y="549" width="12.8" height="15.0" fill="rgb(246,189,45)" rx="2" ry="2" />
+<text  x="533.04" y="559.5" ></text>
+</g>
+<g >
+<title>jl_types_egal (28,175,308 samples, 0.54%)</title><rect x="1144.6" y="485" width="6.4" height="15.0" fill="rgb(211,31,7)" rx="2" ry="2" />
+<text  x="1147.65" y="495.5" ></text>
+</g>
+<g >
+<title>gc_sweep_pool (308,709,017 samples, 5.94%)</title><rect x="447.1" y="789" width="70.2" height="15.0" fill="rgb(235,142,34)" rx="2" ry="2" />
+<text  x="450.12" y="799.5" >gc_swee..</text>
+</g>
+<g >
+<title>__handle_mm_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1029" width="1.6" height="15.0" fill="rgb(207,9,2)" rx="2" ry="2" />
+<text  x="272.76" y="1039.5" ></text>
+</g>
+<g >
+<title>jfptr_require_80923.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="837" width="665.8" height="15.0" fill="rgb(235,139,33)" rx="2" ry="2" />
+<text  x="520.25" y="847.5" >jfptr_require_80923.1</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="437" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="447.5" ></text>
+</g>
+<g >
+<title>julia__tryrequire_from_serialized_80824.2 (2,874,631,612 samples, 55.35%)</title><rect x="530.0" y="629" width="653.1" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="533.04" y="639.5" >julia__tryrequire_from_serialized_80824.2</text>
+</g>
+<g >
+<title>ijl_method_table_insert (28,149,280 samples, 0.54%)</title><rect x="517.3" y="565" width="6.3" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="520.25" y="575.5" ></text>
+</g>
+<g >
+<title>intersect_var (28,180,282 samples, 0.54%)</title><rect x="830.9" y="309" width="6.4" height="15.0" fill="rgb(213,37,9)" rx="2" ry="2" />
+<text  x="833.92" y="319.5" ></text>
+</g>
+<g >
+<title>jl_unwrap_unionall (28,180,460 samples, 0.54%)</title><rect x="606.9" y="485" width="6.4" height="15.0" fill="rgb(237,150,36)" rx="2" ry="2" />
+<text  x="609.86" y="495.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (84,541,428 samples, 1.63%)</title><rect x="555.6" y="469" width="19.3" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="558.65" y="479.5" ></text>
+</g>
+<g >
+<title>__x64_sys_mprotect (28,111,211 samples, 0.54%)</title><rect x="357.6" y="741" width="6.4" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="360.61" y="751.5" ></text>
+</g>
+<g >
+<title>subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="373" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="725.09" y="383.5" ></text>
+</g>
+<g >
+<title>do_anonymous_page (28,180,331 samples, 0.54%)</title><rect x="773.3" y="245" width="6.4" height="15.0" fill="rgb(238,155,37)" rx="2" ry="2" />
+<text  x="776.30" y="255.5" ></text>
+</g>
+<g >
+<title>jl_rename_unionall (28,180,710 samples, 0.54%)</title><rect x="792.5" y="197" width="6.4" height="15.0" fill="rgb(226,100,24)" rx="2" ry="2" />
+<text  x="795.51" y="207.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_34905.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="197" width="6.4" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="1179.73" y="207.5" ></text>
+</g>
+<g >
+<title>subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="421" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="725.09" y="431.5" ></text>
+</g>
+<g >
+<title>filemap_map_pages (7,306,551 samples, 0.14%)</title><rect x="269.8" y="965" width="1.6" height="15.0" fill="rgb(229,112,27)" rx="2" ry="2" />
+<text  x="272.76" y="975.5" ></text>
+</g>
+<g >
+<title>do_syscall_64 (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1093" width="2.9" height="15.0" fill="rgb(209,20,4)" rx="2" ry="2" />
+<text  x="280.98" y="1103.5" ></text>
+</g>
+<g >
+<title>obviously_egal (28,172,015 samples, 0.54%)</title><rect x="1131.8" y="421" width="6.4" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="1134.84" y="431.5" ></text>
+</g>
+<g >
+<title>[perf-1837788.map] (702,669,742 samples, 13.53%)</title><rect x="357.6" y="869" width="159.7" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="360.61" y="879.5" >[perf-1837788.map]</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,353 samples, 0.54%)</title><rect x="798.9" y="293" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="801.91" y="303.5" ></text>
+</g>
+<g >
+<title>simple_union (28,181,513 samples, 0.54%)</title><rect x="658.1" y="389" width="6.4" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="661.08" y="399.5" ></text>
+</g>
+<g >
+<title>julia__start_82922.1 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1045" width="825.5" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="360.61" y="1055.5" >julia__start_82922.1</text>
+</g>
+<g >
+<title>_forall_exists_subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="469" width="6.4" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="725.09" y="479.5" ></text>
+</g>
+<g >
+<title>typekey_eq.isra.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="533" width="6.4" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="526.65" y="543.5" ></text>
+</g>
+<g >
+<title>do_syscall_64 (28,111,211 samples, 0.54%)</title><rect x="357.6" y="773" width="6.4" height="15.0" fill="rgb(209,20,4)" rx="2" ry="2" />
+<text  x="360.61" y="783.5" ></text>
+</g>
+<g >
+<title>subtype (28,192,194 samples, 0.54%)</title><rect x="939.8" y="341" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="942.77" y="351.5" ></text>
+</g>
+<g >
+<title>PageHuge (3,961,982 samples, 0.08%)</title><rect x="269.8" y="949" width="0.9" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="272.76" y="959.5" ></text>
+</g>
+<g >
+<title>jl_substitute_var (56,359,758 samples, 1.09%)</title><rect x="747.7" y="437" width="12.8" height="15.0" fill="rgb(219,65,15)" rx="2" ry="2" />
+<text  x="750.70" y="447.5" ></text>
+</g>
+<g >
+<title>unmap_vmas (28,124,839 samples, 0.54%)</title><rect x="338.4" y="981" width="6.4" height="15.0" fill="rgb(243,176,42)" rx="2" ry="2" />
+<text  x="341.43" y="991.5" ></text>
+</g>
+<g >
+<title>tname_intersection (28,171,733 samples, 0.54%)</title><rect x="818.1" y="485" width="6.4" height="15.0" fill="rgb(239,158,37)" rx="2" ry="2" />
+<text  x="821.12" y="495.5" ></text>
+</g>
+<g >
+<title>asm_exc_page_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="517" width="6.5" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="1160.45" y="527.5" ></text>
+</g>
+<g >
+<title>ijl_types_equal (56,354,250 samples, 1.09%)</title><rect x="1144.6" y="501" width="12.8" height="15.0" fill="rgb(213,37,8)" rx="2" ry="2" />
+<text  x="1147.65" y="511.5" ></text>
+</g>
+<g >
+<title>julia___require_prelocked_80962.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="677" width="665.8" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="520.25" y="687.5" >julia___require_prelocked_80962.1</text>
+</g>
+<g >
+<title>intersect_all (394,509,920 samples, 7.60%)</title><rect x="722.1" y="517" width="89.6" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="725.09" y="527.5" >intersect_..</text>
+</g>
+<g >
+<title>subtype (56,349,815 samples, 1.08%)</title><rect x="786.1" y="309" width="12.8" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="319.5" ></text>
+</g>
+<g >
+<title>llvm::LiveRange::LiveRange (28,152,787 samples, 0.54%)</title><rect x="256.9" y="1093" width="6.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="259.95" y="1103.5" ></text>
+</g>
+<g >
+<title>jl_toplevel_eval_flex (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="901" width="825.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="360.61" y="911.5" >jl_toplevel_eval_flex</text>
+</g>
+<g >
+<title>julia_abstract_call_34877.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="181" width="6.4" height="15.0" fill="rgb(206,5,1)" rx="2" ry="2" />
+<text  x="1179.73" y="191.5" ></text>
+</g>
+<g >
+<title>zap_pte_range (28,124,839 samples, 0.54%)</title><rect x="338.4" y="917" width="6.4" height="15.0" fill="rgb(231,120,28)" rx="2" ry="2" />
+<text  x="341.43" y="927.5" ></text>
+</g>
+<g >
+<title>julia_slot2reg_37545.2 (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="293" width="6.4" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="1173.33" y="303.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="997" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1007.5" ></text>
+</g>
+<g >
+<title>jl_module_run_initializer (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="565" width="12.8" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="1173.33" y="575.5" ></text>
+</g>
+<g >
+<title>x64_sys_call (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1077" width="2.9" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="280.98" y="1087.5" ></text>
+</g>
+<g >
+<title>irq_exit_rcu (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1045" width="0.5" height="15.0" fill="rgb(254,227,54)" rx="2" ry="2" />
+<text  x="1192.53" y="1055.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (56,349,815 samples, 1.08%)</title><rect x="786.1" y="293" width="12.8" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="303.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection2 (309,964,471 samples, 5.97%)</title><rect x="555.6" y="533" width="70.5" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="558.65" y="543.5" >jl_type..</text>
+</g>
+<g >
+<title>jfptr___init___44630 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="533" width="12.8" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="1173.33" y="543.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (197,272,445 samples, 3.80%)</title><rect x="907.8" y="453" width="44.8" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="910.76" y="463.5" >subt..</text>
+</g>
+<g >
+<title>jl_restore_package_image_from_stream.constprop.0 (56,298,405 samples, 1.08%)</title><rect x="517.3" y="581" width="12.7" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="520.25" y="591.5" ></text>
+</g>
+<g >
+<title>julia_abstract_eval_call_34997.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="229" width="6.4" height="15.0" fill="rgb(234,134,32)" rx="2" ry="2" />
+<text  x="1179.73" y="239.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (845,328,595 samples, 16.28%)</title><rect x="626.1" y="533" width="192.0" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="629.07" y="543.5" >jl_type_intersection_env_s</text>
+</g>
+<g >
+<title>obviously_egal (28,181,350 samples, 0.54%)</title><rect x="568.5" y="357" width="6.4" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="571.45" y="367.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (366,313,942 samples, 7.05%)</title><rect x="1048.6" y="405" width="83.2" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1051.62" y="415.5" >obvious_s..</text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="949" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="959.5" ></text>
+</g>
+<g >
+<title>inst_type_w_ (56,359,758 samples, 1.09%)</title><rect x="747.7" y="421" width="12.8" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="750.70" y="431.5" ></text>
+</g>
+<g >
+<title>_forall_exists_subtype (197,258,555 samples, 3.80%)</title><rect x="626.1" y="501" width="44.8" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="629.07" y="511.5" >_for..</text>
+</g>
+<g >
+<title>do_execveat_common.isra.0 (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1045" width="2.9" height="15.0" fill="rgb(231,123,29)" rx="2" ry="2" />
+<text  x="280.98" y="1055.5" ></text>
+</g>
+<g >
+<title>intersect (84,541,428 samples, 1.63%)</title><rect x="555.6" y="485" width="19.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="558.65" y="495.5" ></text>
+</g>
+<g >
+<title>do_read_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="981" width="1.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="272.76" y="991.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="341" width="6.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="565.05" y="351.5" ></text>
+</g>
+<g >
+<title>entry_SYSCALL_64_after_hwframe (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1125" width="6.4" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="341.43" y="1135.5" ></text>
+</g>
+<g >
+<title>shift_arg_pages (12,723,684 samples, 0.24%)</title><rect x="278.0" y="933" width="2.9" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="280.98" y="943.5" ></text>
+</g>
+<g >
+<title>asm_exc_page_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="341" width="6.4" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="776.30" y="351.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,174,280 samples, 0.54%)</title><rect x="722.1" y="309" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="725.09" y="319.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_method_with_const_args_34181.1 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="133" width="6.4" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="1179.73" y="143.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="709" width="665.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="520.25" y="719.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>ijl_subtype_env.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="389" width="6.5" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="565.05" y="399.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (28,174,280 samples, 0.54%)</title><rect x="722.1" y="405" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="725.09" y="415.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="1029" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1039.5" ></text>
+</g>
+<g >
+<title>julia_initialize_julia_module_35579 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="501" width="12.8" height="15.0" fill="rgb(223,86,20)" rx="2" ry="2" />
+<text  x="1173.33" y="511.5" ></text>
+</g>
+<g >
+<title>julia_compute_live_ins_35852.2 (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="261" width="6.4" height="15.0" fill="rgb(232,125,30)" rx="2" ry="2" />
+<text  x="1173.33" y="271.5" ></text>
+</g>
+<g >
+<title>jl_restore_package_image_from_stream.constprop.0 (2,818,316,469 samples, 54.26%)</title><rect x="530.0" y="565" width="640.3" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="533.04" y="575.5" >jl_restore_package_image_from_stream.constprop.0</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="373" width="6.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="565.05" y="383.5" ></text>
+</g>
+<g >
+<title>__vma_adjust (12,723,684 samples, 0.24%)</title><rect x="278.0" y="917" width="2.9" height="15.0" fill="rgb(224,87,20)" rx="2" ry="2" />
+<text  x="280.98" y="927.5" ></text>
+</g>
+<g >
+<title>obviously_disjoint.part.0 (225,423,043 samples, 4.34%)</title><rect x="574.9" y="501" width="51.2" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="577.85" y="511.5" >obvio..</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (817,224,162 samples, 15.73%)</title><rect x="952.6" y="485" width="185.6" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="955.58" y="495.5" >obvious_subtype.part.0</text>
+</g>
+<g >
+<title>intersect (28,179,189 samples, 0.54%)</title><rect x="555.6" y="421" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="558.65" y="431.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (56,351,656 samples, 1.08%)</title><rect x="530.0" y="517" width="12.8" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="533.04" y="527.5" ></text>
+</g>
+<g >
+<title>ijl_types_equal (28,180,558 samples, 0.54%)</title><rect x="747.7" y="373" width="6.4" height="15.0" fill="rgb(213,37,8)" rx="2" ry="2" />
+<text  x="750.70" y="383.5" ></text>
+</g>
+<g >
+<title>ijl_subtype_env.part.0 (422,641,393 samples, 8.14%)</title><rect x="626.1" y="517" width="96.0" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="629.07" y="527.5" >ijl_subtype..</text>
+</g>
+<g >
+<title>lru_cache_add (28,180,331 samples, 0.54%)</title><rect x="773.3" y="213" width="6.4" height="15.0" fill="rgb(247,196,47)" rx="2" ry="2" />
+<text  x="776.30" y="223.5" ></text>
+</g>
+<g >
+<title>jl_restore_incremental_from_buf (56,298,405 samples, 1.08%)</title><rect x="517.3" y="597" width="12.7" height="15.0" fill="rgb(216,55,13)" rx="2" ry="2" />
+<text  x="520.25" y="607.5" ></text>
+</g>
+<g >
+<title>asm_exc_page_fault (28,167,635 samples, 0.54%)</title><rect x="80.3" y="1061" width="6.4" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="83.29" y="1071.5" ></text>
+</g>
+<g >
+<title>intersect_unionall_ (197,251,760 samples, 3.80%)</title><rect x="766.9" y="421" width="44.8" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="769.90" y="431.5" >inte..</text>
+</g>
+<g >
+<title>jl_type_infer (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="437" width="12.8" height="15.0" fill="rgb(210,23,5)" rx="2" ry="2" />
+<text  x="1173.33" y="447.5" ></text>
+</g>
+<g >
+<title>clear_page_erms (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="341" width="6.5" height="15.0" fill="rgb(229,113,27)" rx="2" ry="2" />
+<text  x="1160.45" y="351.5" ></text>
+</g>
+<g >
+<title>handle_mm_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1045" width="6.6" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="274.43" y="1055.5" ></text>
+</g>
+<g >
+<title>julia_typeinf_ext_35644.1 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="357" width="12.8" height="15.0" fill="rgb(241,167,40)" rx="2" ry="2" />
+<text  x="1173.33" y="367.5" ></text>
+</g>
+<g >
+<title>intersect (28,171,716 samples, 0.54%)</title><rect x="536.4" y="437" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="539.45" y="447.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="1045" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1055.5" ></text>
+</g>
+<g >
+<title>intersect_unionall_ (28,181,350 samples, 0.54%)</title><rect x="568.5" y="405" width="6.4" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="571.45" y="415.5" ></text>
+</g>
+<g >
+<title>julia_exec_options_82784.2 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1029" width="825.5" height="15.0" fill="rgb(213,37,8)" rx="2" ry="2" />
+<text  x="360.61" y="1039.5" >julia_exec_options_82784.2</text>
+</g>
+<g >
+<title>jl_types_egal (28,180,558 samples, 0.54%)</title><rect x="747.7" y="357" width="6.4" height="15.0" fill="rgb(211,31,7)" rx="2" ry="2" />
+<text  x="750.70" y="367.5" ></text>
+</g>
+<g >
+<title>ijl_method_table_insert (1,296,184,350 samples, 24.96%)</title><rect x="549.2" y="549" width="294.5" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="552.24" y="559.5" >ijl_method_table_insert</text>
+</g>
+<g >
+<title>ijl_apply_generic (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="485" width="12.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1173.33" y="495.5" ></text>
+</g>
+<g >
+<title>__handle_mm_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1029" width="6.6" height="15.0" fill="rgb(207,9,2)" rx="2" ry="2" />
+<text  x="274.43" y="1039.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (28,201,464 samples, 0.54%)</title><rect x="946.2" y="421" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="949.17" y="431.5" ></text>
+</g>
+<g >
+<title>release_pages (28,180,331 samples, 0.54%)</title><rect x="773.3" y="197" width="6.4" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="776.30" y="207.5" ></text>
+</g>
+<g >
+<title>restore_env.constprop.0 (28,190,154 samples, 0.54%)</title><rect x="1138.2" y="485" width="6.4" height="15.0" fill="rgb(223,83,20)" rx="2" ry="2" />
+<text  x="1141.24" y="495.5" ></text>
+</g>
+<g >
+<title>llvm::SelectionDAGISel::SelectCodeCommon (28,159,868 samples, 0.54%)</title><rect x="93.1" y="1077" width="6.4" height="15.0" fill="rgb(232,125,29)" rx="2" ry="2" />
+<text  x="96.08" y="1087.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (28,171,716 samples, 0.54%)</title><rect x="536.4" y="469" width="6.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="539.45" y="479.5" ></text>
+</g>
+<g >
+<title>do_syscall_64 (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1109" width="6.4" height="15.0" fill="rgb(209,20,4)" rx="2" ry="2" />
+<text  x="341.43" y="1119.5" ></text>
+</g>
+<g >
+<title>intersect_all (28,149,280 samples, 0.54%)</title><rect x="517.3" y="373" width="6.3" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="520.25" y="383.5" ></text>
+</g>
+<g >
+<title>exc_page_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="501" width="6.5" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="1160.45" y="511.5" ></text>
+</g>
+<g >
+<title>julia_typeinf_ext_toplevel_35674.1 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="373" width="12.8" height="15.0" fill="rgb(205,4,1)" rx="2" ry="2" />
+<text  x="1173.33" y="383.5" ></text>
+</g>
+<g >
+<title>exc_page_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1077" width="6.6" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="274.43" y="1087.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,178,732 samples, 0.54%)</title><rect x="1119.0" y="357" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1122.04" y="367.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (28,180,282 samples, 0.54%)</title><rect x="830.9" y="469" width="6.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="833.92" y="479.5" ></text>
+</g>
+<g >
+<title>main (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1125" width="825.5" height="15.0" fill="rgb(243,179,42)" rx="2" ry="2" />
+<text  x="360.61" y="1135.5" >main</text>
+</g>
+<g >
+<title>[perf-1837788.map] (702,669,742 samples, 13.53%)</title><rect x="357.6" y="837" width="159.7" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="360.61" y="847.5" >[perf-1837788.map]</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (225,382,838 samples, 4.34%)</title><rect x="670.9" y="501" width="51.2" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="673.88" y="511.5" >obvio..</text>
+</g>
+<g >
+<title>jl_cache_type_ (28,149,125 samples, 0.54%)</title><rect x="523.6" y="549" width="6.4" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="526.65" y="559.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,353 samples, 0.54%)</title><rect x="798.9" y="309" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="801.91" y="319.5" ></text>
+</g>
+<g >
+<title>intersect_tuple (169,071,559 samples, 3.26%)</title><rect x="773.3" y="389" width="38.4" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="776.30" y="399.5" >int..</text>
+</g>
+<g >
+<title>julia_compute_basic_blocks_31413.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="53" width="6.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="1179.73" y="63.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,176,885 samples, 0.54%)</title><rect x="933.4" y="373" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="936.36" y="383.5" ></text>
+</g>
+<g >
+<title>jl_unwrap_unionall (28,177,199 samples, 0.54%)</title><rect x="837.3" y="517" width="6.4" height="15.0" fill="rgb(237,150,36)" rx="2" ry="2" />
+<text  x="840.32" y="527.5" ></text>
+</g>
+<g >
+<title>jl_toplevel_eval_flex (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="885" width="825.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="360.61" y="895.5" >jl_toplevel_eval_flex</text>
+</g>
+<g >
+<title>var_occurs_inside (28,171,716 samples, 0.54%)</title><rect x="536.4" y="405" width="6.4" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="539.45" y="415.5" ></text>
+</g>
+<g >
+<title>japi1_include_string_81163.2 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="933" width="825.5" height="15.0" fill="rgb(236,144,34)" rx="2" ry="2" />
+<text  x="360.61" y="943.5" >japi1_include_string_81163.2</text>
+</g>
+<g >
+<title>intersect_all (84,541,428 samples, 1.63%)</title><rect x="555.6" y="501" width="19.3" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="558.65" y="511.5" ></text>
+</g>
+<g >
+<title>subtype_var (28,181,513 samples, 0.54%)</title><rect x="658.1" y="421" width="6.4" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="661.08" y="431.5" ></text>
+</g>
+<g >
+<title>load_elf_binary (12,723,684 samples, 0.24%)</title><rect x="278.0" y="965" width="2.9" height="15.0" fill="rgb(223,83,20)" rx="2" ry="2" />
+<text  x="280.98" y="975.5" ></text>
+</g>
+<g >
+<title>intersect_union (28,149,280 samples, 0.54%)</title><rect x="517.3" y="437" width="6.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="520.25" y="447.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="933" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="943.5" ></text>
+</g>
+<g >
+<title>handle_mm_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="293" width="6.4" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="776.30" y="303.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (56,351,656 samples, 1.08%)</title><rect x="530.0" y="501" width="12.8" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="533.04" y="511.5" ></text>
+</g>
+<g >
+<title>julia__require_prelocked_80960.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="741" width="665.8" height="15.0" fill="rgb(254,229,54)" rx="2" ry="2" />
+<text  x="520.25" y="751.5" >julia__require_prelocked_80960.1</text>
+</g>
+<g >
+<title>subtype_unionall (28,169,105 samples, 0.54%)</title><rect x="786.1" y="165" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="175.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (28,180,282 samples, 0.54%)</title><rect x="830.9" y="421" width="6.4" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="833.92" y="431.5" ></text>
+</g>
+<g >
+<title>save_env.constprop.0 (28,192,646 samples, 0.54%)</title><rect x="856.5" y="469" width="6.4" height="15.0" fill="rgb(226,96,23)" rx="2" ry="2" />
+<text  x="859.53" y="479.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_array_visitor (28,181,155 samples, 0.54%)</title><rect x="824.5" y="485" width="6.4" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="827.52" y="495.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_node_visitor (56,351,656 samples, 1.08%)</title><rect x="530.0" y="485" width="12.8" height="15.0" fill="rgb(207,10,2)" rx="2" ry="2" />
+<text  x="533.04" y="495.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (789,051,260 samples, 15.19%)</title><rect x="959.0" y="469" width="179.2" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="961.98" y="479.5" >obvious_subtype.part.0</text>
+</g>
+<g >
+<title>ijl_gc_mark_queue_obj (28,035,851 samples, 0.54%)</title><rect x="280.9" y="1109" width="6.3" height="15.0" fill="rgb(253,222,53)" rx="2" ry="2" />
+<text  x="283.87" y="1119.5" ></text>
+</g>
+<g >
+<title>ijl_subtype_env.part.0 (28,492,822 samples, 0.55%)</title><rect x="1163.9" y="533" width="6.4" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="1166.86" y="543.5" ></text>
+</g>
+<g >
+<title>forall_exists_equal (56,369,079 samples, 1.09%)</title><rect x="933.4" y="421" width="12.8" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="936.36" y="431.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="309" width="6.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="565.05" y="319.5" ></text>
+</g>
+<g >
+<title>typekey_eq.isra.0 (1,380,899,033 samples, 26.59%)</title><rect x="843.7" y="517" width="313.7" height="15.0" fill="rgb(246,191,45)" rx="2" ry="2" />
+<text  x="846.72" y="527.5" >typekey_eq.isra.0</text>
+</g>
+<g >
+<title>eval_import_path.isra.0.constprop.0 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="869" width="665.8" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="520.25" y="879.5" >eval_import_path.isra.0.constprop.0</text>
+</g>
+<g >
+<title>ijl_restore_package_image_from_file (56,298,405 samples, 1.08%)</title><rect x="517.3" y="613" width="12.7" height="15.0" fill="rgb(241,167,40)" rx="2" ry="2" />
+<text  x="520.25" y="623.5" ></text>
+</g>
+<g >
+<title>exc_page_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1077" width="1.6" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="272.76" y="1087.5" ></text>
+</g>
+<g >
+<title>perf_iterate_sb (28,111,211 samples, 0.54%)</title><rect x="357.6" y="661" width="6.4" height="15.0" fill="rgb(244,179,42)" rx="2" ry="2" />
+<text  x="360.61" y="671.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (56,361,437 samples, 1.09%)</title><rect x="824.5" y="517" width="12.8" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="827.52" y="527.5" ></text>
+</g>
+<g >
+<title>julia_require_80922.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="821" width="665.8" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="520.25" y="831.5" >julia_require_80922.1</text>
+</g>
+<g >
+<title>llvm::MachineInstr::addRegisterKilled (28,163,647 samples, 0.54%)</title><rect x="22.8" y="789" width="6.4" height="15.0" fill="rgb(233,131,31)" rx="2" ry="2" />
+<text  x="25.79" y="799.5" ></text>
+</g>
+<g >
+<title>intersect_unionall_ (28,180,282 samples, 0.54%)</title><rect x="830.9" y="405" width="6.4" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="833.92" y="415.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_known_34696.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="165" width="6.4" height="15.0" fill="rgb(250,210,50)" rx="2" ry="2" />
+<text  x="1179.73" y="175.5" ></text>
+</g>
+<g >
+<title>intersect_unionall_ (84,541,428 samples, 1.63%)</title><rect x="555.6" y="453" width="19.3" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="558.65" y="463.5" ></text>
+</g>
+<g >
+<title>julia_InferenceState_23951.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="85" width="6.4" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="1179.73" y="95.5" ></text>
+</g>
+<g >
+<title>unmap_single_vma (28,124,839 samples, 0.54%)</title><rect x="338.4" y="965" width="6.4" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="341.43" y="975.5" ></text>
+</g>
+<g >
+<title>unalias_unionall.isra.0 (28,180,710 samples, 0.54%)</title><rect x="792.5" y="213" width="6.4" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="795.51" y="223.5" ></text>
+</g>
+<g >
+<title>ijl_toplevel_eval_in (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="917" width="825.5" height="15.0" fill="rgb(231,121,29)" rx="2" ry="2" />
+<text  x="360.61" y="927.5" >ijl_toplevel_eval_in</text>
+</g>
+<g >
+<title>jl_unwrap_unionall (28,178,653 samples, 0.54%)</title><rect x="1112.6" y="357" width="6.4" height="15.0" fill="rgb(237,150,36)" rx="2" ry="2" />
+<text  x="1115.64" y="367.5" ></text>
+</g>
+<g >
+<title>exc_page_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="325" width="6.4" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="776.30" y="335.5" ></text>
+</g>
+<g >
+<title>do_user_addr_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="485" width="6.5" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="1160.45" y="495.5" ></text>
+</g>
+<g >
+<title>inst_type_w_ (28,179,200 samples, 0.54%)</title><rect x="754.1" y="373" width="6.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="757.10" y="383.5" ></text>
+</g>
+<g >
+<title>obviously_disjoint.part.0 (56,360,751 samples, 1.09%)</title><rect x="613.3" y="485" width="12.8" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="616.26" y="495.5" ></text>
+</g>
+<g >
+<title>gc_mark_loop_serial (337,842,040 samples, 6.50%)</title><rect x="370.4" y="789" width="76.7" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="373.36" y="799.5" >gc_mark_..</text>
+</g>
+<g >
+<title>llvm::LiveIntervalUnion::Array::init (28,151,288 samples, 0.54%)</title><rect x="287.2" y="1109" width="6.4" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="290.24" y="1119.5" ></text>
+</g>
+<g >
+<title>jl_restore_system_image_from_stream_ (1,409,122,153 samples, 27.13%)</title><rect x="843.7" y="549" width="320.2" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="846.72" y="559.5" >jl_restore_system_image_from_stream_</text>
+</g>
+<g >
+<title>julia_include_46549.1 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="981" width="825.5" height="15.0" fill="rgb(217,58,14)" rx="2" ry="2" />
+<text  x="360.61" y="991.5" >julia_include_46549.1</text>
+</g>
+<g >
+<title>subtype (394,571,360 samples, 7.60%)</title><rect x="862.9" y="469" width="89.7" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="865.93" y="479.5" >subtype</text>
+</g>
+<g >
+<title>handle_mm_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="469" width="6.5" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="1160.45" y="479.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="453" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="463.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,254 samples, 0.54%)</title><rect x="728.5" y="469" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="731.49" y="479.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (28,171,716 samples, 0.54%)</title><rect x="536.4" y="421" width="6.4" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="539.45" y="431.5" ></text>
+</g>
+<g >
+<title>gc_mark_loop_serial_ (337,842,040 samples, 6.50%)</title><rect x="370.4" y="773" width="76.7" height="15.0" fill="rgb(205,4,1)" rx="2" ry="2" />
+<text  x="373.36" y="783.5" >gc_mark_..</text>
+</g>
+<g >
+<title>inst_tuple_w_ (56,359,758 samples, 1.09%)</title><rect x="747.7" y="405" width="12.8" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="750.70" y="415.5" ></text>
+</g>
+<g >
+<title>finish_unionall.isra.0 (84,543,136 samples, 1.63%)</title><rect x="741.3" y="453" width="19.2" height="15.0" fill="rgb(226,97,23)" rx="2" ry="2" />
+<text  x="744.29" y="463.5" ></text>
+</g>
+<g >
+<title>subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="389" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="725.09" y="399.5" ></text>
+</g>
+<g >
+<title>julia__include_from_serialized_80564.2 (56,298,405 samples, 1.08%)</title><rect x="517.3" y="629" width="12.7" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="520.25" y="639.5" ></text>
+</g>
+<g >
+<title>jfptr_include_46550.1 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="997" width="825.5" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="360.61" y="1007.5" >jfptr_include_46550.1</text>
+</g>
+<g >
+<title>zap_pmd_range.isra.0 (28,124,839 samples, 0.54%)</title><rect x="338.4" y="933" width="6.4" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="341.43" y="943.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,176,885 samples, 0.54%)</title><rect x="933.4" y="389" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="936.36" y="399.5" ></text>
+</g>
+<g >
+<title>subtype_var (28,192,194 samples, 0.54%)</title><rect x="939.8" y="373" width="6.4" height="15.0" fill="rgb(235,141,33)" rx="2" ry="2" />
+<text  x="942.77" y="383.5" ></text>
+</g>
+<g >
+<title>handle_pte_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="261" width="6.4" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="776.30" y="271.5" ></text>
+</g>
+<g >
+<title>[perf-1837788.map] (702,669,742 samples, 13.53%)</title><rect x="357.6" y="853" width="159.7" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="360.61" y="863.5" >[perf-1837788.map]</text>
+</g>
+<g >
+<title>ijl_alloc_array_1d (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="37" width="6.4" height="15.0" fill="rgb(213,36,8)" rx="2" ry="2" />
+<text  x="1179.73" y="47.5" ></text>
+</g>
+<g >
+<title>ml_matches.part.0 (56,351,656 samples, 1.08%)</title><rect x="530.0" y="533" width="12.8" height="15.0" fill="rgb(221,73,17)" rx="2" ry="2" />
+<text  x="533.04" y="543.5" ></text>
+</g>
+<g >
+<title>_dl_runtime_resolve_xsavec (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1109" width="6.6" height="15.0" fill="rgb(217,59,14)" rx="2" ry="2" />
+<text  x="274.43" y="1119.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (28,149,280 samples, 0.54%)</title><rect x="517.3" y="341" width="6.3" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="520.25" y="351.5" ></text>
+</g>
+<g >
+<title>local_forall_exists_subtype (56,369,079 samples, 1.09%)</title><rect x="933.4" y="405" width="12.8" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="936.36" y="415.5" ></text>
+</g>
+<g >
+<title>subtype (56,349,815 samples, 1.08%)</title><rect x="786.1" y="277" width="12.8" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="287.5" ></text>
+</g>
+<g >
+<title>__alloc_pages (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="373" width="6.5" height="15.0" fill="rgb(233,129,30)" rx="2" ry="2" />
+<text  x="1160.45" y="383.5" ></text>
+</g>
+<g >
+<title>inst_type_w_ (28,180,710 samples, 0.54%)</title><rect x="792.5" y="165" width="6.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="795.51" y="175.5" ></text>
+</g>
+<g >
+<title>subtype_ccheck (28,169,105 samples, 0.54%)</title><rect x="786.1" y="69" width="6.4" height="15.0" fill="rgb(227,101,24)" rx="2" ry="2" />
+<text  x="789.11" y="79.5" ></text>
+</g>
+<g >
+<title>normalize_unionalls (28,179,640 samples, 0.54%)</title><rect x="805.3" y="341" width="6.4" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="808.31" y="351.5" ></text>
+</g>
+<g >
+<title>bprm_execve.part.0 (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1013" width="2.9" height="15.0" fill="rgb(228,106,25)" rx="2" ry="2" />
+<text  x="280.98" y="1023.5" ></text>
+</g>
+<g >
+<title>subtype (56,349,815 samples, 1.08%)</title><rect x="786.1" y="245" width="12.8" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="255.5" ></text>
+</g>
+<g >
+<title>japi1__include_81171.2 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="965" width="825.5" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="360.61" y="975.5" >japi1__include_81171.2</text>
+</g>
+<g >
+<title>ijl_has_free_typevars (28,180,254 samples, 0.54%)</title><rect x="728.5" y="453" width="6.4" height="15.0" fill="rgb(245,184,44)" rx="2" ry="2" />
+<text  x="731.49" y="463.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (28,181,350 samples, 0.54%)</title><rect x="568.5" y="421" width="6.4" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="571.45" y="431.5" ></text>
+</g>
+<g >
+<title>intersect_unionall (338,155,386 samples, 6.51%)</title><rect x="734.9" y="485" width="76.8" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="737.89" y="495.5" >intersec..</text>
+</g>
+<g >
+<title>llvm::X86InstrInfo::getExecutionDomain (28,153,426 samples, 0.54%)</title><rect x="351.2" y="1125" width="6.4" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="354.22" y="1135.5" ></text>
+</g>
+<g >
+<title>malloc (28,167,946 samples, 0.54%)</title><rect x="1183.1" y="1125" width="6.4" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1186.13" y="1135.5" ></text>
+</g>
+<g >
+<title>AddNodeIDNode (28,152,403 samples, 0.54%)</title><rect x="16.4" y="1109" width="6.4" height="15.0" fill="rgb(252,216,51)" rx="2" ry="2" />
+<text  x="19.40" y="1119.5" ></text>
+</g>
+<g >
+<title>julia_abstract_eval_basic_statement_35281.1 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="277" width="6.4" height="15.0" fill="rgb(214,45,10)" rx="2" ry="2" />
+<text  x="1179.73" y="287.5" ></text>
+</g>
+<g >
+<title>var_occurs_inside (28,171,716 samples, 0.54%)</title><rect x="536.4" y="389" width="6.4" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="539.45" y="399.5" ></text>
+</g>
+<g >
+<title>start (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1125" width="0.5" height="15.0" fill="rgb(208,18,4)" rx="2" ry="2" />
+<text  x="1192.53" y="1135.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (789,051,260 samples, 15.19%)</title><rect x="959.0" y="453" width="179.2" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="961.98" y="463.5" >obvious_subtype.part.0</text>
+</g>
+<g >
+<title>do_read_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="981" width="6.6" height="15.0" fill="rgb(223,84,20)" rx="2" ry="2" />
+<text  x="274.43" y="991.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="469" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="479.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_gf_by_type_33872.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="149" width="6.4" height="15.0" fill="rgb(207,13,3)" rx="2" ry="2" />
+<text  x="1179.73" y="159.5" ></text>
+</g>
+<g >
+<title>jl_restore_incremental_from_buf (2,818,316,469 samples, 54.26%)</title><rect x="530.0" y="581" width="640.3" height="15.0" fill="rgb(216,55,13)" rx="2" ry="2" />
+<text  x="533.04" y="591.5" >jl_restore_incremental_from_buf</text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="853" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="863.5" ></text>
+</g>
+<g >
+<title>__anon_vma_interval_tree_remove (12,723,684 samples, 0.24%)</title><rect x="278.0" y="885" width="2.9" height="15.0" fill="rgb(244,181,43)" rx="2" ry="2" />
+<text  x="280.98" y="895.5" ></text>
+</g>
+<g >
+<title>has_free_typevars (56,377,971 samples, 1.09%)</title><rect x="1035.8" y="405" width="12.8" height="15.0" fill="rgb(219,66,15)" rx="2" ry="2" />
+<text  x="1038.81" y="415.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (28,149,280 samples, 0.54%)</title><rect x="517.3" y="517" width="6.3" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="520.25" y="527.5" ></text>
+</g>
+<g >
+<title>intersect_all (28,171,716 samples, 0.54%)</title><rect x="536.4" y="453" width="6.4" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="539.45" y="463.5" ></text>
+</g>
+<g >
+<title>llvm::X86GenRegisterInfo::getRegClassPressureSets (28,252,600 samples, 0.54%)</title><rect x="263.3" y="1093" width="6.5" height="15.0" fill="rgb(212,35,8)" rx="2" ry="2" />
+<text  x="266.35" y="1103.5" ></text>
+</g>
+<g >
+<title>inst_datatype_inner (28,180,710 samples, 0.54%)</title><rect x="792.5" y="149" width="6.4" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="795.51" y="159.5" ></text>
+</g>
+<g >
+<title>ijl_has_typevar (28,183,378 samples, 0.54%)</title><rect x="741.3" y="437" width="6.4" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="744.29" y="447.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="965" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="975.5" ></text>
+</g>
+<g >
+<title>subtype (28,169,105 samples, 0.54%)</title><rect x="786.1" y="213" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="223.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_array_visitor (28,181,155 samples, 0.54%)</title><rect x="824.5" y="501" width="6.4" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="827.52" y="511.5" ></text>
+</g>
+<g >
+<title>__handle_mm_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="277" width="6.4" height="15.0" fill="rgb(207,9,2)" rx="2" ry="2" />
+<text  x="776.30" y="287.5" ></text>
+</g>
+<g >
+<title>x64_sys_call (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1093" width="6.4" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="341.43" y="1103.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,492,822 samples, 0.55%)</title><rect x="1163.9" y="501" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1166.86" y="511.5" ></text>
+</g>
+<g >
+<title>inst_type_w_ (28,180,710 samples, 0.54%)</title><rect x="792.5" y="181" width="6.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="795.51" y="191.5" ></text>
+</g>
+<g >
+<title>__mprotect (28,111,211 samples, 0.54%)</title><rect x="357.6" y="805" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="360.61" y="815.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,174,280 samples, 0.54%)</title><rect x="722.1" y="325" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="725.09" y="335.5" ></text>
+</g>
+<g >
+<title>jfptr___require_80926.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="773" width="665.8" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="520.25" y="783.5" >jfptr___require_80926.1</text>
+</g>
+<g >
+<title>subtype_unionall (28,169,105 samples, 0.54%)</title><rect x="786.1" y="197" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="207.5" ></text>
+</g>
+<g >
+<title>alloc_pages_vma (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="389" width="6.5" height="15.0" fill="rgb(253,224,53)" rx="2" ry="2" />
+<text  x="1160.45" y="399.5" ></text>
+</g>
+<g >
+<title>julia (5,193,861,784 samples, 100.00%)</title><rect x="10.0" y="1141" width="1180.0" height="15.0" fill="rgb(220,70,16)" rx="2" ry="2" />
+<text  x="13.00" y="1151.5" >julia</text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="1077" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1087.5" ></text>
+</g>
+<g >
+<title>page_remove_file_rmap (28,124,839 samples, 0.54%)</title><rect x="338.4" y="885" width="6.4" height="15.0" fill="rgb(251,215,51)" rx="2" ry="2" />
+<text  x="341.43" y="895.5" ></text>
+</g>
+<g >
+<title>__x64_sys_execve (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1061" width="2.9" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="280.98" y="1071.5" ></text>
+</g>
+<g >
+<title>asm_exc_page_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1093" width="1.6" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="272.76" y="1103.5" ></text>
+</g>
+<g >
+<title>subtype (28,169,105 samples, 0.54%)</title><rect x="786.1" y="181" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="191.5" ></text>
+</g>
+<g >
+<title>do_mprotect_pkey (28,111,211 samples, 0.54%)</title><rect x="357.6" y="725" width="6.4" height="15.0" fill="rgb(252,218,52)" rx="2" ry="2" />
+<text  x="360.61" y="735.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="1061" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1071.5" ></text>
+</g>
+<g >
+<title>asm_sysvec_call_function_single (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1077" width="0.5" height="15.0" fill="rgb(234,136,32)" rx="2" ry="2" />
+<text  x="1192.53" y="1087.5" ></text>
+</g>
+<g >
+<title>subtype (169,077,640 samples, 3.26%)</title><rect x="632.5" y="485" width="38.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="635.47" y="495.5" >sub..</text>
+</g>
+<g >
+<title>filemap_map_pages (28,817,118 samples, 0.55%)</title><rect x="271.4" y="965" width="6.6" height="15.0" fill="rgb(229,112,27)" rx="2" ry="2" />
+<text  x="274.43" y="975.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_34869.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="213" width="6.4" height="15.0" fill="rgb(249,205,49)" rx="2" ry="2" />
+<text  x="1179.73" y="223.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,353 samples, 0.54%)</title><rect x="798.9" y="325" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="801.91" y="335.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (56,349,815 samples, 1.08%)</title><rect x="786.1" y="261" width="12.8" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="271.5" ></text>
+</g>
+<g >
+<title>julia_run_module_init_80607.2 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="581" width="12.8" height="15.0" fill="rgb(217,55,13)" rx="2" ry="2" />
+<text  x="1173.33" y="591.5" ></text>
+</g>
+<g >
+<title>jfptr_typeinf_ext_toplevel_35670.1 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="405" width="12.8" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="1173.33" y="415.5" ></text>
+</g>
+<g >
+<title>subtype (140,896,847 samples, 2.71%)</title><rect x="632.5" y="453" width="32.0" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="635.47" y="463.5" >su..</text>
+</g>
+<g >
+<title>julia_const_prop_call_34366.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="101" width="6.4" height="15.0" fill="rgb(231,122,29)" rx="2" ry="2" />
+<text  x="1179.73" y="111.5" ></text>
+</g>
+<g >
+<title>intersect_invariant (28,180,282 samples, 0.54%)</title><rect x="830.9" y="341" width="6.4" height="15.0" fill="rgb(209,20,4)" rx="2" ry="2" />
+<text  x="833.92" y="351.5" ></text>
+</g>
+<g >
+<title>jl_type_intersection_env_s (28,492,822 samples, 0.55%)</title><rect x="1163.9" y="549" width="6.4" height="15.0" fill="rgb(234,133,31)" rx="2" ry="2" />
+<text  x="1166.86" y="559.5" ></text>
+</g>
+<g >
+<title>julia__require_81064.2 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="661" width="665.8" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="520.25" y="671.5" >julia__require_81064.2</text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="869" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="879.5" ></text>
+</g>
+<g >
+<title>julia_construct_ssaNOT._35877.2 (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="277" width="6.4" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="1173.33" y="287.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="949" width="825.5" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="360.61" y="959.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (28,149,280 samples, 0.54%)</title><rect x="517.3" y="549" width="6.3" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="520.25" y="559.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (450,883,767 samples, 8.68%)</title><rect x="1029.4" y="421" width="102.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1032.41" y="431.5" >obvious_subt..</text>
+</g>
+<g >
+<title>ijl_apply_generic (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="853" width="665.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="520.25" y="863.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>jfptr___require_prelocked_80963.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="693" width="665.8" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="520.25" y="703.5" >jfptr___require_prelocked_80963.1</text>
+</g>
+<g >
+<title>subtype (28,169,105 samples, 0.54%)</title><rect x="786.1" y="149" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="789.11" y="159.5" ></text>
+</g>
+<g >
+<title>__handle_mm_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="453" width="6.5" height="15.0" fill="rgb(207,9,2)" rx="2" ry="2" />
+<text  x="1160.45" y="463.5" ></text>
+</g>
+<g >
+<title>ijl_gc_collect (702,669,742 samples, 13.53%)</title><rect x="357.6" y="821" width="159.7" height="15.0" fill="rgb(227,102,24)" rx="2" ry="2" />
+<text  x="360.61" y="831.5" >ijl_gc_collect</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,889 samples, 0.54%)</title><rect x="562.0" y="357" width="6.5" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="565.05" y="367.5" ></text>
+</g>
+<g >
+<title>getLeastCommonType (28,149,633 samples, 0.54%)</title><rect x="344.8" y="1125" width="6.4" height="15.0" fill="rgb(248,198,47)" rx="2" ry="2" />
+<text  x="347.82" y="1135.5" ></text>
+</g>
+<g >
+<title>x64_sys_call (28,111,211 samples, 0.54%)</title><rect x="357.6" y="757" width="6.4" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="360.61" y="767.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="885" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="895.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="917" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="927.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (112,710,369 samples, 2.17%)</title><rect x="818.1" y="533" width="25.6" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="821.12" y="543.5" >j..</text>
+</g>
+<g >
+<title>jl_compile_method_internal (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="469" width="12.8" height="15.0" fill="rgb(224,90,21)" rx="2" ry="2" />
+<text  x="1173.33" y="479.5" ></text>
+</g>
+<g >
+<title>next_uptodate_page (28,817,118 samples, 0.55%)</title><rect x="271.4" y="949" width="6.6" height="15.0" fill="rgb(210,25,6)" rx="2" ry="2" />
+<text  x="274.43" y="959.5" ></text>
+</g>
+<g >
+<title>normalize_unionalls (28,179,640 samples, 0.54%)</title><rect x="805.3" y="325" width="6.4" height="15.0" fill="rgb(251,213,51)" rx="2" ry="2" />
+<text  x="808.31" y="335.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (140,896,847 samples, 2.71%)</title><rect x="632.5" y="469" width="32.0" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="635.47" y="479.5" >su..</text>
+</g>
+<g >
+<title>_forall_exists_subtype (84,531,235 samples, 1.63%)</title><rect x="779.7" y="325" width="19.2" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="782.71" y="335.5" ></text>
+</g>
+<g >
+<title>intersect_tuple (28,180,889 samples, 0.54%)</title><rect x="562.0" y="421" width="6.5" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="565.05" y="431.5" ></text>
+</g>
+<g >
+<title>intersect (28,180,282 samples, 0.54%)</title><rect x="830.9" y="325" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="833.92" y="335.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_array_visitor (28,171,733 samples, 0.54%)</title><rect x="818.1" y="517" width="6.4" height="15.0" fill="rgb(225,95,22)" rx="2" ry="2" />
+<text  x="821.12" y="527.5" ></text>
+</g>
+<g >
+<title>_dl_lookup_symbol_x (636,634,419 samples, 12.26%)</title><rect x="99.5" y="1093" width="144.6" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="102.48" y="1103.5" >_dl_lookup_symbol_x</text>
+</g>
+<g >
+<title>intersect_unionall (197,251,760 samples, 3.80%)</title><rect x="766.9" y="437" width="44.8" height="15.0" fill="rgb(244,180,43)" rx="2" ry="2" />
+<text  x="769.90" y="447.5" >inte..</text>
+</g>
+<g >
+<title>ijl_types_equal.part.0 (112,711,588 samples, 2.17%)</title><rect x="779.7" y="341" width="25.6" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="782.71" y="351.5" >i..</text>
+</g>
+<g >
+<title>intersect (394,509,920 samples, 7.60%)</title><rect x="722.1" y="501" width="89.6" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="725.09" y="511.5" >intersect</text>
+</g>
+<g >
+<title>[unknown] (1,087,078,413 samples, 20.93%)</title><rect x="22.8" y="1109" width="247.0" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1119.5" >[unknown]</text>
+</g>
+<g >
+<title>int64hash (28,180,710 samples, 0.54%)</title><rect x="792.5" y="117" width="6.4" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="795.51" y="127.5" ></text>
+</g>
+<g >
+<title>inst_datatype_inner (169,071,559 samples, 3.26%)</title><rect x="773.3" y="357" width="38.4" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="776.30" y="367.5" >ins..</text>
+</g>
+<g >
+<title>jl_precompute_memoized_dt (28,180,710 samples, 0.54%)</title><rect x="792.5" y="133" width="6.4" height="15.0" fill="rgb(247,197,47)" rx="2" ry="2" />
+<text  x="795.51" y="143.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="501" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="511.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,164,776 samples, 0.54%)</title><rect x="715.7" y="469" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="718.69" y="479.5" ></text>
+</g>
+<g >
+<title>julia_abstract_call_method_with_const_args_34120.1 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="117" width="6.4" height="15.0" fill="rgb(240,165,39)" rx="2" ry="2" />
+<text  x="1179.73" y="127.5" ></text>
+</g>
+<g >
+<title>obviously_egal (28,171,975 samples, 0.54%)</title><rect x="1125.4" y="389" width="6.4" height="15.0" fill="rgb(222,78,18)" rx="2" ry="2" />
+<text  x="1128.44" y="399.5" ></text>
+</g>
+<g >
+<title>jl_typemap_intersection_visitor (28,180,282 samples, 0.54%)</title><rect x="830.9" y="501" width="6.4" height="15.0" fill="rgb(247,193,46)" rx="2" ry="2" />
+<text  x="833.92" y="511.5" ></text>
+</g>
+<g >
+<title>intersect_all (28,180,282 samples, 0.54%)</title><rect x="830.9" y="453" width="6.4" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="833.92" y="463.5" ></text>
+</g>
+<g >
+<title>gc_mark_objarray.constprop.0 (84,460,130 samples, 1.63%)</title><rect x="427.9" y="757" width="19.2" height="15.0" fill="rgb(216,50,12)" rx="2" ry="2" />
+<text  x="430.93" y="767.5" ></text>
+</g>
+<g >
+<title>julia_abstract_eval_statement_35196.1 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="261" width="6.4" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="1179.73" y="271.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="805" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="815.5" ></text>
+</g>
+<g >
+<title>_raw_spin_lock (3,344,569 samples, 0.06%)</title><rect x="270.7" y="949" width="0.7" height="15.0" fill="rgb(239,160,38)" rx="2" ry="2" />
+<text  x="273.66" y="959.5" ></text>
+</g>
+<g >
+<title>intersect_tuple (28,149,280 samples, 0.54%)</title><rect x="517.3" y="469" width="6.3" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="520.25" y="479.5" ></text>
+</g>
+<g >
+<title>__getauxval (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1093" width="0.5" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="1192.53" y="1103.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (169,058,532 samples, 3.25%)</title><rect x="1087.0" y="373" width="38.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1090.03" y="383.5" >obv..</text>
+</g>
+<g >
+<title>jl_f__call_in_world (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="805" width="665.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="520.25" y="815.5" >jl_f__call_in_world</text>
+</g>
+<g >
+<title>intersect_tuple (28,180,282 samples, 0.54%)</title><rect x="830.9" y="373" width="6.4" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="833.92" y="383.5" ></text>
+</g>
+<g >
+<title>forall_exists_equal (28,201,464 samples, 0.54%)</title><rect x="946.2" y="389" width="6.4" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="949.17" y="399.5" ></text>
+</g>
+<g >
+<title>_jl_gc_collect (674,558,531 samples, 12.99%)</title><rect x="364.0" y="805" width="153.3" height="15.0" fill="rgb(241,169,40)" rx="2" ry="2" />
+<text  x="367.00" y="815.5" >_jl_gc_collect</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (253,599,143 samples, 4.88%)</title><rect x="1067.8" y="389" width="57.6" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1070.83" y="399.5" >obviou..</text>
+</g>
+<g >
+<title>handle_pte_fault (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="437" width="6.5" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="1160.45" y="447.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1013" width="825.5" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="360.61" y="1023.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>unalias_unionall.isra.0 (28,180,793 samples, 0.54%)</title><rect x="664.5" y="469" width="6.4" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="667.48" y="479.5" ></text>
+</g>
+<g >
+<title>jl_f__call_in_world (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="725" width="665.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="520.25" y="735.5" >jl_f__call_in_world</text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="821" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="831.5" ></text>
+</g>
+<g >
+<title>jl_repl_entrypoint (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1109" width="825.5" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="360.61" y="1119.5" >jl_repl_entrypoint</text>
+</g>
+<g >
+<title>julia_run_passes_37486.2 (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="309" width="6.4" height="15.0" fill="rgb(243,178,42)" rx="2" ry="2" />
+<text  x="1173.33" y="319.5" ></text>
+</g>
+<g >
+<title>do_lookup_x (56,442,365 samples, 1.09%)</title><rect x="325.6" y="1125" width="12.8" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="328.61" y="1135.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1077" width="825.5" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="360.61" y="1087.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>__x64_sys_exit_group (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1077" width="6.4" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="341.43" y="1087.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (28,174,280 samples, 0.54%)</title><rect x="722.1" y="437" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="725.09" y="447.5" ></text>
+</g>
+<g >
+<title>do_group_exit (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1061" width="6.4" height="15.0" fill="rgb(219,67,16)" rx="2" ry="2" />
+<text  x="341.43" y="1071.5" ></text>
+</g>
+<g >
+<title>ijl_subtype_env.part.0 (28,179,415 samples, 0.54%)</title><rect x="645.3" y="437" width="6.4" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="648.27" y="447.5" ></text>
+</g>
+<g >
+<title>jl_has_bound_typevars (28,183,378 samples, 0.54%)</title><rect x="741.3" y="421" width="6.4" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="744.29" y="431.5" ></text>
+</g>
+<g >
+<title>handle_mm_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1045" width="1.6" height="15.0" fill="rgb(234,135,32)" rx="2" ry="2" />
+<text  x="272.76" y="1055.5" ></text>
+</g>
+<g >
+<title>unmap_page_range (28,124,839 samples, 0.54%)</title><rect x="338.4" y="949" width="6.4" height="15.0" fill="rgb(206,5,1)" rx="2" ry="2" />
+<text  x="341.43" y="959.5" ></text>
+</g>
+<g >
+<title>intersect (28,149,280 samples, 0.54%)</title><rect x="517.3" y="485" width="6.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="520.25" y="495.5" ></text>
+</g>
+<g >
+<title>julia_typeinf_local_35296.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="293" width="6.4" height="15.0" fill="rgb(214,41,9)" rx="2" ry="2" />
+<text  x="1179.73" y="303.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,176,885 samples, 0.54%)</title><rect x="933.4" y="357" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="936.36" y="367.5" ></text>
+</g>
+<g >
+<title>do_wp_page (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="421" width="6.5" height="15.0" fill="rgb(212,36,8)" rx="2" ry="2" />
+<text  x="1160.45" y="431.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (28,169,105 samples, 0.54%)</title><rect x="786.1" y="133" width="6.4" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="143.5" ></text>
+</g>
+<g >
+<title>mmput (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1013" width="6.4" height="15.0" fill="rgb(226,99,23)" rx="2" ry="2" />
+<text  x="341.43" y="1023.5" ></text>
+</g>
+<g >
+<title>_may_substitute_ub (28,179,640 samples, 0.54%)</title><rect x="805.3" y="309" width="6.4" height="15.0" fill="rgb(211,32,7)" rx="2" ry="2" />
+<text  x="808.31" y="319.5" ></text>
+</g>
+<g >
+<title>exit_mm (28,124,839 samples, 0.54%)</title><rect x="338.4" y="1029" width="6.4" height="15.0" fill="rgb(236,144,34)" rx="2" ry="2" />
+<text  x="341.43" y="1039.5" ></text>
+</g>
+<g >
+<title>inst_datatype_inner (28,180,558 samples, 0.54%)</title><rect x="747.7" y="389" width="6.4" height="15.0" fill="rgb(211,28,6)" rx="2" ry="2" />
+<text  x="750.70" y="399.5" ></text>
+</g>
+<g >
+<title>ijl_subtype_env.part.0 (56,354,534 samples, 1.09%)</title><rect x="722.1" y="485" width="12.8" height="15.0" fill="rgb(221,74,17)" rx="2" ry="2" />
+<text  x="725.09" y="495.5" ></text>
+</g>
+<g >
+<title>julia_register_restored_modules_80591.2 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="597" width="12.8" height="15.0" fill="rgb(233,133,31)" rx="2" ry="2" />
+<text  x="1173.33" y="607.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="789" width="665.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="520.25" y="799.5" >ijl_apply_generic</text>
+</g>
+<g >
+<title>may_contain_union_decision (28,201,464 samples, 0.54%)</title><rect x="946.2" y="341" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="949.17" y="351.5" ></text>
+</g>
+<g >
+<title>mprotect_fixup (28,111,211 samples, 0.54%)</title><rect x="357.6" y="709" width="6.4" height="15.0" fill="rgb(236,144,34)" rx="2" ry="2" />
+<text  x="360.61" y="719.5" ></text>
+</g>
+<g >
+<title>ijl_types_equal.part.0 (1,324,544,783 samples, 25.50%)</title><rect x="843.7" y="501" width="300.9" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="846.72" y="511.5" >ijl_types_equal.part.0</text>
+</g>
+<g >
+<title>jl_typemap_intersection_node_visitor (28,180,282 samples, 0.54%)</title><rect x="830.9" y="485" width="6.4" height="15.0" fill="rgb(207,10,2)" rx="2" ry="2" />
+<text  x="833.92" y="495.5" ></text>
+</g>
+<g >
+<title>entry_SYSCALL_64_after_hwframe (28,111,211 samples, 0.54%)</title><rect x="357.6" y="789" width="6.4" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="360.61" y="799.5" ></text>
+</g>
+<g >
+<title>jl_generate_fptr_impl (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="453" width="12.8" height="15.0" fill="rgb(222,80,19)" rx="2" ry="2" />
+<text  x="1173.33" y="463.5" ></text>
+</g>
+<g >
+<title>_int_free (28,154,959 samples, 0.54%)</title><rect x="86.7" y="1077" width="6.4" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="89.69" y="1087.5" ></text>
+</g>
+<g >
+<title>[unknown] (1,360,830,950 samples, 26.20%)</title><rect x="16.4" y="1125" width="309.2" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="19.40" y="1135.5" >[unknown]</text>
+</g>
+<g >
+<title>julia___require_80925.1 (2,930,930,017 samples, 56.43%)</title><rect x="517.3" y="757" width="665.8" height="15.0" fill="rgb(254,228,54)" rx="2" ry="2" />
+<text  x="520.25" y="767.5" >julia___require_80925.1</text>
+</g>
+<g >
+<title>entry_SYSCALL_64_after_hwframe (12,723,684 samples, 0.24%)</title><rect x="278.0" y="1109" width="2.9" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="280.98" y="1119.5" ></text>
+</g>
+<g >
+<title>jl_read_reloclist (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="533" width="6.5" height="15.0" fill="rgb(230,119,28)" rx="2" ry="2" />
+<text  x="1160.45" y="543.5" ></text>
+</g>
+<g >
+<title>intersect_tuple (28,180,302 samples, 0.54%)</title><rect x="760.5" y="437" width="6.4" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="763.50" y="447.5" ></text>
+</g>
+<g >
+<title>page_remove_rmap (28,124,839 samples, 0.54%)</title><rect x="338.4" y="901" width="6.4" height="15.0" fill="rgb(252,219,52)" rx="2" ry="2" />
+<text  x="341.43" y="911.5" ></text>
+</g>
+<g >
+<title>anon_vma_interval_tree_remove (12,723,684 samples, 0.24%)</title><rect x="278.0" y="901" width="2.9" height="15.0" fill="rgb(221,77,18)" rx="2" ry="2" />
+<text  x="280.98" y="911.5" ></text>
+</g>
+<g >
+<title>jl_restore_system_image_from_stream_ (28,149,125 samples, 0.54%)</title><rect x="523.6" y="565" width="6.4" height="15.0" fill="rgb(233,130,31)" rx="2" ry="2" />
+<text  x="526.65" y="575.5" ></text>
+</g>
+<g >
+<title>std::sys::pal::unix::thread::Thread::new::thread_start (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1109" width="0.5" height="15.0" fill="rgb(253,223,53)" rx="2" ry="2" />
+<text  x="1192.53" y="1119.5" ></text>
+</g>
+<g >
+<title>local_forall_exists_subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="341" width="6.4" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="725.09" y="351.5" ></text>
+</g>
+<g >
+<title>local_forall_exists_subtype (28,201,464 samples, 0.54%)</title><rect x="946.2" y="373" width="6.4" height="15.0" fill="rgb(229,114,27)" rx="2" ry="2" />
+<text  x="949.17" y="383.5" ></text>
+</g>
+<g >
+<title>subtype (28,201,464 samples, 0.54%)</title><rect x="946.2" y="405" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="949.17" y="415.5" ></text>
+</g>
+<g >
+<title>do_user_addr_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1061" width="1.6" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="272.76" y="1071.5" ></text>
+</g>
+<g >
+<title>ijl_alloc_array_1d (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="245" width="6.4" height="15.0" fill="rgb(213,36,8)" rx="2" ry="2" />
+<text  x="1173.33" y="255.5" ></text>
+</g>
+<g >
+<title>wp_page_copy (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="405" width="6.5" height="15.0" fill="rgb(214,42,10)" rx="2" ry="2" />
+<text  x="1160.45" y="415.5" ></text>
+</g>
+<g >
+<title>obviously_disjoint.part.0 (28,179,819 samples, 0.54%)</title><rect x="619.7" y="469" width="6.4" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="622.67" y="479.5" ></text>
+</g>
+<g >
+<title>llvm::GVNPass::ValueTable::createExpr (28,151,987 samples, 0.54%)</title><rect x="250.6" y="1093" width="6.3" height="15.0" fill="rgb(228,107,25)" rx="2" ry="2" />
+<text  x="253.55" y="1103.5" ></text>
+</g>
+<g >
+<title>julia_typeinf_nocycle_35377.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="309" width="6.4" height="15.0" fill="rgb(254,226,54)" rx="2" ry="2" />
+<text  x="1179.73" y="319.5" ></text>
+</g>
+<g >
+<title>llvm::LivePhysRegs::addPristines (28,154,708 samples, 0.54%)</title><rect x="293.6" y="1109" width="6.4" height="15.0" fill="rgb(239,156,37)" rx="2" ry="2" />
+<text  x="296.64" y="1119.5" ></text>
+</g>
+<g >
+<title>handle_pte_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="1013" width="1.6" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="272.76" y="1023.5" ></text>
+</g>
+<g >
+<title>ijl_apply_generic (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="421" width="12.8" height="15.0" fill="rgb(237,149,35)" rx="2" ry="2" />
+<text  x="1173.33" y="431.5" ></text>
+</g>
+<g >
+<title>julia_typeinf_ext_toplevel_35669.1 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="389" width="12.8" height="15.0" fill="rgb(230,115,27)" rx="2" ry="2" />
+<text  x="1173.33" y="399.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (56,345,331 samples, 1.08%)</title><rect x="709.3" y="485" width="12.8" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="712.29" y="495.5" ></text>
+</g>
+<g >
+<title>do_lookup_x (28,328,877 samples, 0.55%)</title><rect x="244.1" y="1093" width="6.5" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="247.12" y="1103.5" ></text>
+</g>
+<g >
+<title>subtype (28,174,280 samples, 0.54%)</title><rect x="722.1" y="453" width="6.4" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="725.09" y="463.5" ></text>
+</g>
+<g >
+<title>do_fault (7,306,551 samples, 0.14%)</title><rect x="269.8" y="997" width="1.6" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="272.76" y="1007.5" ></text>
+</g>
+<g >
+<title>obviously_disjoint.part.0 (28,177,282 samples, 0.54%)</title><rect x="811.7" y="517" width="6.4" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="814.72" y="527.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_decrement (28,098,688 samples, 0.54%)</title><rect x="306.4" y="1109" width="6.4" height="15.0" fill="rgb(238,152,36)" rx="2" ry="2" />
+<text  x="309.43" y="1119.5" ></text>
+</g>
+<g >
+<title>subtype (140,919,993 samples, 2.71%)</title><rect x="920.6" y="437" width="32.0" height="15.0" fill="rgb(224,91,21)" rx="2" ry="2" />
+<text  x="923.56" y="447.5" >su..</text>
+</g>
+<g >
+<title>__memset_evex_unaligned_erms (253,079,269 samples, 4.87%)</title><rect x="29.2" y="1077" width="57.5" height="15.0" fill="rgb(218,60,14)" rx="2" ry="2" />
+<text  x="32.19" y="1087.5" >__mems..</text>
+</g>
+<g >
+<title>var_lt (28,192,194 samples, 0.54%)</title><rect x="939.8" y="357" width="6.4" height="15.0" fill="rgb(227,103,24)" rx="2" ry="2" />
+<text  x="942.77" y="367.5" ></text>
+</g>
+<g >
+<title>julia__include_from_serialized_80564.2 (2,874,631,612 samples, 55.35%)</title><rect x="530.0" y="613" width="653.1" height="15.0" fill="rgb(236,146,35)" rx="2" ry="2" />
+<text  x="533.04" y="623.5" >julia__include_from_serialized_80564.2</text>
+</g>
+<g >
+<title>intersect_all (28,149,280 samples, 0.54%)</title><rect x="517.3" y="501" width="6.3" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="520.25" y="511.5" ></text>
+</g>
+<g >
+<title>jl_unwrap_unionall (28,180,915 samples, 0.54%)</title><rect x="626.1" y="485" width="6.4" height="15.0" fill="rgb(237,150,36)" rx="2" ry="2" />
+<text  x="629.07" y="495.5" ></text>
+</g>
+<g >
+<title>true_main (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1093" width="825.5" height="15.0" fill="rgb(236,143,34)" rx="2" ry="2" />
+<text  x="360.61" y="1103.5" >true_main</text>
+</g>
+<g >
+<title>gc_mark_obj8 (168,912,168 samples, 3.25%)</title><rect x="389.6" y="757" width="38.3" height="15.0" fill="rgb(226,97,23)" rx="2" ry="2" />
+<text  x="392.55" y="767.5" >gc_..</text>
+</g>
+<g >
+<title>julia__typeinf_35418.2 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="325" width="12.8" height="15.0" fill="rgb(218,61,14)" rx="2" ry="2" />
+<text  x="1173.33" y="335.5" ></text>
+</g>
+<g >
+<title>intersect_all (28,149,280 samples, 0.54%)</title><rect x="517.3" y="421" width="6.3" height="15.0" fill="rgb(216,53,12)" rx="2" ry="2" />
+<text  x="520.25" y="431.5" ></text>
+</g>
+<g >
+<title>inst_type_w_ (28,179,200 samples, 0.54%)</title><rect x="754.1" y="389" width="6.4" height="15.0" fill="rgb(215,49,11)" rx="2" ry="2" />
+<text  x="757.10" y="399.5" ></text>
+</g>
+<g >
+<title>may_contain_union_decision (28,201,464 samples, 0.54%)</title><rect x="946.2" y="357" width="6.4" height="15.0" fill="rgb(240,164,39)" rx="2" ry="2" />
+<text  x="949.17" y="367.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (704,489,076 samples, 13.56%)</title><rect x="978.2" y="437" width="160.0" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="981.19" y="447.5" >obvious_subtype.part.0</text>
+</g>
+<g >
+<title>non-virtual thunk to llvm::legacy::PassManagerImpl::getTopLevelPassManagerType (28,151,566 samples, 0.54%)</title><rect x="300.0" y="1109" width="6.4" height="15.0" fill="rgb(247,194,46)" rx="2" ry="2" />
+<text  x="303.03" y="1119.5" ></text>
+</g>
+<g >
+<title>setup_arg_pages (12,723,684 samples, 0.24%)</title><rect x="278.0" y="949" width="2.9" height="15.0" fill="rgb(222,82,19)" rx="2" ry="2" />
+<text  x="280.98" y="959.5" ></text>
+</g>
+<g >
+<title>sysvec_call_function_single (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1061" width="0.5" height="15.0" fill="rgb(221,78,18)" rx="2" ry="2" />
+<text  x="1192.53" y="1071.5" ></text>
+</g>
+<g >
+<title>idle_cpu (2,035,610 samples, 0.04%)</title><rect x="1189.5" y="1029" width="0.5" height="15.0" fill="rgb(206,7,1)" rx="2" ry="2" />
+<text  x="1192.53" y="1039.5" ></text>
+</g>
+<g >
+<title>jl_cache_type_ (1,380,899,033 samples, 26.59%)</title><rect x="843.7" y="533" width="313.7" height="15.0" fill="rgb(253,221,52)" rx="2" ry="2" />
+<text  x="846.72" y="543.5" >jl_cache_type_</text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,492,822 samples, 0.55%)</title><rect x="1163.9" y="517" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1166.86" y="527.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="981" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="991.5" ></text>
+</g>
+<g >
+<title>llvm::DenseMapBase&lt;llvm::DenseMap&lt;llvm::Pass*, llvm::AnalysisUsage*, llvm::DenseMapInfo&lt;llvm::Pass*, void&gt;, llvm::detail::DenseMapPair&lt;llvm::Pass*, llvm::AnalysisUsage*&gt; &gt;, llvm::Pass*, llvm::AnalysisUsage*, llvm::DenseMapInfo&lt;llvm::Pass*, void&gt;, llvm::detail::DenseMapPair&lt;llvm::Pass*, llvm::AnalysisUsage*&gt; &gt;::LookupBucketFor&lt;llvm::Pass const*&gt; (28,151,566 samples, 0.54%)</title><rect x="300.0" y="1077" width="6.4" height="15.0" fill="rgb(218,63,15)" rx="2" ry="2" />
+<text  x="303.03" y="1087.5" ></text>
+</g>
+<g >
+<title>handle_pte_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1013" width="6.6" height="15.0" fill="rgb(217,57,13)" rx="2" ry="2" />
+<text  x="274.43" y="1023.5" ></text>
+</g>
+<g >
+<title>intersect_union (28,149,280 samples, 0.54%)</title><rect x="517.3" y="389" width="6.3" height="15.0" fill="rgb(216,51,12)" rx="2" ry="2" />
+<text  x="520.25" y="399.5" ></text>
+</g>
+<g >
+<title>var_gt (28,181,513 samples, 0.54%)</title><rect x="658.1" y="405" width="6.4" height="15.0" fill="rgb(209,22,5)" rx="2" ry="2" />
+<text  x="661.08" y="415.5" ></text>
+</g>
+<g >
+<title>intersect_unionall_ (309,975,198 samples, 5.97%)</title><rect x="741.3" y="469" width="70.4" height="15.0" fill="rgb(230,117,28)" rx="2" ry="2" />
+<text  x="744.29" y="479.5" >interse..</text>
+</g>
+<g >
+<title>jl_gc_alloc (28,160,270 samples, 0.54%)</title><rect x="1170.3" y="229" width="6.4" height="15.0" fill="rgb(220,70,16)" rx="2" ry="2" />
+<text  x="1173.33" y="239.5" ></text>
+</g>
+<g >
+<title>julia_InferenceState_23967.2 (28,154,873 samples, 0.54%)</title><rect x="1176.7" y="69" width="6.4" height="15.0" fill="rgb(249,203,48)" rx="2" ry="2" />
+<text  x="1179.73" y="79.5" ></text>
+</g>
+<g >
+<title>has_free_typevars (56,350,598 samples, 1.08%)</title><rect x="696.5" y="485" width="12.8" height="15.0" fill="rgb(219,66,15)" rx="2" ry="2" />
+<text  x="699.48" y="495.5" ></text>
+</g>
+<g >
+<title>intersect (28,180,282 samples, 0.54%)</title><rect x="830.9" y="389" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="833.92" y="399.5" ></text>
+</g>
+<g >
+<title>_forall_exists_subtype (479,130,467 samples, 9.22%)</title><rect x="843.7" y="485" width="108.9" height="15.0" fill="rgb(208,15,3)" rx="2" ry="2" />
+<text  x="846.72" y="495.5" >_forall_exist..</text>
+</g>
+<g >
+<title>do_user_addr_fault (28,180,331 samples, 0.54%)</title><rect x="773.3" y="309" width="6.4" height="15.0" fill="rgb(228,108,25)" rx="2" ry="2" />
+<text  x="776.30" y="319.5" ></text>
+</g>
+<g >
+<title>intersect (197,251,760 samples, 3.80%)</title><rect x="766.9" y="405" width="44.8" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="769.90" y="415.5" >inte..</text>
+</g>
+<g >
+<title>intersect (28,149,280 samples, 0.54%)</title><rect x="517.3" y="405" width="6.3" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="520.25" y="415.5" ></text>
+</g>
+<g >
+<title>asm_exc_page_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="1093" width="6.6" height="15.0" fill="rgb(225,93,22)" rx="2" ry="2" />
+<text  x="274.43" y="1103.5" ></text>
+</g>
+<g >
+<title>std::_Rb_tree_increment (56,123,754 samples, 1.08%)</title><rect x="312.8" y="1109" width="12.8" height="15.0" fill="rgb(247,196,46)" rx="2" ry="2" />
+<text  x="315.81" y="1119.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="1013" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="1023.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,163,647 samples, 0.54%)</title><rect x="22.8" y="901" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="25.79" y="911.5" ></text>
+</g>
+<g >
+<title>get_page_from_freelist (28,223,120 samples, 0.54%)</title><rect x="1157.4" y="357" width="6.5" height="15.0" fill="rgb(252,218,52)" rx="2" ry="2" />
+<text  x="1160.45" y="367.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,180,353 samples, 0.54%)</title><rect x="798.9" y="277" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="801.91" y="287.5" ></text>
+</g>
+<g >
+<title>tname_intersection (28,171,733 samples, 0.54%)</title><rect x="818.1" y="501" width="6.4" height="15.0" fill="rgb(239,158,37)" rx="2" ry="2" />
+<text  x="821.12" y="511.5" ></text>
+</g>
+<g >
+<title>[unknown] (28,151,566 samples, 0.54%)</title><rect x="300.0" y="1093" width="6.4" height="15.0" fill="rgb(210,24,5)" rx="2" ry="2" />
+<text  x="303.03" y="1103.5" ></text>
+</g>
+<g >
+<title>ijl_restore_package_image_from_file (2,818,316,469 samples, 54.26%)</title><rect x="530.0" y="597" width="640.3" height="15.0" fill="rgb(241,167,40)" rx="2" ry="2" />
+<text  x="533.04" y="607.5" >ijl_restore_package_image_from_file</text>
+</g>
+<g >
+<title>perf_event_mmap_event (28,111,211 samples, 0.54%)</title><rect x="357.6" y="677" width="6.4" height="15.0" fill="rgb(238,154,36)" rx="2" ry="2" />
+<text  x="360.61" y="687.5" ></text>
+</g>
+<g >
+<title>search_binary_handler (12,723,684 samples, 0.24%)</title><rect x="278.0" y="981" width="2.9" height="15.0" fill="rgb(208,14,3)" rx="2" ry="2" />
+<text  x="280.98" y="991.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,178,732 samples, 0.54%)</title><rect x="1119.0" y="341" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="1122.04" y="351.5" ></text>
+</g>
+<g >
+<title>forall_exists_equal (28,169,105 samples, 0.54%)</title><rect x="786.1" y="101" width="6.4" height="15.0" fill="rgb(248,199,47)" rx="2" ry="2" />
+<text  x="789.11" y="111.5" ></text>
+</g>
+<g >
+<title>do_fault (28,817,118 samples, 0.55%)</title><rect x="271.4" y="997" width="6.6" height="15.0" fill="rgb(248,200,47)" rx="2" ry="2" />
+<text  x="274.43" y="1007.5" ></text>
+</g>
+<g >
+<title>intersect (28,180,282 samples, 0.54%)</title><rect x="830.9" y="437" width="6.4" height="15.0" fill="rgb(252,217,51)" rx="2" ry="2" />
+<text  x="833.92" y="447.5" ></text>
+</g>
+<g >
+<title>intersect_tuple (28,181,350 samples, 0.54%)</title><rect x="568.5" y="373" width="6.4" height="15.0" fill="rgb(209,21,5)" rx="2" ry="2" />
+<text  x="571.45" y="383.5" ></text>
+</g>
+<g >
+<title>equal_var (28,169,105 samples, 0.54%)</title><rect x="786.1" y="85" width="6.4" height="15.0" fill="rgb(212,32,7)" rx="2" ry="2" />
+<text  x="789.11" y="95.5" ></text>
+</g>
+<g >
+<title>subtype_unionall (56,349,815 samples, 1.08%)</title><rect x="786.1" y="229" width="12.8" height="15.0" fill="rgb(216,54,13)" rx="2" ry="2" />
+<text  x="789.11" y="239.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="485" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="495.5" ></text>
+</g>
+<g >
+<title>lru_cache_add_inactive_or_unevictable (28,180,331 samples, 0.54%)</title><rect x="773.3" y="229" width="6.4" height="15.0" fill="rgb(247,196,47)" rx="2" ry="2" />
+<text  x="776.30" y="239.5" ></text>
+</g>
+<g >
+<title>all (5,193,901,558 samples, 100%)</title><rect x="10.0" y="1157" width="1180.0" height="15.0" fill="rgb(213,39,9)" rx="2" ry="2" />
+<text  x="13.00" y="1167.5" ></text>
+</g>
+<g >
+<title>jfptr__start_82923.1 (3,633,599,759 samples, 69.96%)</title><rect x="357.6" y="1061" width="825.5" height="15.0" fill="rgb(245,187,44)" rx="2" ry="2" />
+<text  x="360.61" y="1071.5" >jfptr__start_82923.1</text>
+</g>
+<g >
+<title>julia_typeinf_35386.2 (56,315,143 samples, 1.08%)</title><rect x="1170.3" y="341" width="12.8" height="15.0" fill="rgb(206,5,1)" rx="2" ry="2" />
+<text  x="1173.33" y="351.5" ></text>
+</g>
+<g >
+<title>obvious_subtype.part.0 (28,149,125 samples, 0.54%)</title><rect x="523.6" y="421" width="6.4" height="15.0" fill="rgb(214,43,10)" rx="2" ry="2" />
+<text  x="526.65" y="431.5" ></text>
+</g>
+</g>
+</svg>
