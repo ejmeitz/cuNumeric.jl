@@ -85,6 +85,29 @@ end
 #### ARRAY/INDEXING INTERFACE ####
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
 
+Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
+Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
+Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
+
+
+Base.firstindex(arr::NDArray, dim::Int) = 1
+Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
+
+Base.IndexStyle(::NDArray) = IndexCartesian()
+
+function Base.show(io::IO, arr::NDArray)
+    T = eltype(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
+    T = eltype(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
+
+
 function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
     T = eltype(arr)
     acc = NDArrayAccessor{T,N}()
@@ -129,7 +152,7 @@ end
 
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
-    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(j-1, j)))
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, Base.size(lhs, 1)), slice(j-1, j)))
     assign(s, rhs);
 end
 
@@ -139,12 +162,12 @@ function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Colon)
-    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(lhs, 2))))
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, Base.size(lhs, 2))))
     assign(s, rhs)
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::UnitRange)
-    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(first(j) - 1, last(j))))
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, Base.size(lhs, 1)), slice(first(j) - 1, last(j))))
     assign(s, rhs)
 end
 
@@ -164,7 +187,7 @@ function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::UnitRange)
 end
 
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
-    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
+    return get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(j-1, j)))
 end
 
 function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
@@ -172,11 +195,11 @@ function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Colon)
-    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(arr, 2))))
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, Base.size(arr, 2))))
 end
 
 function Base.getindex(arr::NDArray,  i::Colon, j::UnitRange)
-    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(first(j) - 1, last(j))))
+    return get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(first(j) - 1, last(j))))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Int64)
@@ -218,7 +241,7 @@ function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Co
 end
 
 function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Colon, j::Int64)
-    s = get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
+    s = get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(j-1, j)))
     fill(s, LegateScalar(val))
 end
 
@@ -226,29 +249,6 @@ function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Int64, j:
     s = get_slice(arr, to_cpp_init_slice(slice(i-1, i)))
     fill(s, LegateScalar(val))
 end
-
-Base.firstindex(arr::NDArray, dim::Int) = 1
-Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
-
-Base.IndexStyle(::NDArray) = IndexCartesian()
-
-Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
-Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
-Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
-
-function Base.show(io::IO, arr::NDArray)
-    T = eltype(arr)
-    dim = Base.size(arr)
-    print(io, "NDArray of $(T)s, Dim: $(dim)")
-end
-
-function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
-    T = eltype(arr)
-    dim = Base.size(arr)
-    print(io, "NDArray of $(T)s, Dim: $(dim)")
-end
-
-
 #### INITIALIZATION ####
 
 
@@ -263,7 +263,7 @@ end
     cuNumeric.zeros([T=Float64,] dims::Int...)
     cuNumeric.zeros([T=Float64,] dims::Tuple)
 
-Create an NDArray with element type `T`, of all zeros with size specified by `dims`.
+Create an NDArray with element type `T`, of all zeros with Base specified by `dims`.
 This function has the same signature as `Base.zeros`, so be sure to call it as `cuNuermic.zeros`.
 
 # Examples
@@ -401,7 +401,7 @@ function Base.Broadcast.broadcasted(::typeof(-), arr::NDArray, val::Union{Float3
 end
 function Base.Broadcast.broadcasted(::typeof(-), val::Union{Float32, Float64, Int64, Int32}, rhs::NDArray) 
     # throw(ErrorException("element wise [val - NDArray] is not supported yet"))
-    lhs = full(size(rhs), val)
+    lhs = full(Base.size(rhs), val)
     return -(lhs, rhs)
 end
 
@@ -494,8 +494,8 @@ end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
-    if (size(arr) != size(julia_array))
-        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+    if (Base.size(arr) != Base.size(julia_array))
+        @warn "NDArray has size $(Base.size(arr)) and Julia array has size $(Base.size(julia_array))!\n"
         return false
     end
 
@@ -527,8 +527,8 @@ end
 
 #* ADD ISAPPROX FOR TWO NDARRAYS AFTER BINARY OPS DONE
 function compare(julia_array::AbstractArray, arr::NDArray, max_diff)
-    if (size(arr) != size(julia_array))
-        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+    if (Base.size(arr) != Base.size(julia_array))
+        @warn "NDArray has size $(Base.size(arr)) and Julia array has size $(Base.size(julia_array))!\n"
         return false
     end
 

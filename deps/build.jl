@@ -146,7 +146,7 @@ function core_build_process(conda_env_dir, run_legion_patch::Bool = true)
 
     # We still need to build libcxxwrap from source until 
     # everything is on BinaryBuilder to ensure compiler compatability
-    build_jlcxxwrap(pkg_root)
+    # build_jlcxxwrap(pkg_root)
 
     # create libcupynumericwrapper.so
     build_cpp_wrapper(pkg_root, conda_env_dir)

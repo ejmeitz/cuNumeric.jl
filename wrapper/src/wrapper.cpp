@@ -128,8 +128,20 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .constructor<float>()
       .constructor<double>();  // julia lets me make with ints???
 
-  jlcxx::stl::apply_stl<legate::Scalar>(
-      mod);  // enable std::vector<legate::Scalar>
+  mod.add_type<std::vector<legate::Scalar>>("VectorLegateScalar")
+    .method("push_back", [](std::vector<legate::Scalar>& v, const legate::Scalar& x) {
+      v.push_back(x);
+    })
+    .method("size", [](const std::vector<legate::Scalar>& v) {
+      return v.size();
+    })
+    .method("get", [](const std::vector<legate::Scalar>& v, std::size_t i) {
+      return v.at(i);
+    })
+    .method("set", [](std::vector<legate::Scalar>& v, std::size_t i, const legate::Scalar& x) {
+      v.at(i) = x;
+    });
+
 
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
       .method("_size",

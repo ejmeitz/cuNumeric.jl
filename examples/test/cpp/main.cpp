@@ -9,9 +9,7 @@ class GetVector {
         std::vector<double> values;
         
     public:
-        GetVector(size_t N) {
-            values.resize(N);
-        }
+        GetVector(size_t N) : values(N) {}
         
         void set(size_t index, double val) {
             values[index] = val;

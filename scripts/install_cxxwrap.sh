@@ -44,7 +44,7 @@ fi
 echo "Using $JULIA at: $JULIA_PATH"
 
 GIT_REPO="https://github.com/JuliaInterop/libcxxwrap-julia.git"
-COMMIT_HASH="c47d1148355d30752aa772e03a2ac8078bb2d06b" #(v0.13.4)
+COMMIT_HASH="89e4699837bfa0929610c9e330889fb2df925b47" #(v14.2)
 JULIA_CXXWRAP_SRC=$CUNUMERIC_ROOT_DIR/libcxxwrap-julia
 
 if [ ! -d "$JULIA_CXXWRAP_SRC" ]; then
@@ -53,6 +53,7 @@ if [ ! -d "$JULIA_CXXWRAP_SRC" ]; then
 fi
 
 cd $JULIA_CXXWRAP_SRC
+git fetch --tags
 git checkout $COMMIT_HASH
 
 # find julia dependency path
