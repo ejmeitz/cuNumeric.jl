@@ -3,19 +3,20 @@ export JULIA_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
+FREQ=99
+for script in ccall_gc.jl cxxwrap_gc.jl default_gc.jl; do
+  base=$(basename $script .jl)
 
-ENABLE_JITPROFILING=1  perf record -F 99 -g julia --project="." ccall_gc.jl 
-perf script > out_c.perf
-stackcollapse-perf.pl out_c.perf > out_c.folded
-flamegraph.pl out_c.folded > kernel_c.svg
+  echo "Profiling $script ..."
 
-ENABLE_JITPROFILING=1  perf record -F 99 -g julia --project="." cxxwrap_gc.jl 
-perf script > out_cxx.perf
-stackcollapse-perf.pl out_cxx.perf > out_cxx.folded
-flamegraph.pl out_cxx.folded > kernel_cxx.svg
+  ENABLE_JITPROFILING=1 perf record -F $FREQ --call-graph dwarf julia --project="." $script
 
+  perf script > ${base}.perf
 
-ENABLE_JITPROFILING=1  perf record -F 99 -g julia --project="." default_gc.jl 
-perf script > out_default.perf
-stackcollapse-perf.pl out_default.perf > out_default.folded
-flamegraph.pl out_default.folded > kernel_default.svg
+  # Flamegraph
+  stackcollapse-perf.pl ${base}.perf > ${base}.folded
+  flamegraph.pl ${base}.folded > kernel_${base}.svg
+
+  Generate text callgraph with graphviz
+  cat ${base}.perf  | c++filt | gprof2dot -f perf | dot -Tpdf -o ${base}_callgraph.pdf
+done
