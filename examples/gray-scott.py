@@ -48,8 +48,8 @@ def greyScottSys(u, v, dx, dt, c_u, c_v, f, k):
 # initial conditions and discretizaiton
 dx = 1
 dt = dx/5
-u = np.ones((10000,10000))
-v = np.zeros((10000,10000))
+u = np.ones((4000,4000))
+v = np.zeros((4000,4000))
 u[:150,:150] = np.random.rand(150,150)
 v[:150,:150] = np.random.rand(150,150)
 
@@ -64,7 +64,7 @@ k = 0.06
 # t_final = 1000
 
 # ims = []
-n_steps = 1000 # number of steps to take
+n_steps = 100 # number of steps to take
 frame_interval = 200 # steps to take between making plots
 
 # build a list of images

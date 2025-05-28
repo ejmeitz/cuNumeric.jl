@@ -217,6 +217,16 @@ function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Co
     fill(arr, LegateScalar(val))
 end
 
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Colon, j::Int64)
+    s = get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
+    fill(s, LegateScalar(val))
+end
+
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Int64, j::Colon)
+    s = get_slice(arr, to_cpp_init_slice(slice(i-1, i)))
+    fill(s, LegateScalar(val))
+end
+
 Base.firstindex(arr::NDArray, dim::Int) = 1
 Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
 
