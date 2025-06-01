@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.22.1 FATAL_ERROR)
 
 project(cuNumericWrapper VERSION 0.01 LANGUAGES C CXX)
@@ -10,8 +9,21 @@ if (NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 17)
 endif()
 
+# Ensure the LEGATE_PATH is defined
+if(NOT DEFINED LEGATE_PATH)
+    message(FATAL_ERROR "LEGATE_PATH is not set.")
+endif()
+
+if(NOT DEFINED HDF5_PATH)
+    message(FATAL_ERROR "HDF5_PATH is not set.")
+endif()
+
+
+find_package(CUDAToolkit 12.2 REQUIRED)
 find_package(cupynumeric REQUIRED)
 
+get_target_property(CUPYNUMERIC_LIB cupynumeric::cupynumeric LOCATION)
+get_filename_component(CUPYNUMERIC_LIB_DIR "${CUPYNUMERIC_LIB}" DIRECTORY)
 
 execute_process(
   COMMAND julia -e "println(DEPOT_PATH[1])"
@@ -33,29 +45,26 @@ add_library(cupynumericwrapper SHARED
              src/wrapper.cpp
              src/types.cpp)
 
+
+set_target_properties(cupynumericwrapper PROPERTIES
+    BUILD_WITH_INSTALL_RPATH TRUE
+    INSTALL_RPATH "${HDF5_PATH}/lib;${LEGATE_PATH}/lib;${CUPYNUMERIC_LIB_DIR}"
+)
+
 # both can be private I think
 target_link_libraries(cupynumericwrapper 
                         PRIVATE cupynumeric::cupynumeric
                         PRIVATE legate::legate
-                        PUBLIC JlCxx::cxxwrap_julia)
+                        PUBLIC JlCxx::cxxwrap_julia
+                      )
 
 
 target_include_directories(cupynumericwrapper PRIVATE 
                             include
+                            ${LEGATE_PATH}/include/legate
+                            ${LEGATE_PATH}/include/legate/deps
+                            ${CUDAToolkit_INCLUDE_DIRS}
                         )
 
 install(TARGETS cupynumericwrapper 
           DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
-
-
-
-
-######### C++ API TEST FILE ONLY ######################################
-# Create executable which tests the cpp interface 		      #
-# that the shared library is wrapping/exposing to Julia		      #
-# add_executable(matmulfp32 wrapper/matmulfp32.cpp) 
-# target_link_libraries(matmulfp32 PRIVATE cupynumeric::cupynumeric)
-# install(TARGETS matmulfp32 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/cmake-install")
-
-
-
