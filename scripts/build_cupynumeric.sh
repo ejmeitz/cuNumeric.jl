@@ -1,15 +1,17 @@
 set -e
 
 # Check if exactly one argument is provided
-if [[ $# -ne 5 ]]; then
-    echo "Usage: $0  <root-dir> <legate-dir> <build-dir> <version> <nthreads>"
+if [[ $# -ne 7 ]]; then
+    echo "Usage: $0  <root-dir> <legate-dir> <nccl-dir> <cutensor-dir> <build-dir> <version> <nthreads>"
     exit 1
 fi
 CUNUMERIC_ROOT_DIR=$1
 LEGATE_ROOT_DIR=$2
-BUILD_DIR=$3
-VERSION=$4
-NTHREADS=$5
+NCCL_ROOT_DIR=$3
+CUTENSOR_ROOT_DIR=$4
+BUILD_DIR=$5
+VERSION=$6
+NTHREADS=$7
 
 # Check if the provided argument is a valid directory
 if [[ ! -d "$CUNUMERIC_ROOT_DIR" ]]; then
@@ -22,31 +24,68 @@ if [[ ! -d "$BUILD_DIR" ]]; then
     exit 1
 fi
 
+
+LAPACKE_INSTALL_DIR=$CUNUMERIC_ROOT_DIR/lapacke
+if [ -d "$LAPACKE_INSTALL_DIR" ]; then
+    echo "Directory '$LAPACKE_INSTALL_DIR' already exists. Skipping LAPACKE build."
+else
+    LAPACKE_VERSION=3.12.1
+    LAPACKE_BUILD_DIR=$CUNUMERIC_ROOT_DIR/deps/lapacke_build
+
+    mkdir -p $LAPACKE_INSTALL_DIR
+    mkdir -p $LAPACKE_BUILD_DIR
+    cd $LAPACKE_BUILD_DIR
+
+    # Download LAPACK source (LAPACKe is part of it)
+    curl -L -O https://github.com/Reference-LAPACK/lapack/archive/refs/tags/v${LAPACKE_VERSION}.tar.gz
+    tar -xzf v${LAPACKE_VERSION}.tar.gz
+    cd lapack-${LAPACKE_VERSION}
+
+    # Build only LAPACKe
+    mkdir build && cd build
+    cmake .. \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_INSTALL_PREFIX=$LAPACKE_INSTALL_DIR \
+    -DBUILD_SHARED_LIBS=ON \
+    -DLAPACKE=ON \
+    -DBUILD_TESTING=OFF
+
+    make -j $NTHREADS
+    make install
+    cd $CUNUMERIC_ROOT_DIR
+fi
+
 TAG="v$VERSION"
 REPO_URL="https://github.com/nv-legate/cupynumeric"
 TAG_URL="$REPO_URL/releases/tag/$TAG"
 CLONE_DIR="cupynumeric-$VERSION"
 
-echo "Checking if tag $TAG exists on GitHub..."
+# echo "Checking if tag $TAG exists on GitHub..."
 
-if curl --silent --head --fail "$TAG_URL" > /dev/null; then
-    echo "Tag $TAG exists. Cloning..."
-else
-    echo "Error: Tag $TAG does not exist at $TAG_URL"
-    exit 1
-fi
+# if curl --silent --head --fail "$TAG_URL" > /dev/null; then
+#     echo "Tag $TAG exists. Cloning..."
+# else
+#     echo "Error: Tag $TAG does not exist at $TAG_URL"
+#     exit 1
+# fi
 
 if [ -d "$CLONE_DIR" ]; then
     echo "Directory '$CLONE_DIR' already exists. Skipping clone."
 else
-    git clone --branch "$TAG" --depth 1 "$REPO_URL.git" "$CLONE_DIR"
+    # git clone --branch "$TAG" --depth 1 "$REPO_URL.git" "$CLONE_DIR"
+    # forcing main to happen as that is 25.05
+    git clone --branch "main" --depth 1 "$REPO_URL.git" "$CLONE_DIR"
     echo "Cloned cuNumeric $VERSION into $CLONE_DIR"
 fi
 
 echo $LEGATE_ROOT_DIR
- 
-cmake -S $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR -B $BUILD_DIR \
-    -D legate_ROOT=$LEGATE_ROOT_DIR
-cmake --build $BUILD_DIR  --parallel $NTHREADS --verbose
 
-# $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR/install.py --cuda --hdf5 --spy --clean -j $NTHREADS
+export CXXFLAGS="-I$LAPACKE_INSTALL_DIR/include" 
+export LDFLAGS="-L$LAPACKE_INSTALL_DIR/lib"
+
+cmake -S $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR -B $BUILD_DIR \
+    -D legate_ROOT=$LEGATE_ROOT_DIR \
+    -D NCCL_ROOT=$NCCL_ROOT_DIR \
+    -D cutensor_ROOT=$CUTENSOR_ROOT_DIR \
+ 
+cmake --build $BUILD_DIR  --parallel 100 --verbose

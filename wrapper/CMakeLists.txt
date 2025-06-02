@@ -22,9 +22,6 @@ endif()
 find_package(CUDAToolkit 12.2 REQUIRED)
 find_package(cupynumeric REQUIRED)
 
-get_target_property(CUPYNUMERIC_LIB cupynumeric::cupynumeric LOCATION)
-get_filename_component(CUPYNUMERIC_LIB_DIR "${CUPYNUMERIC_LIB}" DIRECTORY)
-
 execute_process(
   COMMAND julia -e "println(DEPOT_PATH[1])"
   OUTPUT_VARIABLE JULIA_DEP_PATH
@@ -48,7 +45,7 @@ add_library(cupynumericwrapper SHARED
 
 set_target_properties(cupynumericwrapper PROPERTIES
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "${HDF5_PATH}/lib;${LEGATE_PATH}/lib;${CUPYNUMERIC_LIB_DIR}"
+    INSTALL_RPATH "${HDF5_PATH}/lib;${LEGATE_PATH}/lib"
 )
 
 # both can be private I think

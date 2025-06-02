@@ -23,10 +23,12 @@ import Base: notnothing
 using Preferences
 using legate_jll
 using HDF5_jll
+using NCCL_jll
+using CUTENSOR_jll
 
 # import CNPreferences
 
-const SUPPORTED_CUPYNUMERIC_VERSIONS = ["25.03.00"]
+const SUPPORTED_CUPYNUMERIC_VERSIONS = ["25.05.00"]
 const LATEST_CUPYNUMERIC_VERSION = SUPPORTED_CUPYNUMERIC_VERSIONS[end]
 
 
@@ -71,9 +73,7 @@ end
 # patch legion. The readme below talks about our compilation error
 # https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
 function patch_legion(repo_root::String, legate_loc::String)
-
     @info "Patching Legion"
-    @warn "This will modify your cupynumeric install"
     
     legion_patch = joinpath(repo_root, "scripts/patch_legion.sh")
     @info "Running legion patch script: $legion_patch"
@@ -108,8 +108,8 @@ function build_cpp_wrapper(repo_root, cupynumeric_loc, legate_loc, hdf5_loc)
     run_sh(`bash $build_cpp_wrapper $cupynumeric_loc $legate_loc $hdf5_loc $repo_root $build_dir $nthreads`, "cpp_wrapper")
 end
 
-function parse_cupynumeric_version(conda_env_dir)
-    version_file = joinpath(conda_env_dir, "include", "cupynumeric", "version_config.hpp")
+function parse_cupynumeric_version(cupynumeric_dir)
+    version_file = joinpath(cupynumeric_dir, "include", "cupynumeric", "version_config.hpp")
 
     version = nothing
     open(version_file, "r") do f
@@ -135,10 +135,10 @@ function core_build_process(pkg_root, cupynumeric_loc, run_legion_patch::Bool = 
 
     # We still need to build libcxxwrap from source until 
     # everything is on BinaryBuilder to ensure compiler compatability
-    # build_jlcxxwrap(pkg_root)
+    build_jlcxxwrap(pkg_root)
 
     # create libcupynumericwrapper.so
-    build_cpp_wrapper(repo_root, cupynumeric_loc, legate_loc, hdf5_loc)
+    build_cpp_wrapper(pkg_root, cupynumeric_loc, legate_loc, hdf5_loc)
 end
 
 
@@ -153,18 +153,20 @@ function install_cupynumeric(repo_root, version_to_install)
         rm(build_dir, recursive = true)
         mkdir(build_dir)
     end
-    
+
     legate_loc = legate_jll.artifact_dir
+    nccl_loc = NCCL_jll.artifact_dir
+    cutensor_loc = CUTENSOR_jll.artifact_dir
     build_cupynumeric = joinpath(repo_root, "scripts/build_cupynumeric.sh")
     nthreads = Threads.nthreads()
-    run_sh(`bash $build_cupynumeric $repo_root $legate_loc $build_dir $version_to_install $nthreads`, "cupynumeric")
+    run_sh(`bash $build_cupynumeric $repo_root $legate_loc $nccl_loc $cutensor_loc $build_dir $version_to_install $nthreads`, "cupynumeric")
 end
 
 function build()
     pkg_root = abspath(joinpath(@__DIR__, "../"))
     @info "Parsed Package Dir as: $(pkg_root)"
 
-    cupynumeric_dir = joinpath(pkg_root, "/libcupynumeric")
+    cupynumeric_dir = abspath(joinpath(@__DIR__, "../libcupynumeric"))
 
     cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
 
@@ -180,7 +182,7 @@ function build()
         install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
     end
 
-    core_build_process(pkg_root, cupynumeric_loc)
+    core_build_process(pkg_root, cupynumeric_dir)
 end
 
 
