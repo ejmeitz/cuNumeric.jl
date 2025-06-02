@@ -18,6 +18,9 @@ if(NOT DEFINED HDF5_PATH)
     message(FATAL_ERROR "HDF5_PATH is not set.")
 endif()
 
+if(NOT DEFINED CUPYNUMERIC_PATH)
+    message(FATAL_ERROR "CUPYNUMERIC_PATH is not set.")
+endif()
 
 find_package(CUDAToolkit 12.2 REQUIRED)
 find_package(cupynumeric REQUIRED)
@@ -45,7 +48,7 @@ add_library(cupynumericwrapper SHARED
 
 set_target_properties(cupynumericwrapper PROPERTIES
     BUILD_WITH_INSTALL_RPATH TRUE
-    INSTALL_RPATH "${HDF5_PATH}/lib;${LEGATE_PATH}/lib"
+    INSTALL_RPATH "${HDF5_PATH}/lib;${LEGATE_PATH}/lib;${CUPYNUMERIC_PATH}/lib"
 )
 
 # both can be private I think

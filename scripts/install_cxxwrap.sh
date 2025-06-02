@@ -69,7 +69,7 @@ JULIA_CXXWRAP=$JULIA_CXXWRAP_DEV/override
 cd $CUNUMERIC_ROOT_DIR
 [ -f Manifest.toml ] && rm Manifest.toml
 rm -rf $JULIA_CXXWRAP_DEV
-julia -e 'using Pkg; Pkg.activate("."); Pkg.resolve(); Pkg.precompile(["CxxWrap"])'
+julia -e 'using Pkg; Pkg.activate("."); Pkg.add(url="https://github.com/ejmeitz/legate_jll.jl.git"); Pkg.resolve(); Pkg.precompile(["CxxWrap"])'
 
 # https://github.com/JuliaInterop/libcxxwrap-julia/tree/v0.13.3?tab=readme-ov-file#preparing-the-install-location
 # this command will download https://github.com/JuliaBinaryWrappers/libcxxwrap_julia_jll.jl and install it in JULIA_DEP_PATH

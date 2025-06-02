@@ -88,4 +88,4 @@ cmake -S $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR -B $BUILD_DIR \
     -D NCCL_ROOT=$NCCL_ROOT_DIR \
     -D cutensor_ROOT=$CUTENSOR_ROOT_DIR \
  
-cmake --build $BUILD_DIR  --parallel 100 --verbose
+cmake --build $BUILD_DIR  --parallel $NTHREADS --verbose
