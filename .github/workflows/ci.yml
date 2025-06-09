@@ -32,13 +32,7 @@ jobs:
           
       - name: Install Dependencies
         run: |
-
-          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
-          pushd libcxxwrap-julia
-          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
-          popd
-          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
-          julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
+          julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.add(url="https://github.com/JuliaLegate/Legate.jl", rev="25.03-build-separation") Pkg.resolve(); Pkg.build(verbose = true);'
 
       - name: Run Tests
         env: 

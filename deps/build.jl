@@ -101,7 +101,8 @@ function parse_cupynumeric_version(cupynumeric_dir)
         data = readlines(f)
         major = parse(Int, split(data[end-2])[end])
         minor = lpad(split(data[end-1])[end], 2, '0')
-        version = "$(major).$(minor)"
+        patch = lpad(split(data[end])[end], 2, '0')
+        version = "$(major).$(minor).$(patch)"
     end
 
     if isnothing(version)
