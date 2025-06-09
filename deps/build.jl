@@ -133,23 +133,47 @@ function install_cupynumeric(repo_root, version_to_install)
     run_sh(`bash $build_cupynumeric $repo_root $legate_loc $nccl_loc $cutensor_loc $build_dir $version_to_install $nthreads`, "cupynumeric")
 end
 
+function check_prefix_install(env_var, env_loc)
+    if get(ENV, env_var, "0") == "1"
+        @info "Using $(env_var) mode"
+        cupynumeric_dir = get(ENV, env_loc, nothing)
+        cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
+        if !cupynumeric_installed
+            error("Build halted: cupynumeric not found in $cupynumeric_dir")
+        end
+        installed_version = parse_cupynumeric_version(cupynumeric_dir)
+        if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
+            error("Build halted: $(cupynumeric_dir) detected unsupported version $(installed_version)")
+        end
+        @info "Found a valid install in: $(cupynumeric_dir)"
+        return true
+    end
+    return false
+end
+
 function build()
     pkg_root = abspath(joinpath(@__DIR__, "../"))
     @info "Parsed Package Dir as: $(pkg_root)"
-
-    cupynumeric_dir = abspath(joinpath(@__DIR__, "../libcupynumeric"))
-    cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
-
-    if cupynumeric_installed
-        installed_version = parse_cupynumeric_version(cupynumeric_dir)
-        if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
-            @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
-            install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
+    # custom install 
+    if check_prefix_install("CUNUMERIC_CUSTOM_INSTALL", "CUNUMERIC_CUSTOM_INSTALL_LOCATION")
+        cupynumeric_dir = get(ENV, "CUNUMERIC_CUSTOM_INSTALL_LOCATION", nothing)
+    # conda install 
+    elseif check_prefix_install("CUNUMERIC_LEGATE_CONDA_INSTALL", "CONDA_PREFIX")
+        cupynumeric_dir = get(ENV, "CONDA_PREFIX", nothing)
+    else # default install 
+        cupynumeric_dir = abspath(joinpath(@__DIR__, "../libcupynumeric"))
+        cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
+        if cupynumeric_installed
+            installed_version = parse_cupynumeric_version(cupynumeric_dir)
+            if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
+                @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
+                install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
+            else
+                @info "Found cupynumeric already installed."
+            end
         else
-            @info "Found cupynumeric already installed."
+            install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
         end
-    else
-        install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
     end
 
     # create libcupynumericwrapper.so
