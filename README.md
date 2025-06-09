@@ -36,7 +36,7 @@ juliaup default 1.10
 ### 2. Download cuNumeric.jl
 cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your environment run:
 ```julia
-using Pkg; Pkg.add(url = "https://github.com/ejmeitz/cuNumeric.jl", rev = "main")
+using Pkg; Pkg.add(url = "https://github.com/JuliaLegate/cuNumeric.jl", rev = "main")
 ```
 
 The `rev` option can be main or any tagged version. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`. By default, this will use [legate_jll](https://github.com/ejmeitz/legate_jll.jl) and build cuPyNumeric from source. 
