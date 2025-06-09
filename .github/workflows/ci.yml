@@ -37,10 +37,11 @@ jobs:
           Pkg.activate(".");
           Pkg.Registry.add("General");
           Pkg.Registry.update("General");
+          Pkg.rm("Legate");  # Critical step
           Pkg.add(url="https://github.com/ejmeitz/legate_jll.jl");
           Pkg.develop(url="https://github.com/JuliaLegate/Legate.jl", rev="25.03-build-separation");
           Pkg.resolve();
-          Pkg.build(verbose=true);
+          Pkg.build(verbose = true);
           '
 
       - name: Run Tests
