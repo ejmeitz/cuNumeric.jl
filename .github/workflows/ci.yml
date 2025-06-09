@@ -40,6 +40,7 @@ jobs:
           Pkg.rm("Legate");  # Critical step
           Pkg.add(url="https://github.com/ejmeitz/legate_jll.jl");
           Pkg.add(url="https://github.com/JuliaLegate/Legate.jl", rev="main");
+          Pkg.instantiate();
           Pkg.resolve();
           Pkg.build(verbose = true);
           '
