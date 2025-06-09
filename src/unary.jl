@@ -57,7 +57,7 @@ for (base_func, op_code) in unary_op_map_no_args
     @eval begin
         function $(Symbol(base_func))(input::NDArray)
             out = cuNumeric.zeros(eltype(input), Base.size(input)) # not sure this is ok for performance
-            empty = cuNumeric.VectorLegateScalar() # not sure this is ok for performanc
+            empty = Legate.VectorScalar() # not sure this is ok for performanc
             unary_op(out, $(op_code), input, empty)
             return out
         end

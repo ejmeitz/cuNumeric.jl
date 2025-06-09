@@ -21,12 +21,12 @@ using Pkg
 import Base: notnothing
 
 using Preferences
-using legate_jll
+
+using Legate
 using HDF5_jll
 using NCCL_jll
 using CUTENSOR_jll
 
-# import CNPreferences
 
 const SUPPORTED_CUPYNUMERIC_VERSIONS = ["25.05.00"]
 const LATEST_CUPYNUMERIC_VERSION = SUPPORTED_CUPYNUMERIC_VERSIONS[end]
@@ -51,11 +51,6 @@ function run_sh(cmd::Cmd, filename::String)
         println("stderr log generated: ", err_log, '\n')
         exit(-1)
     end
-
-    # for line in eachline(build_log)
-    #     println(line)
-    # end
-
 end
 
 function is_cupynumeric_installed(cupynumeric_dir::String; throw_errors::Bool = false)
@@ -79,16 +74,6 @@ function patch_legion(repo_root::String, legate_loc::String)
     @info "Running legion patch script: $legion_patch"
     run_sh(`bash $legion_patch $repo_root $legate_loc`, "legion_patch")
 end
-
-function build_jlcxxwrap(repo_root)
-
-    @info "Downloading libcxxwrap"
-    build_libcxxwrap = joinpath(repo_root, "scripts/install_cxxwrap.sh")
-
-    @info "Running libcxxwrap build script: $build_libcxxwrap"
-    run_sh(`bash $build_libcxxwrap $repo_root`, "libcxxwrap")
-end
-
 
 function build_cpp_wrapper(repo_root, cupynumeric_loc, legate_loc, hdf5_loc)
 
@@ -127,21 +112,6 @@ function parse_cupynumeric_version(cupynumeric_dir)
 end
 
 
-function core_build_process(pkg_root, cupynumeric_loc, run_legion_patch::Bool = true)
-    legate_loc = legate_jll.artifact_dir
-    hdf5_loc = HDF5_jll.artifact_dir
-
-    run_legion_patch && patch_legion(pkg_root, legate_loc)
-
-    # We still need to build libcxxwrap from source until 
-    # everything is on BinaryBuilder to ensure compiler compatability
-    build_jlcxxwrap(pkg_root)
-
-    # create libcupynumericwrapper.so
-    build_cpp_wrapper(pkg_root, cupynumeric_loc, legate_loc, hdf5_loc)
-end
-
-
 function install_cupynumeric(repo_root, version_to_install)
     @info "Building cupynumeric"
 
@@ -154,7 +124,7 @@ function install_cupynumeric(repo_root, version_to_install)
         mkdir(build_dir)
     end
 
-    legate_loc = legate_jll.artifact_dir
+    legate_loc = Legate.get_jll()
     nccl_loc = NCCL_jll.artifact_dir
     cutensor_loc = CUTENSOR_jll.artifact_dir
     build_cupynumeric = joinpath(repo_root, "scripts/build_cupynumeric.sh")
@@ -167,7 +137,6 @@ function build()
     @info "Parsed Package Dir as: $(pkg_root)"
 
     cupynumeric_dir = abspath(joinpath(@__DIR__, "../libcupynumeric"))
-
     cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
 
     if cupynumeric_installed
@@ -182,9 +151,10 @@ function build()
         install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
     end
 
-    core_build_process(pkg_root, cupynumeric_dir)
+    # create libcupynumericwrapper.so
+    legate_loc = Legate.get_jll()
+    hdf5_loc = HDF5_jll.artifact_dir
+    build_cpp_wrapper(pkg_root, cupynumeric_dir, legate_loc, hdf5_loc)
 end
-
-
 
 build()
