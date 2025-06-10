@@ -160,7 +160,6 @@ function build()
             install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
         end
     end
-    install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
     # create libcupynumericwrapper.so
     legate_loc = Legate.get_install_liblegate()
     hdf5_loc = HDF5_jll.artifact_dir
