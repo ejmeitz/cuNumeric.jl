@@ -59,7 +59,7 @@ jobs:
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ejmeitz/cuNumeric.jl
+          slug: JuliaLegate/cuNumeric.jl
   docs:
     name : Documentation
     permissions:
