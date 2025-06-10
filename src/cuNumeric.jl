@@ -38,6 +38,16 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
              < , <=, !=, >>, all, any, argmax, argmin, maximum, minimum,
              prod, sum
 
+include("../deps/deps.jl")
+
+ENV["LD_LIBRARY_PATH"] = string(
+    TBLIS_ROOT, "/lib:", 
+    CUTENSOR_ROOT, "/lib:", 
+    HDF5_ROOT, "/lib:", 
+    NCCL_ROOT, "/lib:", 
+    get(ENV, "LD_LIBRARY_PATH", "")
+)
+
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "wrapper", "build", lib))
 
