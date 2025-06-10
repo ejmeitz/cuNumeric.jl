@@ -39,13 +39,26 @@ cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your env
 using Pkg; Pkg.add(url = "https://github.com/JuliaLegate/cuNumeric.jl", rev = "main")
 ```
 
-The `rev` option can be main or any tagged version. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`. By default, this will use [legate_jll](https://github.com/ejmeitz/legate_jll.jl) and build cuPyNumeric from source. In [2b](#2b-use-preinstalled-version-of-cupynumeric) and [2c](#2c-use-a-conda-environment-to-install-cunumericjl), we show different installation methods. Make sure to export any environment variables for custom installation before running `Pkg.add`. 
+The `rev` option can be main or any tagged version.  By default, this will use [legate_jll](https://github.com/ejmeitz/legate_jll.jl) and build cuPyNumeric from source. In [2b](#2b-use-preinstalled-version-of-cupynumeric) and [2c](#2c-use-a-conda-environment-to-install-cunumericjl), we show different installation methods. Ensure that the enviroment variables are correctly set for custom builds.
+
+
+To contribute to cuNumeric.jl, we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`.
+```bash
+git clone https://github.com/JuliaLegate/cuNumeric.jl.git
+cd cuNumeric.jl
+julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
+```
+
+
 
 #### 2b. Use preinstalled version of [cuPyNumeric](https://github.com/nv-legate/cupynumeric)
 We support using a custom install version of cuPyNumeric. See https://docs.nvidia.com/cupynumeric/latest/installation.html for details about different install configurations, or building cuPyNumeric from source.
 ```bash
 export CUNUMERIC_CUSTOM_INSTALL=1
 export CUNUMERIC_CUSTOM_INSTALL_LOCATION="/home/user/path/to/cupynumeric-install-dir"
+```
+```julia
+using Pkg; Pkg.add(url = "https://github.com/JuliaLegate/cuNumeric.jl", rev = "main")
 ```
 cuNumeric.jl depends on [Legate.jl](https://github.com/JuliaLegate/Legate.jl). To use a custom Legate install, follow the instructions [here](https://github.com/JuliaLegate/Legate.jl?tab=readme-ov-file#2b-use-preinstalled-version-of-legate). 
 
@@ -62,7 +75,9 @@ Once you have the conda package installed, you can activate here.
 conda activate [conda-env-with-cupynumeric]
 export CUNUMERIC_LEGATE_CONDA_INSTALL=1
 ```
-
+```julia
+using Pkg; Pkg.add(url = "https://github.com/JuliaLegate/cuNumeric.jl", rev = "main")
+```
 ### 3. Test the Julia Package
 Run this command in the Julia environment where cuNumeric.jl is installed.
 ```julia
@@ -71,14 +86,6 @@ using Pkg; Pkg.test("cuNumeric")
 
 With everything working, its the perfect time to checkout some of our [examples](https://ejmeitz.github.io/cuNumeric.jl/dev/examples/)!
 
-
-## Custom Installs and Development
-See the [Custom Builds](https://ejmeitz.github.io/cuNumeric.jl/dev/install/) section of the documentation to build cuNumeric.jl with a local conda environment providing the cupynumeric binaries. 
-
-If you cloned the `cuNumeric.jl` git-repo isntead of using Pkg.add you will need to manually trigger the build process. The command is below. The progress of the build is piped into `./pkg/deps/build.log`. It may take a few minutes to compile. This command assumes the `Project.toml` for `cuNumeric.jl` is in the current working directory.
-```julia
-julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
-```
 
 
 ## TO-DO List of Missing Important Features
