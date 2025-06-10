@@ -22,7 +22,7 @@ This project is in alpha and we do not commit to anything necessarily working as
 curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.10
 ```
 
-This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (your may need to source bashrc):
+This will install version 1.10 by default since that is what we have tested against. To verify 1.10 is the default run either of the following (you may need to source bashrc):
 ```bash
 juliaup status
 julia --version
