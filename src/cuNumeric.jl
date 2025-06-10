@@ -22,6 +22,7 @@ module cuNumeric
 using Legate 
 using CxxWrap
 using Pkg
+using Libdl
 
 using LinearAlgebra
 import LinearAlgebra: mul!
@@ -40,13 +41,9 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
 
 include("../deps/deps.jl")
 
-pushfirst!(Base.DL_LOAD_PATH, joinpath(TBLIS_ROOT, "lib"))
-pushfirst!(Base.DL_LOAD_PATH, joinpath(CUTENSOR_ROOT, "lib"))
-pushfirst!(Base.DL_LOAD_PATH, joinpath(HDF5_ROOT, "lib"))
-pushfirst!(Base.DL_LOAD_PATH, joinpath(NCCL_ROOT, "lib"))
-
 lib = "libcupynumericwrapper.so"
-@wrapmodule(() -> joinpath(@__DIR__, "../", "wrapper", "build", lib))
+libpath = joinpath(@__DIR__, "../", "wrapper", "build", lib)
+@wrapmodule(() -> libpath)
 
 include("util.jl")
 include("ndarray.jl")
