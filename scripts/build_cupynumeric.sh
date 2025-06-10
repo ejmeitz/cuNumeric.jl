@@ -2,14 +2,14 @@ set -e
 
 # Check if exactly one argument is provided
 if [[ $# -ne 7 ]]; then
-    echo "Usage: $0  <root-dir> <legate-dir> <nccl-dir> <cutensor-dir> <build-dir> <version> <nthreads>"
+    echo "Usage: $0  <root-dir> <legate-dir> <nccl-dir> <cutensor-dir> <install-dir> <version> <nthreads>"
     exit 1
 fi
 CUNUMERIC_ROOT_DIR=$1
 LEGATE_ROOT_DIR=$2
 NCCL_ROOT_DIR=$3
 CUTENSOR_ROOT_DIR=$4
-BUILD_DIR=$5
+INSTALL_DIR=$5
 VERSION=$6
 NTHREADS=$7
 
@@ -19,11 +19,10 @@ if [[ ! -d "$CUNUMERIC_ROOT_DIR" ]]; then
     exit 1
 fi
 
-if [[ ! -d "$BUILD_DIR" ]]; then
-    echo "Error: '$BUILD_DIR' is not a valid directory."
+if [[ ! -d "$INSTALL_DIR" ]]; then
+    echo "Error: '$INSTALL_DIR' is not a valid directory."
     exit 1
 fi
-
 
 LAPACKE_INSTALL_DIR=$CUNUMERIC_ROOT_DIR/lapacke
 if [ -d "$LAPACKE_INSTALL_DIR" ]; then
@@ -83,9 +82,11 @@ echo $LEGATE_ROOT_DIR
 export CXXFLAGS="-I$LAPACKE_INSTALL_DIR/include" 
 export LDFLAGS="-L$LAPACKE_INSTALL_DIR/lib"
 
+BUILD_DIR=$CUNUMERIC_ROOT_DIR/deps/cupynumeric-build
 cmake -S $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR -B $BUILD_DIR \
     -D legate_ROOT=$LEGATE_ROOT_DIR \
     -D NCCL_ROOT=$NCCL_ROOT_DIR \
     -D cutensor_ROOT=$CUTENSOR_ROOT_DIR \
  
 cmake --build $BUILD_DIR  --parallel $NTHREADS --verbose
+cmake --install . --prefix $INSTALL_DIR
