@@ -53,37 +53,13 @@ function run_sh(cmd::Cmd, filename::String)
     end
 end
 
-function is_cupynumeric_installed(cupynumeric_dir::String; throw_errors::Bool = false)
-
-    include_dir = joinpath(cupynumeric_dir, "include")
-
-    if !isdir(joinpath(include_dir, "cupynumeric"))
-        throw_errors && @error "Cannot find include/cupynumeric in $(cupynumeric_dir)"
-        return false
-    end 
-
-    return true
-end
-
-# patch legion. The readme below talks about our compilation error
-# https://github.com/ejmeitz/cuNumeric.jl/blob/main/scripts/README.md
-function patch_legion(repo_root::String, legate_loc::String)
-    @info "Patching Legion"
-    
-    legion_patch = joinpath(repo_root, "scripts/patch_legion.sh")
-    @info "Running legion patch script: $legion_patch"
-    run_sh(`bash $legion_patch $repo_root $legate_loc`, "legion_patch")
-end
-
 function build_cpp_wrapper(repo_root, cupynumeric_loc, legate_loc, hdf5_loc)
-
-    @info "Building C++ Wrapper Library"
-
+    @info "libcupynumericwrapper: Building C++ Wrapper Library"
     build_dir = joinpath(repo_root, "wrapper", "build")
     if !isdir(build_dir)
         mkdir(build_dir)
     else
-        @warn "Build dir exists. Deleting prior build."
+        @warn "libcupynumericwrapper: Build dir exists. Deleting prior build."
         rm(build_dir, recursive = true)
         mkdir(build_dir)
     end
@@ -91,6 +67,15 @@ function build_cpp_wrapper(repo_root, cupynumeric_loc, legate_loc, hdf5_loc)
     build_cpp_wrapper = joinpath(repo_root, "scripts/build_cpp_wrapper.sh")
     nthreads = Threads.nthreads()
     run_sh(`bash $build_cpp_wrapper $cupynumeric_loc $legate_loc $hdf5_loc $repo_root $build_dir $nthreads`, "cpp_wrapper")
+end
+
+function is_cupynumeric_installed(cupynumeric_dir::String; throw_errors::Bool = false)
+    include_dir = joinpath(cupynumeric_dir, "include")
+    if !isdir(joinpath(include_dir, "cupynumeric"))
+        throw_errors && @error "cuNumeric.jl: Cannot find include/cupynumeric in $(cupynumeric_dir)"
+        return false
+    end 
+    return true
 end
 
 function parse_cupynumeric_version(cupynumeric_dir)
@@ -106,7 +91,7 @@ function parse_cupynumeric_version(cupynumeric_dir)
     end
 
     if isnothing(version)
-        error("Failed to parse version from conda environment")
+        error("cuNumeric.jl: Failed to parse version from conda environment")
     end
 
     return version
@@ -114,18 +99,18 @@ end
 
 
 function install_cupynumeric(repo_root, version_to_install)
-    @info "Building cupynumeric"
+    @info "libcupynumeric: Building cupynumeric"
 
     build_dir = joinpath(repo_root, "libcupynumeric")
     if !isdir(build_dir)
         mkdir(build_dir)
     else
-        @warn "Build dir exists. Deleting prior build."
+        @warn "libcupynumeric: Build dir exists. Deleting prior build."
         rm(build_dir, recursive = true)
         mkdir(build_dir)
     end
 
-    legate_loc = Legate.get_jll()
+    legate_loc = Legate.get_install_liblegate()
     nccl_loc = NCCL_jll.artifact_dir
     cutensor_loc = CUTENSOR_jll.artifact_dir
     build_cupynumeric = joinpath(repo_root, "scripts/build_cupynumeric.sh")
@@ -135,17 +120,17 @@ end
 
 function check_prefix_install(env_var, env_loc)
     if get(ENV, env_var, "0") == "1"
-        @info "Using $(env_var) mode"
+        @info "cuNumeric.jl: Using $(env_var) mode"
         cupynumeric_dir = get(ENV, env_loc, nothing)
         cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
         if !cupynumeric_installed
-            error("Build halted: cupynumeric not found in $cupynumeric_dir")
+            error("cuNumeric.jl: Build halted: cupynumeric not found in $cupynumeric_dir")
         end
         installed_version = parse_cupynumeric_version(cupynumeric_dir)
         if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
-            error("Build halted: $(cupynumeric_dir) detected unsupported version $(installed_version)")
+            error("cuNumeric.jl: Build halted: $(cupynumeric_dir) detected unsupported version $(installed_version)")
         end
-        @info "Found a valid install in: $(cupynumeric_dir)"
+        @info "cuNumeric.jl: Found a valid install in: $(cupynumeric_dir)"
         return true
     end
     return false
@@ -153,7 +138,7 @@ end
 
 function build()
     pkg_root = abspath(joinpath(@__DIR__, "../"))
-    @info "Parsed Package Dir as: $(pkg_root)"
+    @info "cuNumeric.jl: Parsed Package Dir as: $(pkg_root)"
     # custom install 
     if check_prefix_install("CUNUMERIC_CUSTOM_INSTALL", "CUNUMERIC_CUSTOM_INSTALL_LOCATION")
         cupynumeric_dir = get(ENV, "CUNUMERIC_CUSTOM_INSTALL_LOCATION", nothing)
@@ -166,10 +151,10 @@ function build()
         if cupynumeric_installed
             installed_version = parse_cupynumeric_version(cupynumeric_dir)
             if installed_version ∉ SUPPORTED_CUPYNUMERIC_VERSIONS
-                @warn "Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
+                @warn "cuNumeric.jl: Detected unsupported version of cupynumeric installed: $(installed_version). Installing newest version."
                 install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
             else
-                @info "Found cupynumeric already installed."
+                @info "cuNumeric.jl: Found cupynumeric already installed."
             end
         else
             install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
@@ -177,7 +162,7 @@ function build()
     end
 
     # create libcupynumericwrapper.so
-    legate_loc = Legate.get_jll()
+    legate_loc = Legate.get_install_liblegate()
     hdf5_loc = HDF5_jll.artifact_dir
     build_cpp_wrapper(pkg_root, cupynumeric_dir, legate_loc, hdf5_loc)
 end
