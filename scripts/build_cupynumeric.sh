@@ -89,4 +89,9 @@ cmake -S $CUNUMERIC_ROOT_DIR/deps/$CLONE_DIR -B $BUILD_DIR \
     -D cutensor_ROOT=$CUTENSOR_ROOT_DIR \
  
 cmake --build $BUILD_DIR  --parallel $NTHREADS --verbose
-cmake --install . --prefix $INSTALL_DIR
+cmake --install $BUILD_DIR --prefix $INSTALL_DIR
+
+cp $BUILD_DIR/cupynumeric-config*.cmake $INSTALL_DIR/lib/cmake/cupynumeric/
+cp $BUILD_DIR/cupynumeric-targets.cmake $INSTALL_DIR/lib/cmake/cupynumeric/
+cp $BUILD_DIR/cupynumeric-dependencies.cmake $INSTALL_DIR/lib/cmake/cupynumeric/
+cp $BUILD_DIR/Findtblis.cmake $INSTALL_DIR/lib/cmake/cupynumeric/
