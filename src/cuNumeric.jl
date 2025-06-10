@@ -40,13 +40,10 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
 
 include("../deps/deps.jl")
 
-ENV["LD_LIBRARY_PATH"] = string(
-    TBLIS_ROOT, "/lib:", 
-    CUTENSOR_ROOT, "/lib:", 
-    HDF5_ROOT, "/lib:", 
-    NCCL_ROOT, "/lib:", 
-    get(ENV, "LD_LIBRARY_PATH", "")
-)
+pushfirst!(Base.DL_LOAD_PATH, joinpath(TBLIS_ROOT, "lib"))
+pushfirst!(Base.DL_LOAD_PATH, joinpath(CUTENSOR_ROOT, "lib"))
+pushfirst!(Base.DL_LOAD_PATH, joinpath(HDF5_ROOT, "lib"))
+pushfirst!(Base.DL_LOAD_PATH, joinpath(NCCL_ROOT, "lib"))
 
 lib = "libcupynumericwrapper.so"
 @wrapmodule(() -> joinpath(@__DIR__, "../", "wrapper", "build", lib))
