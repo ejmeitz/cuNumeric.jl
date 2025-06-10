@@ -39,19 +39,27 @@ cuNumeric.jl is not on the general registry yet. To add cuNumeric.jl to your env
 using Pkg; Pkg.add(url = "https://github.com/JuliaLegate/cuNumeric.jl", rev = "main")
 ```
 
-The `rev` option can be main or any tagged version. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`. By default, this will use [legate_jll](https://github.com/ejmeitz/legate_jll.jl) and build cuPyNumeric from source. 
+The `rev` option can be main or any tagged version. To develop cuNumeric.jl we recommend cloning the repository and manually triggering the build process with `Pkg.build` or adding it to one of your existing environments with `Pkg.develop`. By default, this will use [legate_jll](https://github.com/ejmeitz/legate_jll.jl) and build cuPyNumeric from source. In [2b](#2b-use-preinstalled-version-of-cupynumeric) and [2c](#2c-use-a-conda-environment-to-install-cunumericjl), we show different installation methods. Make sure to export any environment variables for custom installation before running `Pkg.add`. 
 
 #### 2b. Use preinstalled version of [cuPyNumeric](https://github.com/nv-legate/cupynumeric)
-We support using a custom install version of cuPyNumeric. See https://docs.nvidia.com/cupynumeric/latest/installation.html for details about different install configurations, or building cuPyNumeric from source. 
+We support using a custom install version of cuPyNumeric. See https://docs.nvidia.com/cupynumeric/latest/installation.html for details about different install configurations, or building cuPyNumeric from source.
 ```bash
 export CUNUMERIC_CUSTOM_INSTALL=1
 export CUNUMERIC_CUSTOM_INSTALL_LOCATION="/home/user/path/to/cupynumeric-install-dir"
 ```
 cuNumeric.jl depends on [Legate.jl](https://github.com/JuliaLegate/Legate.jl). To use a custom Legate install, follow the instructions [here](https://github.com/JuliaLegate/Legate.jl?tab=readme-ov-file#2b-use-preinstalled-version-of-legate). 
 
-#### 2c. Use a conda install to install cuNumeric.jl
+#### 2c. Use a conda environment to install cuNumeric.jl
+Note, you need conda >= 24.1 to install the conda package. More installation details are found [here](https://docs.nvidia.com/cupynumeric/latest/installation.html).
 ```bash
-conda activate [conda-environment-with-cuPyNumeric]
+# with a new environment
+conda create -n myenv -c conda-forge -c legate cupynumeric
+# into an existing environment
+conda install -c conda-forge -c legate cupynumeric
+```
+Once you have the conda package installed, you can activate here. 
+```bash
+conda activate [conda-env-with-cupynumeric]
 export CUNUMERIC_LEGATE_CONDA_INSTALL=1
 ```
 
@@ -74,7 +82,6 @@ julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
 
 
 ## TO-DO List of Missing Important Features
-- Full slicing support
 - Implement `unary_reduction` over arbitrary dims
 - Out-parameter `binary_op`
 - Replace `as_type` with `Base.convert`
@@ -86,7 +93,6 @@ julia -e 'using Pkg; Pkg.activate(".") Pkg.resolve(); Pkg.build()'
 - Add Aqua.jl to CI to ensure we didn't pirate any types
 - Fix CodeCov reports
 - Fix cuNumeric.jl error in CI (requires unreleased CuPyNumeric)
-- Move external packages to [BinaryBuilder.jl](https://docs.binarybuilder.org/stable/) (requires Legate open source)
 
 ## Contact
 For technical questions, please either contact 
