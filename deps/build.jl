@@ -138,13 +138,17 @@ end
 
 function build()
     pkg_root = abspath(joinpath(@__DIR__, "../"))
+    deps_dir = joinpath(@__DIR__)
+
     @info "cuNumeric.jl: Parsed Package Dir as: $(pkg_root)"
     # custom install 
     if check_prefix_install("CUNUMERIC_CUSTOM_INSTALL", "CUNUMERIC_CUSTOM_INSTALL_LOCATION")
         cupynumeric_dir = get(ENV, "CUNUMERIC_CUSTOM_INSTALL_LOCATION", nothing)
+        tblis_root = cupynumeric_dir
     # conda install 
     elseif check_prefix_install("CUNUMERIC_LEGATE_CONDA_INSTALL", "CONDA_PREFIX")
         cupynumeric_dir = get(ENV, "CONDA_PREFIX", nothing)
+        tblis_root = cupynumeric_dir
     else # default install 
         cupynumeric_dir = abspath(joinpath(@__DIR__, "../libcupynumeric"))
         cupynumeric_installed = is_cupynumeric_installed(cupynumeric_dir)
@@ -159,12 +163,23 @@ function build()
         else
             install_cupynumeric(pkg_root, LATEST_CUPYNUMERIC_VERSION)
         end
+        tblis_root = joinpath(@__DIR__, "cupynumeric-build/_deps/tblis-build")
     end
-
     # create libcupynumericwrapper.so
     legate_loc = Legate.get_install_liblegate()
     hdf5_loc = HDF5_jll.artifact_dir
+    nccl_loc = NCCL_jll.artifact_dir
+    cutensor_loc = CUTENSOR_jll.artifact_dir
     build_cpp_wrapper(pkg_root, cupynumeric_dir, legate_loc, hdf5_loc)
+
+    open(joinpath(deps_dir, "deps.jl"), "w") do io
+        println(io, "const LEGATE_ROOT = \"$(legate_loc)\"")
+        println(io, "const CUPYNUMERIC_ROOT = \"$(cupynumeric_dir)\"")
+        println(io, "const HDF5_ROOT = \"$(hdf5_loc)\"")
+        println(io, "const NCCL_ROOT = \"$(nccl_loc)\"")
+        println(io, "const CUTENSOR_ROOT = \"$(cutensor_loc)\"")
+        println(io, "const TBLIS_ROOT = \"$(tblis_root)\"")
+    end 
 end
 
 build()
