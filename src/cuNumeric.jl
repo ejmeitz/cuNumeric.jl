@@ -39,8 +39,21 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
              < , <=, !=, >>, all, any, argmax, argmin, maximum, minimum,
              prod, sum
 
-include("../deps/deps.jl")
-
+function preload_libs()
+    include("../deps/deps.jl")
+    libs = [
+        joinpath(CUTENSOR_ROOT, "lib", "libcutensor.so.2"),
+        joinpath(HDF5_ROOT, "lib", "libhdf5.so.310"),
+        joinpath(NCCL_ROOT, "lib", "libnccl.so.2"),
+        joinpath(TBLIS_ROOT, "lib", "libtblis.so.0"),
+    ]
+    for lib in libs
+        @info "Preloading $lib"
+        Libdl.dlopen(lib, Libdl.RTLD_GLOBAL | Libdl.RTLD_NOW)
+    end
+end
+            
+preload_libs()
 lib = "libcupynumericwrapper.so"
 libpath = joinpath(@__DIR__, "../", "wrapper", "build", lib)
 @wrapmodule(() -> libpath)
@@ -120,13 +133,11 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    # CNPreferences.check_unchanged()
-    @initcxx
+    preload_libs()
 
+    @initcxx
     # Legate ignores these arguments...
     AA = ArgcArgv([Base.julia_cmd()[1]])
-
-    global cuNumeric_config = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
-    
+    global cuNumeric_config = cupynumeric_setup(AA)
 end
 end
