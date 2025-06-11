@@ -40,7 +40,8 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
              prod, sum
 
 function preload_libs()
-    include("../deps/deps.jl")
+    cache_build_meta = joinpath(@__DIR__, "../", "deps", "deps.jl")
+    include(cache_build_meta)
     libs = [
         joinpath(CUTENSOR_ROOT, "lib", "libcutensor.so.2"),
         joinpath(HDF5_ROOT, "lib", "libhdf5.so.310"),

@@ -6,6 +6,21 @@ libnda = joinpath(@__DIR__, "../", "wrapper", "build", lib)
 # Opaque pointer
 const NDArray_t = Ptr{Cvoid}
 
+# destroy
+nda_destroy_array(arr::NDArray_t) = ccall((:nda_destroy_array, libnda),
+                                         Cvoid, (NDArray_t,), arr)
+
+mutable struct NDHandle
+  ptr::NDArray_t
+  function NDHandle(ptr)
+    handle = new(ptr)
+    finalizer(handle) do h
+        cuNumeric.nda_destroy_array(h.ptr)
+    end
+    return handle
+  end
+end
+
 # zeros
 function nda_zeros_array(shape::Vector{UInt64}; type::Union{Nothing, Type{T}} = nothing) where T
   dim = Int32(length(shape))
@@ -13,7 +28,8 @@ function nda_zeros_array(shape::Vector{UInt64}; type::Union{Nothing, Type{T}} = 
   ptr = ccall((:nda_zeros_array, libnda),
               NDArray_t, (Int32, Ptr{UInt64}, Legate.LegateTypeAllocated),
               dim, shape, legate_type)
-  return ptr
+  handle = NDHandle(ptr)
+  return handle
 end
 
 # full
@@ -22,12 +38,9 @@ function nda_full_array(shape::Vector{UInt64}, value::Float64)
   ptr = ccall((:nda_full_array, libnda),
               NDArray_t, (Int32, Ptr{UInt64}, Float64),
               dim, shape, value)
-  return ptr
+  handle = NDHandle(ptr)
+  return handle
 end
-
-# destroy
-nda_destroy_array(arr::NDArray_t) = ccall((:nda_destroy_array, libnda),
-                                         Cvoid, (NDArray_t,), arr)
 
 # queries
 nda_array_dim(arr::NDArray_t) = ccall((:nda_array_dim, libnda),

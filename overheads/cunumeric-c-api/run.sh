@@ -4,12 +4,12 @@ export OPENBLAS_NUM_THREADS=1
 export OMP_NUM_THREADS=1
 
 FREQ=99
-for script in ccall_gc.jl cxxwrap_gc.jl default_gc.jl; do
+for script in cxx-ndarray.jl; do
   base=$(basename $script .jl)
 
   echo "Profiling $script ..."
 
-  ENABLE_JITPROFILING=1 perf record -F $FREQ --call-graph dwarf julia --project="." $script
+  ENABLE_JITPROFILING=1 perf record -F $FREQ --call-graph dwarf julia --project="../../." $script
 
   perf script > ${base}.perf
 
