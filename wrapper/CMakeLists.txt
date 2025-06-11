@@ -72,7 +72,7 @@ install(TARGETS cupynumericwrapper
 
 # C- API
 add_library(cwrapper SHARED
-    src/ndarray_c_api.c
+    src/ndarray.cpp
 )
 
 

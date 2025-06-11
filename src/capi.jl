@@ -1,17 +1,18 @@
-const libnda = "cwarpper"    # adjust path/extension
+export test_factories
+
+lib = "libcwrapper.so"
+libnda = joinpath(@__DIR__, "../", "wrapper", "build", lib)
 
 # Opaque pointer
 const NDArray_t = Ptr{Cvoid}
 
 # zeros
-function nda_zeros_array(shape::Vector{UInt64};
-                         type::Union{Nothing,Int32}=nothing)
+function nda_zeros_array(shape::Vector{UInt64}; type::Union{Nothing, Type{T}} = nothing) where T
   dim = Int32(length(shape))
-  has_type = isnothing(type) ? Int32(0) : Int32(1)
-  type_code = has_type==1 ? type[] : Int32(0)
+  legate_type = Legate.to_legate_type(isnothing(type) ? Float64 : type)
   ptr = ccall((:nda_zeros_array, libnda),
-              NDArray_t, (Int32, Ptr{UInt64}, Int32, Int32),
-              dim, shape, type_code, has_type)
+              NDArray_t, (Int32, Ptr{UInt64}, Legate.LegateTypeAllocated),
+              dim, shape, legate_type)
   return ptr
 end
 
@@ -47,8 +48,8 @@ end
 # --- quick smoke test ---
 function test_factories()
   shp = UInt64[4,5,6]
-  a = nda_zeros_array(shp)             # default type
-  b = nda_zeros_array(shp, type=4)     # specify legate::Type(4)
+  a = nda_zeros_array(shp)                 # default type
+  b = nda_zeros_array(shp, type=Float64)  
   c = nda_full_array(shp, 3.1415)
   for x in (a,b,c)
     @show nda_array_dim(x), nda_array_size(x),
