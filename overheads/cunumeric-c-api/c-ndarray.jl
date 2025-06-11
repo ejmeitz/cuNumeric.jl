@@ -1,6 +1,5 @@
 using cuNumeric
-using InteractiveUtils
-
+using BenchmarkTools
 
 @noinline function loop_array_no_time(iters::Integer, size::Integer = 500_000)
     for _ in range(1,iters)
@@ -9,4 +8,4 @@ using InteractiveUtils
     end
 end
 
-@time loop_array_no_time(1000)
+@btime loop_array_no_time(1000)
