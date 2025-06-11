@@ -180,19 +180,6 @@ function build()
         println(io, "const CUTENSOR_ROOT = \"$(cutensor_loc)\"")
         println(io, "const TBLIS_ROOT = \"$(tblis_root)\"")
     end 
-
-    open(joinpath(deps_dir, "env.sh"), "w") do io
-        all_paths = [
-            joinpath(cutensor_loc, "lib"),
-            joinpath(hdf5_loc, "lib"),
-            joinpath(nccl_loc, "lib"),
-            joinpath(tblis_root, "lib"),
-            joinpath(cupynumeric_dir, "lib"),
-            joinpath(legate_loc, "lib")
-        ]
-        joined = join(all_paths, ":")
-        println(io, "export LD_LIBRARY_PATH=\"$joined:\$LD_LIBRARY_PATH\"")
-    end
 end
 
 build()
