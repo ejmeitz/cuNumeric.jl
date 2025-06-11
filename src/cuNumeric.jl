@@ -19,15 +19,10 @@
 
 module cuNumeric
 
-# DEBUG HELP: use tool `c++filt -t [St8optionalIN11cupynumeric7NDArrayEE]`
-# this tool helps with reading these c++ strings from libcupynumericwrapper.so
-# the above yields:: std::optional<cupynumeric::NDArray>
-
+using Legate 
 using CxxWrap
 using Pkg
-
-Pkg.develop(path="./lib/CNPreferences") 
-using CNPreferences
+using Libdl
 
 using LinearAlgebra
 import LinearAlgebra: mul!
@@ -44,12 +39,24 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
              < , <=, !=, >>, all, any, argmax, argmin, maximum, minimum,
              prod, sum
 
-# abstract type AbstractFieldAccessor{PM,FT,n_dims} end
-# abstract type AbstractAccessorRO{T,N} end #probably should be subtype of AbstractFieldAccessor
-# abstract type AbstractAccessorWO{T,N} end
-
+function preload_libs()
+    include("../deps/deps.jl")
+    libs = [
+        joinpath(CUTENSOR_ROOT, "lib", "libcutensor.so.2"),
+        joinpath(HDF5_ROOT, "lib", "libhdf5.so.310"),
+        joinpath(NCCL_ROOT, "lib", "libnccl.so.2"),
+        joinpath(TBLIS_ROOT, "lib", "libtblis.so.0"),
+    ]
+    for lib in libs
+        @info "Preloading $lib"
+        Libdl.dlopen(lib, Libdl.RTLD_GLOBAL | Libdl.RTLD_NOW)
+    end
+end
+            
+preload_libs()
 lib = "libcupynumericwrapper.so"
-@wrapmodule(() -> joinpath(@__DIR__, "../", "wrapper", "build", lib))
+libpath = joinpath(@__DIR__, "../", "wrapper", "build", lib)
+@wrapmodule(() -> libpath)
 
 include("util.jl")
 include("ndarray.jl")
@@ -72,8 +79,7 @@ getargv(a::ArgcArgv) = Base.unsafe_convert(CxxPtr{CxxPtr{CxxChar}}, a.argv)
 
 
 function my_on_exit()
-    @info "Cleaning Up Legate"
-    cuNumeric.legate_finish()
+    @info "Cleaning Up cuNuermic"
 end
 
 function cupynumeric_setup(AA::ArgcArgv)
@@ -89,7 +95,7 @@ function cupynumeric_setup(AA::ArgcArgv)
     #@info "LEGATE_AUTO_CONFIG: $(ENV["LEGATE_AUTO_CONFIG"])"
     #println(Base.get_bool_env("LEGATE_AUTO_CONFIG"))
   
-    cuNumeric.start_legate()
+    # cuNumeric.start_legate()
     #pipe = Pipe()
     #started = Base.Event()
     #writer = Threads.@spawn redirect_stdout(pipe) do
@@ -102,23 +108,23 @@ function cupynumeric_setup(AA::ArgcArgv)
     #legate_config_str = Base.read(pipe, String)
     #wait(writer) 
     #print(legate_config_str)
-    legate_config_str = ""
+    cuNumeric_config_str = ""
 
-    @info "Started Legate"
+    @info "Started cuNuermic"
 
     Base.atexit(my_on_exit)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
 
-    return legate_config_str
+    return cuNumeric_config_str
 end
 
 
-global legate_config::String = ""
+global cuNumeric_config_str::String = ""
 
 function versioninfo()
     msg = """
-        Legate Configuration: $(legate_config)
+        CuNumeric Configuration: $(cuNumeric_config_str)
     """
     println(msg)
 end
@@ -126,14 +132,11 @@ end
 # Runtime initilization
 # Called once in lifetime of code
 function __init__()
-    CNPreferences.check_unchanged()
-    @initcxx
+    preload_libs()
 
+    @initcxx
     # Legate ignores these arguments...
     AA = ArgcArgv([Base.julia_cmd()[1]])
-
-    @info "Starting Legate"
-    global legate_config = cupynumeric_setup(AA) #* TODO Parse this and add a versioninfo
-    
+    global cuNumeric_config = cupynumeric_setup(AA)
 end
 end

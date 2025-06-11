@@ -1,4 +1,4 @@
-export NDArray, LegateType
+export NDArray
 
 
 #= Copyright 2025 Northwestern University, 
@@ -22,46 +22,6 @@ export NDArray, LegateType
 
 Base.Broadcast.broadcastable(v::NDArray) = v
 
-# is legion Complex128 same as ComplexF64 in julia? 
-# These are methods that return a Legate::Type
-global const type_map = Dict{Type, Function}(
-    Bool => cuNumeric.bool_, 
-    Int8 => cuNumeric.int8,
-    Int16 => cuNumeric.int16,
-    Int32 => cuNumeric.int32,
-    Int64 => cuNumeric.int64,
-    UInt8 => cuNumeric.uint8,
-    UInt16 => cuNumeric.uint16,
-    UInt32 => cuNumeric.uint32, 
-    UInt64 => cuNumeric.uint64, 
-    Float16 => cuNumeric.float16, 
-    Float32 => cuNumeric.float32, 
-    Float64 => cuNumeric.float64,
-    # ComplexF16 => cuNumeric.complex32,  #COMMENTED OUT IN WRAPPER
-    ComplexF32 => cuNumeric.complex64, 
-    ComplexF64 => cuNumeric.complex128
-)
-
-# hate this but casting to Int gets around 
-# a bug where TypeCode can't be used at compile time 
-global const code_type_map = Dict{Int, Type}(
-    Int(cuNumeric.BOOL) => Bool,
-    Int(cuNumeric.INT8) => Int8,
-    Int(cuNumeric.INT16) => Int16,
-    Int(cuNumeric.INT32) => Int32,
-    Int(cuNumeric.INT64) => Int64,
-    Int(cuNumeric.UINT8) => UInt8,
-    Int(cuNumeric.UINT16) => UInt16,
-    Int(cuNumeric.UINT32) => UInt32,
-    Int(cuNumeric.UINT64) => UInt64,
-    Int(cuNumeric.FLOAT16) => Float16,
-    Int(cuNumeric.FLOAT32) => Float32,
-    Int(cuNumeric.FLOAT64) => Float64,
-    Int(cuNumeric.COMPLEX64) => ComplexF32,
-    Int(cuNumeric.COMPLEX128) => ComplexF64,
-    Int(cuNumeric.STRING) => String # CxxString?
-)
-
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
 to_cpp_dims_int(dims::Dims{N}, int_type::Type = Int64) where N = StdVector(int_type.([d for d in dims]))
@@ -71,19 +31,34 @@ to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 to_cpp_index(idx::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([e - 1 for e in idx]))
 to_cpp_index(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d - 1]))
 
-# disgustingggggg
-Base.eltype(arr::NDArray) = code_type_map[Int(code(type(arr)))]
-to_legate_type(T::Type) = type_map[T]()
-
-
-# probably belongs in another file
-function LegateType(T::Type)
-    return type_map[T]()
-end
-
+Base.eltype(arr::NDArray) = Legate.code_type_map[Int(Legate.code(type(arr)))]
+LegateType(T::Type) = Legate.to_legate_type(T)
 
 #### ARRAY/INDEXING INTERFACE ####
 # https://docs.julialang.org/en/v1/manual/interfaces/#Indexing
+
+Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
+Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
+Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
+
+
+Base.firstindex(arr::NDArray, dim::Int) = 1
+Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
+
+Base.IndexStyle(::NDArray) = IndexCartesian()
+
+function Base.show(io::IO, arr::NDArray)
+    T = eltype(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
+    T = eltype(arr)
+    dim = Base.size(arr)
+    print(io, "NDArray of $(T)s, Dim: $(dim)")
+end
+
 
 function Base.getindex(arr::NDArray, idxs::Vararg{Int, N}) where N
     T = eltype(arr)
@@ -114,22 +89,22 @@ end
 =#
 
 
-# to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N = LegateSlices(collect(slices))
-function to_cpp_init_slice(slices::Vararg{LegateSlice, N}) where N 
-    v = LegateSlices()
+# to_cpp_init_slice(slices::Vararg{Legate.Slice, N}) where N = LegateSlices(collect(slices))
+function to_cpp_init_slice(slices::Vararg{Legate.Slice, N}) where N 
+    v = Legate.VectorSlice()
     for s in slices 
-        push(v, s)
+        Legate.push(v, s)
     end
     return v
 end
 
 function slice(start::Int, stop::Int)
-    return LegateSlice(StdOptional{Int64}(start), StdOptional{Int64}(stop))
+    return Legate.Slice(Legate.StdOptional{Int64}(start), Legate.StdOptional{Int64}(stop))
 end
 
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::Int64)
-    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(j-1, j)))
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, Base.size(lhs, 1)), slice(j-1, j)))
     assign(s, rhs);
 end
 
@@ -139,12 +114,12 @@ function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Int64, j::Colon)
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::Colon)
-    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(lhs, 2))))
+    s = get_slice(lhs, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, Base.size(lhs, 2))))
     assign(s, rhs)
 end
 
 function Base.setindex!(lhs::NDArray, rhs::NDArray, i::Colon, j::UnitRange)
-    s = get_slice(lhs, to_cpp_init_slice(slice(0, size(lhs, 1)), slice(first(j) - 1, last(j))))
+    s = get_slice(lhs, to_cpp_init_slice(slice(0, Base.size(lhs, 1)), slice(first(j) - 1, last(j))))
     assign(s, rhs)
 end
 
@@ -164,7 +139,7 @@ function Base.setindex!(lhs::NDArray, rhs::NDArray, i::UnitRange, j::UnitRange)
 end
 
 function Base.getindex(arr::NDArray, i::Colon, j::Int64)
-    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(j-1, j)))
+    return get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(j-1, j)))
 end
 
 function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
@@ -172,11 +147,11 @@ function Base.getindex(arr::NDArray,  i::Int64, j::Colon)
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Colon)
-    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, size(arr, 2))))
+    return get_slice(arr, to_cpp_init_slice(slice(first(i) - 1, last(i)), slice(0, Base.size(arr, 2))))
 end
 
 function Base.getindex(arr::NDArray,  i::Colon, j::UnitRange)
-    return get_slice(arr, to_cpp_init_slice(slice(0, size(arr, 1)), slice(first(j) - 1, last(j))))
+    return get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(first(j) - 1, last(j))))
 end
 
 function Base.getindex(arr::NDArray, i::UnitRange, j::Int64)
@@ -214,37 +189,24 @@ end
 # This should also probably be a named function
 # We can just define a specialization for Base.fill(::NDArray)
 function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, c::Vararg{Colon, N}) where N
-    fill(arr, LegateScalar(val))
+    fill(arr, Legate.Scalar(val))
 end
 
-Base.firstindex(arr::NDArray, dim::Int) = 1
-Base.lastindex(arr::NDArray, dim::Int) = Base.size(arr,dim)
-
-Base.IndexStyle(::NDArray) = IndexCartesian()
-
-Base.ndims(arr::NDArray) = Int(cuNumeric.dim(arr))
-Base.size(arr::NDArray) = Tuple(Int.(cuNumeric.shape(arr)))
-Base.size(arr::NDArray, dim::Int) = Base.size(arr)[dim]
-
-function Base.show(io::IO, arr::NDArray)
-    T = eltype(arr)
-    dim = Base.size(arr)
-    print(io, "NDArray of $(T)s, Dim: $(dim)")
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Colon, j::Int64)
+    s = get_slice(arr, to_cpp_init_slice(slice(0, Base.size(arr, 1)), slice(j-1, j)))
+    fill(s, Legate.Scalar(val))
 end
 
-function Base.show(io::IO, ::MIME"text/plain", arr::NDArray)
-    T = eltype(arr)
-    dim = Base.size(arr)
-    print(io, "NDArray of $(T)s, Dim: $(dim)")
+function Base.setindex!(arr::NDArray, val::Union{Float32, Float64}, i::Int64, j::Colon)
+    s = get_slice(arr, to_cpp_init_slice(slice(i-1, i)))
+    fill(s, Legate.Scalar(val))
 end
-
-
 #### INITIALIZATION ####
 
 
 function full(dims::Dims{N}, val::Union{Float32, Float64, Int64, Int32}) where N
     dims_uint64 = to_cpp_dims(dims)
-    return _full(dims_uint64, LegateScalar(val))
+    return _full(dims_uint64, Legate.Scalar(val))
 end
 
 
@@ -269,8 +231,8 @@ NDArray of Int32s, Dim: [2, 3]
 ```
 """
 function zeros(::Type{T}, dims::Dims{N}) where {N,T}
-    LT = to_legate_type(T)
-    opt = StdOptional{LegateType}(LT)
+    LT = Legate.to_legate_type(T)
+    opt = Legate.StdOptional{Legate.LegateType}(LT)
     dims_uint64 = to_cpp_dims(dims)
     return _zeros(dims_uint64, opt)
 end
@@ -360,7 +322,7 @@ function reshape(arr::NDArray, i::Int64)
 end
 
 function Base.:+(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
-    return add_scalar(arr, LegateScalar(val))
+    return add_scalar(arr, Legate.Scalar(val))
 end
 function Base.:+(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
     return +(arr, val)
@@ -379,7 +341,7 @@ function Base.Broadcast.broadcasted(::typeof(+), lhs::NDArray, rhs::NDArray)
 end
 
 function Base.:-(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
-    return multiply_scalar(arr, LegateScalar(-val))
+    return multiply_scalar(arr, Legate.Scalar(-val))
 end
 
 function Base.:-(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
@@ -391,7 +353,7 @@ function Base.Broadcast.broadcasted(::typeof(-), arr::NDArray, val::Union{Float3
 end
 function Base.Broadcast.broadcasted(::typeof(-), val::Union{Float32, Float64, Int64, Int32}, rhs::NDArray) 
     # throw(ErrorException("element wise [val - NDArray] is not supported yet"))
-    lhs = full(size(rhs), val)
+    lhs = full(Base.size(rhs), val)
     return -(lhs, rhs)
 end
 
@@ -400,7 +362,7 @@ function Base.Broadcast.broadcasted(::typeof(-), lhs::NDArray, rhs::NDArray)
 end
 
 function Base.:*(val::Union{Float32, Float64, Int64, Int32}, arr::NDArray)
-    return multiply_scalar(arr, LegateScalar(val))
+    return multiply_scalar(arr, Legate.Scalar(val))
 end
 
 function Base.:*( arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
@@ -426,7 +388,7 @@ function Base.:/(arr::NDArray, val::Union{Float32, Float64, Int64, Int32})
 end
 
 function Base.Broadcast.broadcasted(::typeof(/), arr::NDArray, val::Union{Float32, Float64, Int64, Int32}) 
-    return multiply_scalar(arr, LegateScalar(Float64(1 / val)))
+    return multiply_scalar(arr, Legate.Scalar(Float64(1 / val)))
 end
 
 function Base.Broadcast.broadcasted(::typeof(/), val::Union{Float32, Float64, Int64, Int32}, arr::NDArray) 
@@ -484,8 +446,8 @@ end
 
 # arr == julia_array
 function Base.:(==)(arr::NDArray, julia_array::Array)
-    if (size(arr) != size(julia_array))
-        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+    if (Base.size(arr) != Base.size(julia_array))
+        @warn "NDArray has size $(Base.size(arr)) and Julia array has size $(Base.size(julia_array))!\n"
         return false
     end
 
@@ -517,8 +479,8 @@ end
 
 #* ADD ISAPPROX FOR TWO NDARRAYS AFTER BINARY OPS DONE
 function compare(julia_array::AbstractArray, arr::NDArray, max_diff)
-    if (size(arr) != size(julia_array))
-        @warn "NDArray has size $(size(arr)) and Julia array has size $(size(julia_array))!\n"
+    if (Base.size(arr) != Base.size(julia_array))
+        @warn "NDArray has size $(Base.size(arr)) and Julia array has size $(Base.size(julia_array))!\n"
         return false
     end
 

@@ -48,8 +48,8 @@ function sgemm(max_diff)
     # initialize the NDArray
     C_cpu = A_cpu .* B_cpu
 
-    A = cuNumeric.as_type(A, LegateType(FT))
-    B = cuNumeric.as_type(B, LegateType(FT))
+    A = cuNumeric.as_type(A, cuNumeric.LegateType(FT))
+    B = cuNumeric.as_type(B, cuNumeric.LegateType(FT))
     C = cuNumeric.zeros(FT, N, N)
 
     C = A * B

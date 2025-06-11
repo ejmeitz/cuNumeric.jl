@@ -32,13 +32,18 @@ jobs:
           
       - name: Install Dependencies
         run: |
-
-          git clone "https://github.com/JuliaInterop/libcxxwrap-julia.git"
-          pushd libcxxwrap-julia
-          git checkout "c47d1148355d30752aa772e03a2ac8078bb2d06b"
-          popd
-          echo -e "[cuNumeric]\nmode = \"conda_jl\"\nconda_jl_env = \"cupynumeric\"" > LocalPreferences.toml
-          julia -t 2 -e 'using Pkg; Pkg.activate("."); Pkg.Registry.add("General"); Pkg.Registry.update("General"); Pkg.resolve(); Pkg.build(verbose = true);'
+          julia -t 2 -e '
+          using Pkg;
+          Pkg.activate(".");
+          Pkg.Registry.add("General");
+          Pkg.Registry.update("General");
+          Pkg.rm("Legate");  # Critical step
+          Pkg.add(url="https://github.com/ejmeitz/legate_jll.jl");
+          Pkg.add(url="https://github.com/JuliaLegate/Legate.jl", rev="main");
+          Pkg.instantiate();
+          Pkg.resolve();
+          Pkg.build(verbose = true);
+          '
 
       - name: Run Tests
         env: 
@@ -54,7 +59,7 @@ jobs:
       - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          slug: ejmeitz/cuNumeric.jl
+          slug: JuliaLegate/cuNumeric.jl
   docs:
     name : Documentation
     permissions:

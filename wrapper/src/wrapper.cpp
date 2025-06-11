@@ -29,10 +29,8 @@
 #include "jlcxx/jlcxx.hpp"
 #include "jlcxx/stl.hpp"
 #include "legate.h"
-#include "legate/mapping/machine.h"
-#include "legate/timing/timing.h"
 #include "legion.h"
-#include "legion/legion_config.h"
+
 #include "types.h"
 
 struct WrapCppOptional {
@@ -61,17 +59,8 @@ cupynumeric::NDArray get_slice(cupynumeric::NDArray arr,
   assert(0 && "you should not enter here\n");
 }
 
-// std::string get_machine_info() {
-//   auto runtime = legate::Runtime::get_runtime();
-//   return runtime->get_machine().to_string();
-// }
-
-// void print_machine_info() { std::cout << get_machine_info() << std::endl; }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
-  wrap_privilege_modes(mod);
-  wrap_type_enums(mod);
-  wrap_type_getters(mod);
   wrap_unary_ops(mod);
   wrap_binary_ops(mod);
   wrap_unary_reds(mod);
@@ -92,44 +81,16 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   using allowed_dims = ParameterList<std::integral_constant<int_t, 1>,
                                      std::integral_constant<int_t, 2>,
                                      std::integral_constant<int_t, 3>>;
-  using privilege_modes = ParameterList<
-      std::integral_constant<legion_privilege_mode_t, LEGION_WRITE_DISCARD>,
-      std::integral_constant<legion_privilege_mode_t, LEGION_READ_ONLY>>;
 
-  // These are used in stencil.cc, seem important
-  mod.method("start_legate", [] { legate::start(); });  // in legate/runtime.h
   mod.method(
       "initialize_cunumeric",
-      &cupynumeric::initialize);  // in operators.h defined in runtime.cc???
-  mod.method("legate_finish", &legate::finish);  // in legate/runtime.h
+      &cupynumeric::initialize); 
 
-  //   mod.method("get_machine_info", &get_machine_info);
-  //   mod.method("print_machine_info", &print_machine_info);
-
-  // Need to put this before the optional definition,
-  // but StdOptional has to be defined by NDArray::type
   auto ndarry_type = mod.add_type<cupynumeric::NDArray>("NDArray")
                          .constructor<const cupynumeric::NDArray&>();
 
   mod.add_type<Parametric<TypeVar<1>>>("StdOptional")
-      .apply<std::optional<legate::Type>, std::optional<cupynumeric::NDArray>,
-             std::optional<int64_t>>(WrapCppOptional());
-
-  mod.add_type<legate::LogicalStore>("LogicalStore");
-  mod.add_type<legate::Slice>("LegateSlice")
-      .constructor<std::optional<int64_t>, std::optional<int64_t>>();
-
-  mod.add_type<std::vector<legate::Slice>>("LegateSlices")
-      .method("push", [](std::vector<legate::Slice>& v, legate::Slice s) {
-        v.push_back(s);
-      });
-    
-  mod.add_type<legate::Scalar>("LegateScalar")
-      .constructor<float>()
-      .constructor<double>();  // julia lets me make with ints???
-
-  jlcxx::stl::apply_stl<legate::Scalar>(
-      mod);  // enable std::vector<legate::Scalar>
+      .apply<std::optional<cupynumeric::NDArray>>(WrapCppOptional());
 
   ndarry_type.method("dim", &cupynumeric::NDArray::dim)
       .method("_size",
@@ -154,7 +115,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("get_store", &cupynumeric::NDArray::get_store)
       .method("random", &cupynumeric::NDArray::random)
       .method("fill", &cupynumeric::NDArray::fill)
-    //   .method("_dot_three_arg", &cupynumeric::NDArray::dot)
       .method("add", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                          const cupynumeric::NDArray&) const) &
                          cupynumeric::NDArray::operator+)
@@ -167,11 +127,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
       .method("multiply_scalar", (cupynumeric::NDArray(cupynumeric::NDArray::*)(
                                      const legate::Scalar&) const) &
                                      cupynumeric::NDArray::operator*);
-  // replacing this with get_slice custom method
-  // .method("get_slice",
-  //         (cupynumeric::NDArray(cupynumeric::NDArray::*)(
-  //             std::initializer_list<cupynumeric::slice>) const) &
-  //             cupynumeric::NDArray::operator[]);
 
   mod.method("get_slice", &get_slice);
 
@@ -188,69 +143,4 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.method("_add", &cupynumeric::add);
   mod.method("_multiply", &cupynumeric::multiply);
   mod.method("_random_ndarray", &cupynumeric::random);
-
-  mod.add_type<legate::timing::Time>("Time").method(
-      "value", &legate::timing::Time::value);
-  mod.method("time_microseconds", &legate::timing::measure_microseconds);
-  mod.method("time_nanoseconds", &legate::timing::measure_nanoseconds);
-
-  //.method("add_eq", &cupynumeric::NDArray::operator+=)
-  //.method("multiply_eq", &cupynumeric::NDArray::operator*=);
-
-  //   mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>("AccessorTypeContainer")
-  //     .apply_combination<ApplyAccessorTypeContainer, all_types,
-  //     allowed_dims>(EmptyWrapper());
-
-  // template<PrivilegeMode,typename,int,typename,typename,bool> class
-  // FieldAccessor;
-  //  Wrap FieldAccessor so we can create the more species RO and WO accessors
-  //   auto parent_type_field = jlcxx::julia_type("AbstractFieldAccessor");
-  //   auto FieldAccessor =
-  //       mod.add_type<Parametric<TypeVar<1>, TypeVar<2>, TypeVar<3>>>(
-  //           "FieldAccessor", parent_type_field);
-  //   FieldAccessor.apply_combination<ApplyFieldAccessor, privilege_modes,
-  //   all_types,
-  //                                   allowed_dims>(EmptyWrapper());
-
-  //   // Creates tempalte instantiations forall combinations of RO and WO
-  //   Accessors auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-  //   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>(
-  //       "AccessorRO", parent_type_RO);
-  //   accessor_base_RO.apply_combination<ApplyAccessorRO, all_types,
-  //   allowed_dims>(
-  //       WrapAccessorRO());
-
-  //   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-  //   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>, TypeVar<2>>>(
-  //       "AccessorWO", parent_type_WO);
-  //   accessor_base_WO.apply_combination<ApplyAccessorWO, all_types,
-  //   allowed_dims>(
-  //       WrapAccessorWO());
-
-  /// Add a non-member function that uses Foo3
-  //   typedef jlcxx::combine_types<ApplyAccessorRO, all_types, allowed_dims>
-  //   accessor_ro_types;
-  //   jlcxx::for_each_type<accessor_ro_types>(GetAccessorROFreeMethod(mod));
-
-  // MAKE THIS USE `allowed_dims` instead of hard coded
-  // mod.add_type<Parametric<TypeVar<1>>>("Point")
-  //   .apply<Legion::Point<1>, Legion::Point<2>, Legion::Point<3>>([](auto
-  //   wrapped){
-
-  //   });
-
-  // mod.method("make_point", &Realm::make_point);
-
-  // Creates tempalte instantiations forall combinations of RO and WO Accessors
-  //   auto parent_type_RO = jlcxx::julia_type("AbstractAccessorRO");
-  //   auto accessor_base_RO = mod.add_type<Parametric<TypeVar<1>,
-  //   TypeVar<2>>>("AccessorRO", parent_type_RO);
-  //   accessor_base_RO.apply_combination<ApplyAccessorRO, fp_types,
-  //   allowed_dims>(WrapAccessorRO());
-
-  //   auto parent_type_WO = jlcxx::julia_type("AbstractAccessorWO");
-  //   auto accessor_base_WO = mod.add_type<Parametric<TypeVar<1>,
-  //   TypeVar<2>>>("AccessorWO", parent_type_WO);
-  //   accessor_base_WO.apply_combination<ApplyAccessorWO, fp_types,
-  //   allowed_dims>(WrapAccessorWO());
 }
