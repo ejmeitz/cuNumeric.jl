@@ -1,40 +1,36 @@
 using CUDA
 
-# Your kernel
 function kernel_add(a, b, c)
     i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
     if i <= length(a)
-        c[i] = a[i] + b[i]
+        @inbounds c[i] = a[i] + b[i]
     end
+    return
 end
 
-# Compile kernel with @cuda (for PTX)
-a = CuArray{Float32}(undef, 1)
-b = CuArray{Float32}(undef, 1)
-c = CuArray{Float32}(undef, 1)
+# Dummy launch to force compilation
+a = CUDA.fill(1.0f0, 10)
+b = CUDA.fill(2.0f0, 10)
+c = CUDA.fill(0.0f0, 10)
+@cuda threads=10 kernel_add(a, b, c)
 
-argtypes = (typeof(a), typeof(b), typeof(c))
-
-# ptx = CUDA.code_ptx(kernel_add, argtypes)
-
+# Use code_ptx correctly
 buf = IOBuffer()
-CUDA.code_ptx(buf, kernel_add, argtypes)
+CUDA.code_ptx(buf, kernel_add, (typeof(a), typeof(b), typeof(c)))
 ptx = String(take!(buf))
 
-if ptx === nothing
-    error("PTX generation failed")
+# Debug output
+println("PTX preview:")
+println(first(split(ptx, '\n'), 10))  # first 10 lines
+
+# Save to file
+ptx_path = "kernel_add.ptx"
+open(ptx_path, "w") do f
+    write(f, ptx)
 end
 
-# Load PTX module
-mod = CuModule(ptx)
-
-# Get function by name (name mangling can happen, inspect `ptx` or use known kernel name)
-fn_name = "julia_kernel_add"  # You might need to find the exact symbol name from PTX
-
-fun = CuFunction(mod, fn_name)
-
-# Launch kernel manually
-threads = 256
-blocks = 1
-
-CUDA.@sync launch(fun, (blocks,), (threads,), a, b, c)
+# Make sure the file has `.entry kernel_add`
+# Then:
+mod = CuModule(ptx_path)
+fun = CuFunction(mod, "kernel_add")
+CUDA.@sync launch(fun, (1,), (10,), a, b, c)
