@@ -40,7 +40,7 @@ import Base: abs, angle, acos, acosh, asin, asinh, atan, atanh, cbrt,
              prod, sum
 
 function preload_libs()
-    include("../deps/deps.jl")
+    include(joinpath(@__DIR__, "../", "deps/deps.jl"))
     libs = [
         joinpath(CUTENSOR_ROOT, "lib", "libcutensor.so.2"),
         joinpath(HDF5_ROOT, "lib", "libhdf5.so.310"),
@@ -62,6 +62,7 @@ include("util.jl")
 include("ndarray.jl")
 include("unary.jl")
 include("binary.jl")
+include("cuda.jl")
 
 # From https://github.com/JuliaGraphics/QML.jl/blob/dca239404135d85fe5d4afe34ed3dc5f61736c63/src/QML.jl#L147
 mutable struct ArgcArgv

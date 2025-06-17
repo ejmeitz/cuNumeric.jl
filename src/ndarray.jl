@@ -24,6 +24,8 @@ Base.Broadcast.broadcastable(v::NDArray) = v
 
 #probably some way to enforce this only gets passed int types
 to_cpp_dims(dims::Dims{N}, int_type::Type = UInt64) where N = StdVector(int_type.([d for d in dims]))
+to_cpp_dims(d::Int64, int_type::Type = UInt64) = StdVector(int_type.([d]))
+
 to_cpp_dims_int(dims::Dims{N}, int_type::Type = Int64) where N = StdVector(int_type.([d for d in dims]))
 to_cpp_dims_int(d::Int64, int_type::Type = Int64) = StdVector(int_type.([d]))
 
@@ -205,6 +207,12 @@ end
 
 
 function full(dims::Dims{N}, val::Union{Float32, Float64, Int64, Int32}) where N
+    dims_uint64 = to_cpp_dims(dims)
+    return _full(dims_uint64, Legate.Scalar(val))
+end
+
+
+function full(dims::Union{Int32, Int64}, val::Union{Float32, Float64, Int64, Int32})
     dims_uint64 = to_cpp_dims(dims)
     return _full(dims_uint64, Legate.Scalar(val))
 end

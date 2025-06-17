@@ -1,36 +1,116 @@
 using CUDA
+using Random 
 
-function kernel_add(a, b, c)
-    i = (blockIdx().x - 1) * blockDim().x + threadIdx().x
-    if i <= length(a)
-        @inbounds c[i] = a[i] + b[i]
+function __extract_kernel_name(ptx)
+    for line in eachline(IOBuffer(ptx))
+        if occursin(".entry", line)
+            m = match(r"\.entry\s+([a-zA-Z0-9_]+)", line)
+            if m !== nothing
+                return String(m.captures[1])
+            end
+        end
     end
-    return
+    return nothing
 end
 
-# Dummy launch to force compilation
-a = CUDA.fill(1.0f0, 10)
-b = CUDA.fill(2.0f0, 10)
-c = CUDA.fill(0.0f0, 10)
-@cuda threads=10 kernel_add(a, b, c)
-
-# Use code_ptx correctly
-buf = IOBuffer()
-CUDA.code_ptx(buf, kernel_add, (typeof(a), typeof(b), typeof(c)))
-ptx = String(take!(buf))
-
-# Debug output
-println("PTX preview:")
-println(first(split(ptx, '\n'), 10))  # first 10 lines
-
-# Save to file
-ptx_path = "kernel_add.ptx"
-open(ptx_path, "w") do f
-    write(f, ptx)
+function __get_types_from_dummy(args...)
+    types = Any[]
+    for arg in args
+        push!(types, typeof(CUDA.cudaconvert(arg)))
+    end
+    return tuple(types...) 
 end
 
-# Make sure the file has `.entry kernel_add`
-# Then:
-mod = CuModule(ptx_path)
-fun = CuFunction(mod, "kernel_add")
-CUDA.@sync launch(fun, (1,), (10,), a, b, c)
+function __dummy_args_for_ptx(args...)
+    converted = Any[]
+    for arg in args
+        push!(converted, cuNumeric.__convert_arg(arg))
+    end
+    return tuple(converted...) 
+end
+
+function __convert_arg(arg)
+    if isa(arg, NDArray)
+        T = cuNumeric.eltype(arg)
+        size = cuNumeric.size(arg)
+        return CUDA.zeros(T, size)
+    elseif Base.isbits(arg)
+        return arg
+    else
+        error("Unsupported argument type: $(typeof(arg))")
+    end
+end
+
+
+function __tuple_set(args...)
+    state = args[1]
+    types = args[2]
+
+    t = Any[]
+    push!(t, state)
+    for ty in types.parameters
+        push!(t, ty)
+    end
+    return tuple(t...) 
+end
+
+
+struct CUDATask
+    func::CUDA.CuFunction
+    mod::CUDA.CuModule
+    except::Ptr{CUDA.ExceptionInfo_st}
+    argtypes::NTuple{N, Type} where N
+end
+
+macro cuda_task(call_expr)
+    fname = call_expr.args[1]
+    fargs = call_expr.args[2:end]
+    
+    quote
+        local _buf = IOBuffer()
+        local _dummy = $cuNumeric.__dummy_args_for_ptx($(fargs...))
+        # Create the PTX in runtime with actual values
+        CUDA.@device_code_ptx io=_buf CUDA.@cuda launch=false $fname((_dummy...))
+
+        local _ptx = String(take!(_buf))
+        local _mod = CUDA.CuModule(_ptx)
+        local _except = CUDA.create_exceptions!(_mod)
+
+        # Extract kernel name
+        local _kernel_name = cuNumeric.__extract_kernel_name(_ptx)
+        local _func = CUDA.CuFunction(_mod, _kernel_name)
+        local _types = cuNumeric.__get_types_from_dummy(_dummy)
+
+        cuNumeric.CUDATask(_func, _mod, _except, _types)
+    end |> esc
+end
+
+
+macro launch(ex...)
+    @assert length(ex) == 4 "Usage: @launch task=taskname blocks=blocks threads=threads kernel(args...)"
+
+    N = 1024
+    threads = 256
+    blocks = cld(N, threads)
+    
+    task    = ex[1].args[2]
+    blocks  = ex[2].args[2]
+    threads = ex[3].args[2]
+    call    = ex[end] 
+
+    funcname    = call.args[1]    # kernel_add
+    kernel_args = call.args[2:end]
+    
+    quote
+        local _task = $task
+        local _kernel_state = CUDA.KernelState(_task.except, cuNumeric.Random.rand(UInt32))
+
+        CUDA.cudacall(
+            _task.func,
+            cuNumeric.__tuple_set(CUDA.KernelState, _task.argtypes...),
+            _kernel_state, $(kernel_args...);
+            threads=threads, blocks=blocks
+        )
+        CUDA.synchronize()
+    end |> esc
+end
