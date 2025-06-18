@@ -54,7 +54,7 @@ namespace ufi {
   void* args[] = { &a, &b, &c, &N }; 
 
   CUresult status = cuLaunchKernel(
-    func, gridDimX, 1, 1, blockDimX, 1, 1, 0, stream_, args, NULL);
+    func, gridDimX, 1, 1, blockDimX, 1, 1, 0, stream_, args, nullptr);
   if (status != CUDA_SUCCESS) {
     fprintf(stderr, "Failed to launch a CUDA kernel\n");
     cudaStreamDestroy(stream_);
@@ -210,10 +210,12 @@ void register_tasks() {
     ufi::RunPTXTask::register_variants(library);
 }
 
+void gpu_sync() {cudaDeviceSynchronize();}
 
 void wrap_cuda_methods(jlcxx::Module& mod){
     mod.method("register_tasks", &register_tasks);
     mod.method("get_library", &get_lib);
     mod.method("new_task", &new_task);
     mod.method("ptx_task", &ptx_task);
+    mod.method("gpu_sync", &gpu_sync);
 }
