@@ -51,7 +51,7 @@ namespace ufi {
   unsigned int blockDimX = 256;
   unsigned int gridDimX = (N + blockDimX - 1) / blockDimX;
 
-  void* args[] = { a, b, c, &N }; 
+  void* args[] = { &a, &b, &c, &N }; 
 
   CUresult status = cuLaunchKernel(
     func, gridDimX, 1, 1, blockDimX, 1, 1, 0, stream_, args, NULL);
