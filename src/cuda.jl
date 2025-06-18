@@ -92,7 +92,7 @@ macro launch(ex...)
     
     quote
         local _task = $task
-        local _kernel_state = CUDA.KernelState(_task.except, cuNumeric.Random.rand(UInt32))
+
 
         CUDA.cudacall(
             _task.func,

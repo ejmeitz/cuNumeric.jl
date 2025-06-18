@@ -23,11 +23,8 @@ c = cuNumeric.zeros(Float32, N)
 
 task = cuNumeric.@cuda_task kernel_add(a, b, c, Int32(1))
 
+cuNumeric.new_task(task.func, a, b, c, Int32(N)) 
 
-# ac = CUDA.fill(1.0f0, N)
-# bc = CUDA.fill(2.0f0, N)
-# cc = CUDA.zeros(Float32, N)
-
-# cuNumeric.@launch task=task threads=threads blocks=blocks kernel_add(cudaconvert(ac), cudaconvert(bc), cudaconvert(cc), N)
-
-# println("Result: ", Array(cc))
+# cuNumeric.@launch task=task threads=threads blocks=blocks kernel_add(a, b, c, Int32(1))
+c_cpu = c[:]
+println("Result: ", c_cpu)

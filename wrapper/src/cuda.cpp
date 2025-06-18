@@ -28,103 +28,41 @@
 namespace ufi {
     using namespace Legion;
 
-//  struct EvalUDFTaskArgs {
-//     void sanity_check(void);
 
-//     uint64_t func_ptr;
-//     OutputColumn mask;
-//     std::vector<Column<true>> columns;
-//     std::vector<FromRawFuture> scalars;
-//     friend void deserialize(Deserializer &ctx, EvalUDFTaskArgs &args);
-//   };
+// https://github.com/nv-legate/legate.pandas/blob/branch-22.01/src/udf/eval_udf_gpu.cc
+/*static*/ void RunPTXTask::gpu_variant(legate::TaskContext context)
+{
+  cudaStream_t stream_{0};
+  cudaStreamCreate(&stream_);
+
+  int32_t N = context.scalar(0).value<int32_t>();
+
+  uint64_t func_ptr;
+  void* device_func_ptr = (void*)context.input(0).data().read_accessor<uint64_t, 1>().ptr(Realm::Point<1>(0));
+  cudaMemcpy((void*)&func_ptr, (void*)device_func_ptr, sizeof(uint64_t), cudaMemcpyDeviceToHost);
+  
+  CUfunction func = reinterpret_cast<CUfunction>(func_ptr);
+
+  void *a = (void*)context.input(1).data().read_accessor<uint64_t, 1>().ptr(Realm::Point<1>(0));
+  void *b = (void*)context.input(2).data().read_accessor<uint64_t, 1>().ptr(Realm::Point<1>(0));
+  void *c = context.output(0).data().write_accessor<uint64_t, 1>().ptr(Realm::Point<1>(0));
 
 
-// // https://github.com/nv-legate/legate.pandas/blob/branch-22.01/src/udf/eval_udf_gpu.cc
-// /*static*/ void EvalUDFTask::gpu_variant(const Task *task,
-//                                          const std::vector<PhysicalRegion> &regions,
-//                                          Context context,
-//                                          Runtime *runtime)
-// {
-//   Deserializer ctx{task, regions};
+  unsigned int blockDimX = 256;
+  unsigned int gridDimX = (N + blockDimX - 1) / blockDimX;
 
-//   EvalUDFTaskArgs args;
-//   deserialize(ctx, args);
+  void* args[] = { a, b, c, &N }; 
 
-// #ifdef DEBUG_PANDAS
-//   assert(!args.columns.empty());
-// #endif
-//   const auto size = args.columns[0].num_elements();
+  CUresult status = cuLaunchKernel(
+    func, gridDimX, 1, 1, blockDimX, 1, 1, 0, stream_, args, NULL);
+  if (status != CUDA_SUCCESS) {
+    fprintf(stderr, "Failed to launch a CUDA kernel\n");
+    cudaStreamDestroy(stream_);
+    exit(-1);
+  }
 
-//   args.mask.allocate(size);
-//   if (size == 0) return;
-
-//   GPUTaskContext gpu_ctx{};
-//   auto stream = gpu_ctx.stream();
-
-//   // A technical note: this future is not used when args.scalars was deserialized,
-//   // as the length of args.scalars passed from the Python side doesn't count this.
-//   CUfunction func = task->futures.back().get_result<CUfunction>();
-
-//   const uint32_t gridDimX = (size + THREADS_PER_BLOCK - 1) / THREADS_PER_BLOCK;
-//   const uint32_t gridDimY = 1;
-//   const uint32_t gridDimZ = 1;
-
-//   const uint32_t blockDimX = THREADS_PER_BLOCK;
-//   const uint32_t blockDimY = 1;
-//   const uint32_t blockDimZ = 1;
-
-//   size_t buffer_size = (args.columns.size() + 1) * sizeof(void *);
-//   // TODO: We may see alignment issues with the arguments smaller than 4B
-//   for (auto &scalar : args.scalars) buffer_size += scalar.size_;
-//   buffer_size += sizeof(size_t);
-
-//   std::vector<char> arg_buffer(buffer_size);
-//   char *raw_arg_buffer = arg_buffer.data();
-
-//   auto p                        = raw_arg_buffer;
-//   *reinterpret_cast<void **>(p) = args.mask.raw_column_untyped();
-//   p += sizeof(void *);
-
-//   for (auto &column : args.columns) {
-//     *reinterpret_cast<const void **>(p) = column.raw_column_untyped_read();
-//     p += sizeof(void *);
-//   }
-
-//   for (auto &scalar : args.scalars) {
-//     memcpy(p, scalar.rawptr_, scalar.size_);
-//     p += scalar.size_;
-//   }
-
-//   memcpy(p, &size, sizeof(size_t));
-
-//   void *config[] = {
-//     CU_LAUNCH_PARAM_BUFFER_POINTER,
-//     static_cast<void *>(raw_arg_buffer),
-//     CU_LAUNCH_PARAM_BUFFER_SIZE,
-//     &buffer_size,
-//     CU_LAUNCH_PARAM_END,
-//   };
-
-//   CUresult status = cuLaunchKernel(
-//     func, gridDimX, gridDimY, gridDimZ, blockDimX, blockDimY, blockDimZ, 0, stream, NULL, config);
-//   if (status != CUDA_SUCCESS) {
-//     fprintf(stderr, "Failed to launch a CUDA kernel\n");
-//     exit(-1);
-//   }
-
-//   if (!args.mask.nullable()) return;
-
-//   bool initialized = false;
-//   Bitmask bitmask  = args.mask.bitmask();
-//   for (auto &column : args.columns) {
-//     if (!column.nullable()) continue;
-//     Bitmask to_merge = column.read_bitmask();
-//     if (initialized)
-//       intersect_bitmasks(bitmask, bitmask, to_merge, stream);
-//     else
-//       to_merge.copy(bitmask, stream);
-//   }
-// }
+  cudaStreamDestroy(stream_);
+}
 
 
 
@@ -226,10 +164,11 @@ legate::Library get_lib() {
     return runtime->get_library();
 }
 
-cupynumeric::NDArray new_task(int32_t opcode, cupynumeric::NDArray rhs1, cupynumeric::NDArray rhs2, cupynumeric::NDArray output, int32_t N) {
+cupynumeric::NDArray new_task(legate::LogicalStore cufunc, cupynumeric::NDArray rhs1, cupynumeric::NDArray rhs2, cupynumeric::NDArray output, int32_t N) {
     auto runtime = legate::Runtime::get_runtime();
     auto library = get_lib();
-    auto task = runtime->create_task(library, legate::LocalTaskID{opcode});
+    auto task = runtime->create_task(library, legate::LocalTaskID{ufi::RUN_PTX_TASK});
+    task.add_input(cufunc); // first input is the cufunction pointer
 
     auto& out_shape = output.shape();
     auto rhs1_temp = rhs1.get_store();
@@ -268,6 +207,7 @@ legate::LogicalStore ptx_task(std::string ptx) {
 void register_tasks() {
     auto library = get_lib();
     ufi::LoadPTXTask::register_variants(library);
+    ufi::RunPTXTask::register_variants(library);
 }
 
 
