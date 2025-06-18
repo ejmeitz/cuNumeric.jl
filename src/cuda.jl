@@ -71,7 +71,6 @@ macro cuda_task(call_expr)
         CUDA.@device_code_ptx io=_buf CUDA.@cuda launch=false $fname((_dummy...))
 
         local _ptx = String(take!(_buf))
-
         local _func = cuNumeric.ptx_task(_ptx)
         local _types = cuNumeric.__get_types_from_dummy(_dummy)
 

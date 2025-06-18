@@ -22,6 +22,7 @@
 #include "ufi.h"
 #include "cupynumeric.h"
 #include "legate.h"
+#include "legion.h"
 #include "cuda.h"
 
 namespace ufi {
@@ -133,9 +134,7 @@ namespace ufi {
     std::string ptx = context.scalar(0).value<std::string>();
 
     auto output   = context.output(0);
-    auto shape_out = output.shape<1>();
-    auto output_acc = output.data().write_accessor<uint64_t, 1>(shape_out);
-
+    auto output_acc = output.data().write_accessor<uint64_t, 1>();
 
     const unsigned num_options = 4;
     const size_t buffer_size   = 16384;
@@ -190,8 +189,12 @@ namespace ufi {
     result = cuModuleGetFunction(&hfunc, module, fun_name.c_str());
     assert(result == CUDA_SUCCESS);
     auto int_func = reinterpret_cast<uint64_t>(hfunc);
-    
-    output_acc[0] = int_func;
+
+    // this is actually dumb
+    cudaMemcpy(output_acc.ptr(Realm::Point<1>(0)), &int_func, sizeof(uint64_t), cudaMemcpyHostToDevice);
+    // this doesn't work as we are on a GPU task due to necessary GPU context
+    // Realm::Point<1> p(0);
+    // output_acc.write(p, int_func);
     }
 } // end ufi
 
@@ -253,7 +256,7 @@ legate::LogicalStore ptx_task(std::string ptx) {
     auto task = runtime->create_task(library, legate::LocalTaskID{ufi::LOAD_PTX_TASK});
     task.add_scalar_arg(legate::Scalar(ptx));
 
-    auto scalar_store  = runtime->create_store({1}, legate::uint64());
+    auto scalar_store  = runtime->create_store({1}, legate::uint64(), false);
     task.add_output(scalar_store);
 
     runtime->submit(std::move(task));
