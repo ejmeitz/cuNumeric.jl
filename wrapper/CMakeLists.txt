@@ -43,7 +43,8 @@ message(STATUS "Found JlCxx at ${JlCxx_location}")
 # Julia Wrapper Library
 add_library(cupynumericwrapper SHARED
              src/wrapper.cpp
-             src/types.cpp)
+             src/types.cpp
+             src/cuda.cpp)
 
 
 set_target_properties(cupynumericwrapper PROPERTIES

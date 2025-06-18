@@ -56,9 +56,7 @@ end
 
 
 struct CUDATask
-    func::CUDA.CuFunction
-    mod::CUDA.CuModule
-    except::Ptr{CUDA.ExceptionInfo_st}
+    func::Legate.LogicalStore
     argtypes::NTuple{N, Type} where N
 end
 
@@ -73,15 +71,11 @@ macro cuda_task(call_expr)
         CUDA.@device_code_ptx io=_buf CUDA.@cuda launch=false $fname((_dummy...))
 
         local _ptx = String(take!(_buf))
-        local _mod = CUDA.CuModule(_ptx)
-        local _except = CUDA.create_exceptions!(_mod)
 
-        # Extract kernel name
-        local _kernel_name = cuNumeric.__extract_kernel_name(_ptx)
-        local _func = CUDA.CuFunction(_mod, _kernel_name)
+        local _func = cuNumeric.ptx_task(_ptx)
         local _types = cuNumeric.__get_types_from_dummy(_dummy)
 
-        cuNumeric.CUDATask(_func, _mod, _except, _types)
+        cuNumeric.CUDATask(_func, _types)
     end |> esc
 end
 
@@ -89,10 +83,6 @@ end
 macro launch(ex...)
     @assert length(ex) == 4 "Usage: @launch task=taskname blocks=blocks threads=threads kernel(args...)"
 
-    N = 1024
-    threads = 256
-    blocks = cld(N, threads)
-    
     task    = ex[1].args[2]
     blocks  = ex[2].args[2]
     threads = ex[3].args[2]

@@ -117,6 +117,8 @@ function cupynumeric_setup(AA::ArgcArgv)
 
     cuNumeric.initialize_cunumeric(AA.argc, getargv(AA))
 
+    cuNumeric.register_tasks(); # in cuda.cpp wrapper interface
+
     return cuNumeric_config_str
 end
 

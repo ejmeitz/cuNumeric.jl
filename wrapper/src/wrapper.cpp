@@ -31,7 +31,9 @@
 #include "legate.h"
 #include "legion.h"
 
+// cpp wrapper headers
 #include "types.h"
+#include "ufi.h"
 
 struct WrapCppOptional {
   template <typename TypeWrapperT>
@@ -143,4 +145,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& mod) {
   mod.method("_add", &cupynumeric::add);
   mod.method("_multiply", &cupynumeric::multiply);
   mod.method("_random_ndarray", &cupynumeric::random);
+  // uses NDArray so needs to be after
+  wrap_cuda_methods(mod);
 }
